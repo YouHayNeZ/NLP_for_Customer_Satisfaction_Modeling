@@ -32,3 +32,18 @@ def encode_categoricals(data):
             data[col] = pd.get_dummies(data[col])
     return data
 
+# Drop highly correlated column (see exploration.py)
+
+# Drop missing values
+
+# Normalize data
+
+
+# To be added once finished:
+# - new features from sentiment analysis
+# - new features from topic modeling
+
+
+
+
+
