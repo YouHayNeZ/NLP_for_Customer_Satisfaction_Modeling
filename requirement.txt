@@ -5,4 +5,10 @@ seaborn==0.12.2
 numpy==1.26.4
 scikit-learn==1.4.2
 statsmodels==0.14.0
-xgboost==2.0.3 
+xgboost==2.0.3
+transformers==4.40.2
+bert-extractive-summarizer==0.10.1
+textblob==0.18.0.post0
+vader-multi==3.2.2.1 
+spacy==3.7.4
+flair==0.13.1
