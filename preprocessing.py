@@ -28,16 +28,26 @@ def create_datetime(data):
 def encode_categoricals(data):
     # encode all columns except for Overall rating, Comment title, Comment
     for col in data.columns:
-        if col not in ['Comment title', 'Comment', 'Overall Rating']:
-            data[col] = pd.get_dummies(data[col])
+        if col not in ['Comment title', 'Comment', 'Overall Rating', 'Date Published', 'Date Flown']:
+            data = pd.get_dummies(data, columns=[col], prefix=col)
     return data
 
-# Drop highly correlated column (see exploration.py)
+# Drop highly correlated column (see exploration.py) -> nothing to be dropped b/c all correlations < abs(0.8)
 
-# Drop missing values
+# Drop missing values in target 'Overall Rating'
+def drop_missing_target(data):
+    data = data.dropna(subset=['Overall Rating'])
+    return data
 
-# Normalize data
+# Normalization of data not needed because there are no continuous features
 
+# Create pipeline with all preprocessing steps
+def create_pipeline(file_path):
+    data = import_data(file_path)
+    data = create_datetime(data)
+    data = encode_categoricals(data)
+    data = drop_missing_target(data)
+    return data
 
 # To be added once finished:
 # - new features from sentiment analysis
