@@ -37,18 +37,18 @@ X_test = X_test.drop(columns=['Comment title', 'Comment'])
 
 # Define the range of hyperparameters
 param_dist = {
-    'n_estimators': randint(10, 1000),
+    'n_estimators': randint(10, 1200),
     'max_features': ["sqrt", "log2", None],
-    'max_depth': randint(1, 100),
-    'min_samples_split': randint(2, 50),
-    'min_samples_leaf': randint(1, 50),
+    'max_depth': randint(1, 200),
+    'min_samples_split': randint(5, 40),
+    'min_samples_leaf': randint(1, 25),
     'bootstrap': [True, False]
 }
 
 # Hyperparameter tuning
 random_search = RandomizedSearchCV(estimator=RandomForestClassifier(), 
                                param_distributions=param_dist, 
-                               n_iter=200, 
+                               n_iter=1500, 
                                cv=5, 
                                verbose=2, 
                                scoring='f1_weighted',
@@ -66,16 +66,39 @@ results.to_csv('outputs/classification/rf/rf_cv_results.csv')
 
 # Parallel coordinate plot without max_features and bootstrap
 scaler = MinMaxScaler()
-results = results.rename(columns={'param_n_estimators': 'n_estimators', 'param_max_depth': 'max_depth', 'param_min_samples_split': 'min_samples_split', 'param_min_samples_leaf': 'min_samples_leaf'})
+results = results.rename(columns={'param_n_estimators': 'n_estimators', 'param_max_features': 'max_features', 'param_max_depth': 'max_depth', 'param_min_samples_split': 'min_samples_split', 'param_min_samples_leaf': 'min_samples_leaf', 'param_bootstrap': 'bootstrap'})
 for param in ['n_estimators', 'max_depth', 'min_samples_split', 'min_samples_leaf']:
     results[param] = scaler.fit_transform(results[param].values.reshape(-1, 1))
-results = results.drop(columns=['param_max_features', 'param_bootstrap', 'std_test_score', 'rank_test_score'])
+max_features_and_bootstrap = results[['max_features', 'bootstrap']]
+results = results.drop(columns=['max_features', 'bootstrap', 'std_test_score', 'rank_test_score'])
 plt.figure(figsize=(14, 7))
-parallel_coordinates(results, 'mean_test_score', colormap='viridis', alpha = 0.4)
+parallel_coordinates(results, 'mean_test_score', colormap='viridis', alpha = 0.3)
 plt.legend().remove()
 plt.savefig('outputs/classification/rf/rf_parallel_coordinates.png')
 plt.show()
 # purple = best, yellow = worst
+
+# Count the percentage of bootstrap = True/False and max_features = sqrt/log2/None
+results['bootstrap'] = max_features_and_bootstrap['bootstrap'].astype(str)
+results['max_features'] = max_features_and_bootstrap['max_features'].astype(str)
+results = results.sort_values(by='mean_test_score', ascending=False)
+results_top10 = results.head(int(len(results) * 0.1))
+results_bottom10 = results.tail(int(len(results) * 0.1))
+
+# Print length of top 10% and bottom 10% of models
+print('Out of top 10% of models (number {}):'.format(len(results_top10)))
+print('bootstrap = True: {}'.format(len(results_top10[results_top10['bootstrap'] == 'True'])/len(results_top10)))
+print('bootstrap = False: {}'.format(len(results_top10[results_top10['bootstrap'] == 'False'])/len(results_top10)))
+print('max_features = sqrt: {}'.format(len(results_top10[results_top10['max_features'] == 'sqrt'])/len(results_top10)))
+print('max_features = log2: {}'.format(len(results_top10[results_top10['max_features'] == 'log2'])/len(results_top10)))
+print('max_features = None: {}'.format(len(results_top10[results_top10['max_features'] == 'None'])/len(results_top10)))
+
+print('Out of bottom 10% of models (number {})'.format(len(results_bottom10)))
+print('bootstrap = True: {}'.format(len(results_bottom10[results_bottom10['bootstrap'] == 'True'])/len(results_bottom10)))
+print('bootstrap = False: {}'.format(len(results_bottom10[results_bottom10['bootstrap'] == 'False'])/len(results_bottom10)))
+print('max_features = sqrt: {}'.format(len(results_bottom10[results_bottom10['max_features'] == 'sqrt'])/len(results_bottom10)))
+print('max_features = log2: {}'.format(len(results_bottom10[results_bottom10['max_features'] == 'log2'])/len(results_bottom10)))
+print('max_features = None: {}'.format(len(results_bottom10[results_bottom10['max_features'] == 'None'])/len(results_bottom10)))
 
 # Get the best model
 best_model = random_search.best_estimator_
