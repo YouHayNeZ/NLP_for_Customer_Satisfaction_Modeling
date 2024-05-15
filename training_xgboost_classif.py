@@ -56,7 +56,7 @@ param_dist = {
 # Hyperparameter tuning
 random_search = RandomizedSearchCV(estimator=xgb.XGBClassifier(), 
                                param_distributions=param_dist, 
-                               n_iter=2, 
+                               n_iter=100, 
                                cv=5, 
                                verbose=2, 
                                scoring='f1_weighted',
