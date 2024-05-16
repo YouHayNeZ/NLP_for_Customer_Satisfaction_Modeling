@@ -15,25 +15,8 @@ from pandas.plotting import parallel_coordinates
 import matplotlib.pyplot as plt
 import json
 
-# Importing the dataset
-data = create_pipeline('data/ryanair_reviews.csv')
-
-# Splitting the dataset into the Training set and Test set
-X = data.drop(columns=['Overall Rating'])
-y = data['Overall Rating']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-
-# Extract dates from train and test sets
-datetime_train = X_train[['Date Flown']]
-datetime_test = X_test[['Date Flown']]
-
-# Remove dates from train and test sets
-X_train = X_train.drop(columns=['Date Published', 'Date Flown'])
-X_test = X_test.drop(columns=['Date Published', 'Date Flown'])
-
-# Remove 'Comment title' and 'Comment' columns
-X_train = X_train.drop(columns=['Comment title', 'Comment'])
-X_test = X_test.drop(columns=['Comment title', 'Comment'])
+# Prepare data for training
+X_train, X_test, y_train, y_test, datetime_train, datetime_test, data = create_pipeline('data/ryanair_reviews.csv')
 
 # Define the range of hyperparameters
 param_dist = {
@@ -111,6 +94,12 @@ with open('outputs/classification/rf/rf_hyperparameters.json', 'w') as f:
 # Make predictions, save them as data frame and set flown date as index
 train_preds = best_model.predict(X_train)
 test_preds = best_model.predict(X_test)
+
+# Correct classes again: add +1 to predictions & real values to get the real rating
+train_preds = train_preds + 1
+test_preds = test_preds + 1
+y_train = y_train + 1
+y_test = y_test + 1
 
 train_preds = pd.DataFrame({'Predicted Overall Rating': train_preds, 'Real Overall Rating': y_train, 'Date Flown': datetime_train['Date Flown']}).set_index('Date Flown')
 test_preds = pd.DataFrame({'Predicted Overall Rating': test_preds, 'Real Overall Rating': y_test, 'Date Flown': datetime_test['Date Flown']}).set_index('Date Flown')

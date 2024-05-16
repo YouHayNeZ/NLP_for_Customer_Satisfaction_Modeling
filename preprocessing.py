@@ -47,7 +47,26 @@ def create_pipeline(file_path):
     data = create_datetime(data)
     data = encode_categoricals(data)
     data = drop_missing_target(data)
-    return data
+    # Splitting the dataset into the Training set and Test set
+    X = data.drop(columns=['Overall Rating'])
+    y = data['Overall Rating']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    y_train = y_train.astype(int) - 1
+    y_test = y_test.astype(int) - 1
+
+    # Extract dates from train and test sets
+    datetime_train = X_train[['Date Flown']]
+    datetime_test = X_test[['Date Flown']]
+
+    # Remove dates from train and test sets
+    X_train = X_train.drop(columns=['Date Published', 'Date Flown'])
+    X_test = X_test.drop(columns=['Date Published', 'Date Flown'])
+
+    # Remove 'Comment title' and 'Comment' columns
+    X_train = X_train.drop(columns=['Comment title', 'Comment'])
+    X_test = X_test.drop(columns=['Comment title', 'Comment'])
+
+    return X_train, X_test, y_train, y_test, datetime_train, datetime_test, data
 
 # To be added once finished:
 # - new features from sentiment analysis

@@ -36,11 +36,9 @@ ensemble_preds['KNN Predictions'] = ensemble_preds['KNN Predictions'].astype(int
 ensemble_without_date_and_real = ensemble_preds.drop(columns=['Date Flown', 'Real Overall Rating'])
 ensemble_preds['Ensemble Predictions (Unweighted Majority Voting)'] = ensemble_without_date_and_real.mode(axis=1)[0]
 
-# Calculate the accuracy, precision, recall, f1-score and AUC of the ensemble model and compare it to the other models
+# Unweighted Majority Voting
 y_true = ensemble_preds['Real Overall Rating']
 y_pred = ensemble_preds['Ensemble Predictions (Unweighted Majority Voting)']
-print(np.unique(y_true))
-print(np.unique(y_pred))
 
 accuracy = accuracy_score(y_true, y_pred)
 precision = precision_score(y_true, y_pred, average='weighted')

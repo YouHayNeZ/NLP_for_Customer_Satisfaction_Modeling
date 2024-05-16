@@ -15,28 +15,8 @@ from pandas.plotting import parallel_coordinates
 import matplotlib.pyplot as plt
 import json
 
-# Importing the dataset
-data = create_pipeline('data/ryanair_reviews.csv')
-
-# Splitting the dataset into the Training set and Test set
-X = data.drop(columns=['Overall Rating'])
-y = data['Overall Rating']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-y_train = y_train.astype(int) - 1
-y_test = y_test.astype(int) - 1
-
-# Extract dates from train and test sets
-datetime_train = X_train[['Date Flown']]
-datetime_test = X_test[['Date Flown']]
-
-# Remove dates from train and test sets
-X_train = X_train.drop(columns=['Date Published', 'Date Flown'])
-X_test = X_test.drop(columns=['Date Published', 'Date Flown'])
-
-# Remove 'Comment title' and 'Comment' columns
-X_train = X_train.drop(columns=['Comment title', 'Comment'])
-X_test = X_test.drop(columns=['Comment title', 'Comment'])
-
+# Prepare data for training
+X_train, X_test, y_train, y_test, datetime_train, datetime_test, data = create_pipeline('data/ryanair_reviews.csv')
 
 # Define the range of hyperparameters
 param_dist = {
