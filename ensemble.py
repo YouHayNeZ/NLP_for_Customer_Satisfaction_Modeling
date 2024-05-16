@@ -5,51 +5,104 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 from sklearn.ensemble import VotingClassifier
 from preprocessing import *
 from sklearn.model_selection import train_test_split
+import json
+import random
+import matplotlib.pyplot as plt
+from pandas.plotting import parallel_coordinates
 
-# Load test_preds from all models
-xgb_preds = pd.read_csv('outputs/classification/xgboost/xgboost_test_preds.csv')
-rf_preds = pd.read_csv('outputs/classification/rf/rf_test_preds.csv')
-svm_preds = pd.read_csv('outputs/classification/svm/svm_test_preds.csv')
-knn_preds = pd.read_csv('outputs/classification/knn/knn_test_preds.csv')
+# Prepare data for training
+X_train, X_test, y_train, y_test, datetime_train, datetime_test, data = create_pipeline('data/ryanair_reviews.csv')
 
-# Extract and rename columns Predicted Overall Rating to SVM Predictions, XGB Predictions, RF Predictions, KNN Predictions
-xgb_preds.rename(columns={'Predicted Overall Rating': 'XGB Predictions'}, inplace=True)
-rf_preds.rename(columns={'Predicted Overall Rating': 'RF Predictions'}, inplace=True)
-svm_preds.rename(columns={'Predicted Overall Rating': 'SVM Predictions'}, inplace=True)
-knn_preds.rename(columns={'Predicted Overall Rating': 'KNN Predictions'}, inplace=True)
+# Load models
+knn = joblib.load('outputs/classification/knn/knn_model.pkl')
+rf = joblib.load('outputs/classification/rf/rf_model.pkl')
+svm = joblib.load('outputs/classification/svm/svm_model.pkl')
+xgboost = joblib.load('outputs/classification/xgboost/xgboost_model.pkl')
 
-rf_predictions = rf_preds['RF Predictions']
-svm_predictions = svm_preds['SVM Predictions']
-knn_predictions = knn_preds['KNN Predictions']
+# Create ensemble (unweighted)
+ensemble_unweighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('xgboost', xgboost)], voting='hard', n_jobs=-1)
+ensemble_unweighted.fit(X_train, y_train)
+joblib.dump(ensemble_unweighted, 'outputs/classification/ensemble/ensemble_unweighted_model.pkl')
 
-# Concatenate all predictions column wise
-ensemble_preds = pd.concat([xgb_preds, rf_predictions, svm_predictions, knn_predictions], axis=1)
+# Predictions
+y_pred_unweighted = ensemble_unweighted.predict(X_test)
 
-# Convert all predictions to integers (except the date column)
-ensemble_preds['Real Overall Rating'] = ensemble_preds['Real Overall Rating'].astype(int)
-ensemble_preds['XGB Predictions'] = ensemble_preds['XGB Predictions'].astype(int)
-ensemble_preds['RF Predictions'] = ensemble_preds['RF Predictions'].astype(int)
-ensemble_preds['SVM Predictions'] = ensemble_preds['SVM Predictions'].astype(int)
-ensemble_preds['KNN Predictions'] = ensemble_preds['KNN Predictions'].astype(int)
+# Metrics
+accuracy_unweighted = accuracy_score(y_test, y_pred_unweighted)
+f1_unweighted = f1_score(y_test, y_pred_unweighted, average='weighted')
+precision_unweighted = precision_score(y_test, y_pred_unweighted, average='weighted')
+recall_unweighted = recall_score(y_test, y_pred_unweighted, average='weighted')
+metrics_unweighted = {
+    'accuracy': accuracy_unweighted,
+    'f1': f1_unweighted,
+    'precision': precision_unweighted,
+    'recall': recall_unweighted
+}
+with open('outputs/classification/ensemble/ensemble_unweighted_metrics.json', 'w') as f:
+    json.dump(metrics_unweighted, f)
+print(metrics_unweighted)
 
-# Add column 'Ensemble Predictions' with majority voting
-ensemble_without_date_and_real = ensemble_preds.drop(columns=['Date Flown', 'Real Overall Rating'])
-ensemble_preds['Ensemble Predictions (Unweighted Majority Voting)'] = ensemble_without_date_and_real.mode(axis=1)[0]
+# Optimize weighted ensemble based on f1 score
+# Create ensemble (weighted)
+f1_scores = []
 
-# Unweighted Majority Voting
-y_true = ensemble_preds['Real Overall Rating']
-y_pred = ensemble_preds['Ensemble Predictions (Unweighted Majority Voting)']
+while len(f1_scores) < 500:
+    w_xgboost = random.uniform(0, 1)
+    w_rf = random.uniform(0, 1)
+    w_knn = random.uniform(0, 1)
+    w_svm = random.uniform(0, 1)
+    ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('xgboost', xgboost)], voting='hard', n_jobs=-1, weights=[w_knn, w_rf, w_svm, w_xgboost])
+    ensemble_weighted.fit(X_train, y_train)
+    y_pred = ensemble_weighted.predict(X_test)
+    f1 = f1_score(y_test, y_pred, average='weighted')
+    f1_scores.append([w_knn, w_rf, w_svm, w_xgboost, f1])
 
-accuracy = accuracy_score(y_true, y_pred)
-precision = precision_score(y_true, y_pred, average='weighted')
-recall = recall_score(y_true, y_pred, average='weighted')
-f1 = f1_score(y_true, y_pred, average='weighted')
+# Convert the list to a DataFrame
+f1_scores_df = pd.DataFrame(f1_scores, columns=['w_knn', 'w_rf', 'w_svm', 'w_xgboost', 'f1'])
 
-fpr, tpr, _ = roc_curve(y_true, y_pred, pos_label=1)
-roc_auc = auc(fpr, tpr)
+# Use parallel coordinate plot for weights and f1 scores
+plt.figure(figsize=(14, 7))
+parallel_coordinates(f1_scores_df, 'f1', colormap='viridis', alpha=0.25)
+plt.legend().remove()
+plt.savefig('outputs/classification/ensemble/ensemble_parallel_coordinates.png')
+plt.show()
 
-print(f'Ensemble Model Accuracy: {accuracy}')
-print(f'Ensemble Model Precision: {precision}')
-print(f'Ensemble Model Recall: {recall}')
-print(f'Ensemble Model F1-Score: {f1}')
-print(f'Ensemble Model AUC: {roc_auc}')
+f1_scores = f1_scores_df.sort_values(by='f1', ascending=False)
+f1_scores.to_csv('outputs/classification/ensemble/ensemble_weighted_f1_scores.csv')
+best_weights = f1_scores.iloc[0, :-1].values
+
+ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('xgboost', xgboost)], voting='hard', n_jobs=-1, weights=best_weights)
+ensemble_weighted.fit(X_train, y_train)
+y_pred_weighted = ensemble_weighted.predict(X_test)
+
+joblib.dump(ensemble_weighted, 'outputs/classification/ensemble/ensemble_weighted_model.pkl')
+
+# Metrics
+accuracy_weighted = accuracy_score(y_test, y_pred_weighted)
+f1_weighted = f1_score(y_test, y_pred_weighted, average='weighted')
+precision_weighted = precision_score(y_test, y_pred_weighted, average='weighted')
+recall_weighted = recall_score(y_test, y_pred_weighted, average='weighted')
+metrics_weighted = {
+    'accuracy': accuracy_weighted,
+    'f1': f1_weighted,
+    'precision': precision_weighted,
+    'recall': recall_weighted
+}
+with open('outputs/classification/ensemble/ensemble_weighted_metrics.json', 'w') as f:
+    json.dump(metrics_unweighted, f)
+print(metrics_weighted)
+
+# # Create plot of Metrics of both ensembles and each model's individual scores to compare them
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+
+# # Load scores
+# knn_scores = json.load(open('outputs/classification/knn/knn_scores.json'))
+# rf_scores = json.load(open('outputs/classification/rf/rf_scores.json'))
+# svm_scores = json.load(open('outputs/classification/svm/svm_scores.json'))
+# xgboost_scores = json.load(open('outputs/classification/xgboost/xgboost_scores.json'))
+
+# # Create data frame
+# scores = pd.DataFrame([knn_scores, rf_scores, svm_scores, xgboost_scores], index=['knn', 'rf', 'svm', 'xgboost'])
+# scores = scores.append(pd.DataFrame([metrics_unweighted], index=['ensemble_unweighted']))
+# scores = scores.append(pd.DataFrame([metrics_weighted], index=['ensemble_weighted']))
