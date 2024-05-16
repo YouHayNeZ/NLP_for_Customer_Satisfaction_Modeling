@@ -72,7 +72,7 @@ for param in ['n_estimators', 'max_depth', 'min_samples_split', 'min_samples_lea
 max_features_and_bootstrap = results[['max_features', 'bootstrap']]
 results = results.drop(columns=['max_features', 'bootstrap', 'std_test_score', 'rank_test_score'])
 plt.figure(figsize=(14, 7))
-parallel_coordinates(results, 'mean_test_score', colormap='viridis', alpha = 0.3)
+parallel_coordinates(results, 'mean_test_score', colormap='viridis', alpha = 0.25)
 plt.legend().remove()
 plt.savefig('outputs/classification/rf/rf_parallel_coordinates.png')
 plt.show()
@@ -139,7 +139,7 @@ print(scores)
 with open('outputs/classification/rf/rf_scores.json', 'w') as f:
     json.dump(scores, f)
 
-# To Do: Create ROC & PR curves for classes 1, 5, and 10
+# Create ROC & PR curves for classes 1, 5, and 10
 probabilities = best_model.predict_proba(X_test)
 classes = [1, 5, 10]
 
