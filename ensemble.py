@@ -89,7 +89,7 @@ metrics_weighted = {
     'recall': recall_weighted
 }
 with open('outputs/classification/ensemble/ensemble_weighted_metrics.json', 'w') as f:
-    json.dump(metrics_unweighted, f)
+    json.dump(metrics_weighted, f)
 print(metrics_weighted)
 
 # # Create plot of Metrics of both ensembles and each model's individual scores to compare them
