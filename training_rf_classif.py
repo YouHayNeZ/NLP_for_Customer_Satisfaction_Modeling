@@ -14,9 +14,10 @@ from sklearn.preprocessing import MinMaxScaler
 from pandas.plotting import parallel_coordinates
 import matplotlib.pyplot as plt
 import json
+from sklearn.metrics import log_loss
 
 # Prepare data for training
-X_train, X_test, y_train, y_test, datetime_train, datetime_test, data = create_pipeline('data/ryanair_reviews.csv')
+X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews.csv')
 
 # Define the range of hyperparameters
 param_dist = {
@@ -34,7 +35,7 @@ random_search = RandomizedSearchCV(estimator=RandomForestClassifier(),
                                n_iter=1500, 
                                cv=5, 
                                verbose=2, 
-                               scoring='f1_weighted',
+                               scoring='neg_log_loss',
                                random_state=42, 
                                n_jobs=-1)
 random_search.fit(X_train, y_train)
@@ -110,6 +111,7 @@ test_preds.to_csv('outputs/classification/rf/rf_test_preds.csv')
 # Making the Confusion Matrix
 predicted_labels = test_preds['Predicted Overall Rating']
 
+logloss = log_loss(y_test, best_model.predict_proba(X_test))
 cm = confusion_matrix(y_test, predicted_labels)
 accuracy = accuracy_score(y_test, predicted_labels)
 classification_report(y_test, predicted_labels)
@@ -122,7 +124,8 @@ scores = {
     'accuracy': accuracy,
     'f1_score': f1_score,
     'precision': precision,
-    'recall': recall
+    'recall': recall,
+    'logloss': logloss
 }
 print(scores)
 with open('outputs/classification/rf/rf_scores.json', 'w') as f:
