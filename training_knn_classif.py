@@ -21,11 +21,11 @@ X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, da
 
 # Define the range of hyperparameters
 param_dist = {
-    'n_neighbors': randint(1, 11),
-    'weights': ['distance'],
-    'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute'],
-    'leaf_size': randint(1, 100),
-    'p': uniform(1, 15),
+    'n_neighbors': randint(120, 180),
+    'weights': ['uniform'],
+    'algorithm': ['ball_tree', 'kd_tree', 'brute'],
+    'leaf_size': randint(1, 200),
+    'p': uniform(1, 30),
     'metric': ['euclidean', 'manhattan', 'minkowski']
 }
 
@@ -160,18 +160,6 @@ for cls in classes:
     plt.show()
 
 # No feature importance for KNN (maybe add later something similar)
-
-# Plot predictions vs real values over time (use average rating per 'Date Flown' to make it more readable)
-train_predictions = train_preds.groupby('Date Flown').mean()
-test_predictions = test_preds.groupby('Date Flown').mean()
-
-plt.figure(figsize=(14, 7))
-plt.plot(test_predictions.index, test_predictions['Predicted Overall Rating'], label='Predicted Overall Rating (Test)')
-plt.plot(test_predictions.index, test_predictions['Real Overall Rating'], label='Real Overall Rating (Test)')
-plt.legend()
-plt.title('Predicted vs Real Overall Rating over Time')
-plt.savefig('outputs/classification/knn/knn_train_predictions.png')
-plt.show()
 
 # Plot confusion matrix
 plt.figure(figsize=(14, 7))

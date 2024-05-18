@@ -183,18 +183,6 @@ plt.title('Feature Importance')
 plt.savefig('outputs/classification/rf/rf_feature_importance.png')
 plt.show()
 
-# Plot predictions vs real values over time (use average rating per 'Date Flown' to make it more readable)
-train_predictions = train_preds.groupby('Date Flown').mean()
-test_predictions = test_preds.groupby('Date Flown').mean()
-
-plt.figure(figsize=(14, 7))
-plt.plot(test_predictions.index, test_predictions['Predicted Overall Rating'], label='Predicted Overall Rating (Test)')
-plt.plot(test_predictions.index, test_predictions['Real Overall Rating'], label='Real Overall Rating (Test)')
-plt.legend()
-plt.title('Predicted vs Real Overall Rating over Time')
-plt.savefig('outputs/classification/rf/rf_train_predictions.png')
-plt.show()
-
 # Plot confusion matrix
 plt.figure(figsize=(14, 7))
 plt.matshow(cm, cmap='viridis')

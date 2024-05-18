@@ -30,7 +30,7 @@ nb = joblib.load('outputs/classification/nb/nb_model.pkl')
 
 
 # Create ensemble (unweighted)
-ensemble_unweighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb)], voting='hard', n_jobs=-1)
+ensemble_unweighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb)], voting='soft', n_jobs=-1)
 ensemble_unweighted.fit(X_train, y_train)
 joblib.dump(ensemble_unweighted, 'outputs/classification/ensemble/ensemble_unweighted_model.pkl')
 
@@ -42,11 +42,13 @@ accuracy_unweighted = accuracy_score(y_test + 1, y_pred_unweighted)
 f1_unweighted = f1_score(y_test + 1, y_pred_unweighted, average='weighted')
 precision_unweighted = precision_score(y_test + 1, y_pred_unweighted, average='weighted')
 recall_unweighted = recall_score(y_test + 1, y_pred_unweighted, average='weighted')
+log_loss_unweighted = log_loss(y_test, ensemble_unweighted.predict_proba(X_test))
 metrics_unweighted = {
     'accuracy': accuracy_unweighted,
     'f1': f1_unweighted,
     'precision': precision_unweighted,
-    'recall': recall_unweighted
+    'recall': recall_unweighted,
+    'logloss': log_loss_unweighted
 }
 with open('outputs/classification/ensemble/ensemble_unweighted_metrics.json', 'w') as f:
     json.dump(metrics_unweighted, f)
@@ -60,32 +62,32 @@ print(metrics_unweighted)
 # Create ensemble (weighted)
 log_loss_scores = []
 
-while len(log_loss_scores) < 5:
+while len(log_loss_scores) < 30:
     w_rf = random.uniform(0, 1)
     w_knn = random.uniform(0, 1)
     w_svm = random.uniform(0, 1)
     w_nb = random.uniform(0, 1)
-    ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb)], voting='hard', n_jobs=-1, weights=[w_knn, w_rf, w_svm, w_nb])
+    ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb)], voting='soft', n_jobs=-1, weights=[w_knn, w_rf, w_svm, w_nb])
     ensemble_weighted.fit(X_train, y_train)
-    y_pred = ensemble_weighted.predict(X_test) + 1
-    log_loss = log_loss(y_test, ensemble_weighted.predict_proba(X_test))
-    log_loss_scores.append([w_knn, w_rf, w_svm, w_nb, log_loss])
+    y_pred = ensemble_weighted.predict(X_test)
+    log_loss_score = log_loss(y_test, ensemble_weighted.predict_proba(X_test))
+    log_loss_scores.append([w_knn, w_rf, w_svm, w_nb, log_loss_score])
 
 # Convert the list to a DataFrame
-log_loss_scores_df = pd.DataFrame(log_loss, columns=['w_knn', 'w_rf', 'w_svm', 'w_nb', 'log_loss'])
+log_loss_scores_df = pd.DataFrame(log_loss_scores, columns=['w_knn', 'w_rf', 'w_svm', 'w_nb', 'log_loss'])
 
-# Use parallel coordinate plot for weights and f1 scores
+# Use parallel coordinate plot for weights and log loss scores
 plt.figure(figsize=(14, 7))
 parallel_coordinates(log_loss_scores_df, 'log_loss', colormap='viridis', alpha=0.25)
 plt.legend().remove()
 plt.savefig('outputs/classification/ensemble/ensemble_parallel_coordinates.png')
 plt.show()
 
-f1_scores = log_loss_scores_df.sort_values(by='log_loss', ascending=False)
-f1_scores.to_csv('outputs/classification/ensemble/ensemble_weighted_log_loss_scores.csv')
-best_weights = f1_scores.iloc[0, :-1].values
+log_loss_scores = log_loss_scores_df.sort_values(by='log_loss', ascending=True)
+log_loss_scores.to_csv('outputs/classification/ensemble/ensemble_weighted_log_loss_scores.csv')
+best_weights = log_loss_scores.iloc[0, :-1].values
 
-ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb)], voting='hard', n_jobs=-1, weights=best_weights)
+ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb)], voting='soft', n_jobs=-1, weights=best_weights)
 ensemble_weighted.fit(X_train, y_train)
 y_pred_weighted = ensemble_weighted.predict(X_test) + 1
 
@@ -96,11 +98,13 @@ accuracy_weighted = accuracy_score(y_test + 1, y_pred_weighted)
 f1_weighted = f1_score(y_test + 1, y_pred_weighted, average='weighted')
 precision_weighted = precision_score(y_test + 1, y_pred_weighted, average='weighted')
 recall_weighted = recall_score(y_test + 1, y_pred_weighted, average='weighted')
+log_loss_weighted = log_loss(y_test, ensemble_weighted.predict_proba(X_test))
 metrics_weighted = {
     'accuracy': accuracy_weighted,
     'f1': f1_weighted,
     'precision': precision_weighted,
-    'recall': recall_weighted
+    'recall': recall_weighted,
+    'logloss': log_loss_weighted
 }
 with open('outputs/classification/ensemble/ensemble_weighted_metrics.json', 'w') as f:
     json.dump(metrics_weighted, f)
@@ -166,7 +170,7 @@ param_dist = {
 # Hyperparameter tuning
 random_search = RandomizedSearchCV(estimator=xgb.XGBClassifier(), 
                                param_distributions=param_dist, 
-                               n_iter=5, 
+                               n_iter=50, 
                                cv=2, 
                                verbose=2, 
                                scoring='neg_log_loss',
@@ -234,13 +238,15 @@ classification_report(y_test, predicted_labels)
 f1_score = f1_score(y_test, predicted_labels, average='weighted')
 precision = precision_score(y_test, predicted_labels, average='weighted')
 recall = recall_score(y_test, predicted_labels, average='weighted')
+log_loss_xgboost = log_loss(y_test, best_model.predict_proba(X_test))
 
 # Save scores
 scores = {
     'accuracy': accuracy,
     'f1_score': f1_score,
     'precision': precision,
-    'recall': recall
+    'recall': recall,
+    'logloss': log_loss_xgboost
 }
 print(scores)
 with open('outputs/classification/ensemble/xgboost_ensemble_scores.json', 'w') as f:
