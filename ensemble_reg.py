@@ -4,7 +4,6 @@ import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.ensemble import VotingRegressor
 from preprocessing import create_pipeline
-from sklearn.model_selection import train_test_split
 import json
 import random
 import matplotlib.pyplot as plt
@@ -13,6 +12,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import RandomizedSearchCV
 import xgboost as xgb
 from scipy.stats import randint, uniform
+from training_helper_func import *
 
 # Prepare data for training
 X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews.csv')
@@ -55,15 +55,15 @@ print(metrics_unweighted)
 # Create ensemble (weighted)
 mae_losses = []
 
-while len(mae_losses) < 30:
+while len(mae_losses) < 100:
     w_rf = random.uniform(0, 1)
     w_knn = random.uniform(0, 1)
     w_svm = random.uniform(0, 1)
     w_bayesian_ridge = random.uniform(0, 1)
     ensemble_weighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge)], n_jobs=-1, weights=[w_knn, w_rf, w_svm, w_bayesian_ridge])
     ensemble_weighted.fit(X_train, y_train)
-    y_pred = np.round(ensemble_weighted.predict(X_test) + 1)
-    mae = mean_absolute_error(y_test, y_pred)
+    y_pred = np.round(ensemble_weighted.predict(X_val) + 1)
+    mae = mean_absolute_error(y_val, y_pred)
     mae_losses.append([w_knn, w_rf, w_svm, w_bayesian_ridge, mae])
 
 # Convert the list to a DataFrame
@@ -159,14 +159,14 @@ param_dist = {
 # Hyperparameter tuning
 random_search = RandomizedSearchCV(estimator=xgb.XGBRegressor(), 
                                param_distributions=param_dist, 
-                               n_iter=50, 
-                               cv=2, 
+                               n_iter=1500, 
+                               cv=5, 
                                verbose=2, 
                                scoring='neg_mean_absolute_error',
                                random_state=42, 
                                n_jobs=-1)
 random_search.fit(X_train, y_train,
-                    early_stopping_rounds=10,
+                    early_stopping_rounds=20,
                     eval_set=[(X_val, y_val)],
                     eval_metric='mae',
                   )
@@ -192,44 +192,15 @@ plt.savefig('outputs/regression/ensemble/xgboost_ensemble_parallel_coordinates.p
 plt.show()
 # purple = best, yellow = worst
 
-# Get the best model
-best_model = random_search.best_estimator_
-joblib.dump(best_model, 'outputs/regression/ensemble/xgboost_ensemble_model.pkl')
+# Best model, hyperparameters and predictions
+best_model, train_preds, test_preds, y_train, y_test = best_model_and_predictions(random_search, X_train, X_test, y_train, y_test, datetime_train, datetime_test,
+                            'outputs/regression/ensemble/xgboost_ensemble_model.pkl',
+                            'outputs/regression/ensemble/xgboost_ensemble_hyperparameters.json',
+                            'outputs/regression/ensemble/xgboost_ensemble_train_preds.csv',
+                            'outputs/regression/ensemble/xgboost_ensemble_test_preds.csv')
 
-hyperparameters = random_search.best_params_
-with open('outputs/regression/ensemble/xgboost_ensemble_hyperparameters.json', 'w') as f:
-    json.dump(hyperparameters, f)
-
-# Make predictions, save them as data frame and set flown date as index
-train_preds = best_model.predict(X_train)
-test_preds = best_model.predict(X_test)
-
-# Correct classes again: add +1 to predictions & real values to get the real rating
-train_preds = np.round(train_preds + 1)
-test_preds = np.round(test_preds + 1)
-y_train = y_train + 1
-y_test = y_test + 1
-
-train_preds = pd.DataFrame({'Predicted Overall Rating': train_preds, 'Real Overall Rating': y_train, 'Date Flown': datetime_train['Date Flown']}).set_index('Date Flown')
-test_preds = pd.DataFrame({'Predicted Overall Rating': test_preds, 'Real Overall Rating': y_test, 'Date Flown': datetime_test['Date Flown']}).set_index('Date Flown')
-
-train_preds.to_csv('outputs/regression/ensemble/xgboost_train_preds.csv')
-test_preds.to_csv('outputs/regression/ensemble/xgboost_test_preds.csv')
-
-# Compute metrics
-mae = mean_absolute_error(y_test, test_preds['Predicted Overall Rating'])
-mse = mean_squared_error(y_test, test_preds['Predicted Overall Rating'])
-r2 = r2_score(y_test, test_preds['Predicted Overall Rating'])
-
-# Save scores
-scores = {
-    'mae': mae,
-    'mse': mse,
-    'r2': r2
-}
-print(scores)
-with open('outputs/regression/ensemble/xgboost_scores.json', 'w') as f:
-    json.dump(scores, f)
+# Regression metrics
+regression_metrics(y_test, test_preds, 'outputs/regression/ensemble/xgboost_ensemble_scores.json')
 
 # Create feature importance plot for top 15
 feature_importance = best_model.feature_importances_
@@ -249,14 +220,5 @@ plt.title('Feature Importance')
 plt.savefig('outputs/regression/ensemble/xgboost_ensemble_feature_importance.png')
 plt.show()
 
-# Plot predictions vs real values over time (use average rating per 'Date Flown' to make it more readable)
-train_predictions = train_preds.groupby('Date Flown').mean()
-test_predictions = test_preds.groupby('Date Flown').mean()
-
-plt.figure(figsize=(14, 7))
-plt.plot(test_predictions.index, test_predictions['Predicted Overall Rating'], label='Predicted Overall Rating (Test)')
-plt.plot(test_predictions.index, test_predictions['Real Overall Rating'], label='Real Overall Rating (Test)')
-plt.legend()
-plt.title('Predicted vs Real Overall Rating over Time')
-plt.savefig('outputs/regression/ensemble/xgboost_ensemble_train_predictions.png')
-plt.show()
+# Plot predictions vs real values over time (only regression)
+test_preds_vs_real_over_time(test_preds, 'outputs/regression/ensemble/xgboost_ensemble_predictions.png')

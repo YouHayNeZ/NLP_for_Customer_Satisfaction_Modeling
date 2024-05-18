@@ -1,1 +1,1 @@
-{"C": 45.924890196586716, "class_weight": "balanced", "degree": 5, "gamma": "auto", "kernel": "sigmoid", "probability": true}
+{"C": 15.60186504424365, "class_weight": "balanced", "degree": 3, "gamma": "scale", "kernel": "rbf", "probability": true}
