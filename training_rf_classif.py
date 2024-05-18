@@ -14,26 +14,10 @@ from sklearn.preprocessing import MinMaxScaler
 from pandas.plotting import parallel_coordinates
 import matplotlib.pyplot as plt
 import json
+from sklearn.metrics import log_loss
 
-# Importing the dataset
-data = create_pipeline('data/ryanair_reviews.csv')
-
-# Splitting the dataset into the Training set and Test set
-X = data.drop(columns=['Overall Rating'])
-y = data['Overall Rating']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-
-# Extract dates from train and test sets
-datetime_train = X_train[['Date Flown']]
-datetime_test = X_test[['Date Flown']]
-
-# Remove dates from train and test sets
-X_train = X_train.drop(columns=['Date Published', 'Date Flown'])
-X_test = X_test.drop(columns=['Date Published', 'Date Flown'])
-
-# Remove 'Comment title' and 'Comment' columns
-X_train = X_train.drop(columns=['Comment title', 'Comment'])
-X_test = X_test.drop(columns=['Comment title', 'Comment'])
+# Prepare data for training
+X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews.csv')
 
 # Define the range of hyperparameters
 param_dist = {
@@ -51,7 +35,7 @@ random_search = RandomizedSearchCV(estimator=RandomForestClassifier(),
                                n_iter=1500, 
                                cv=5, 
                                verbose=2, 
-                               scoring='f1_weighted',
+                               scoring='neg_log_loss',
                                random_state=42, 
                                n_jobs=-1)
 random_search.fit(X_train, y_train)
@@ -72,7 +56,7 @@ for param in ['n_estimators', 'max_depth', 'min_samples_split', 'min_samples_lea
 max_features_and_bootstrap = results[['max_features', 'bootstrap']]
 results = results.drop(columns=['max_features', 'bootstrap', 'std_test_score', 'rank_test_score'])
 plt.figure(figsize=(14, 7))
-parallel_coordinates(results, 'mean_test_score', colormap='viridis', alpha = 0.3)
+parallel_coordinates(results, 'mean_test_score', colormap='viridis', alpha = 0.25)
 plt.legend().remove()
 plt.savefig('outputs/classification/rf/rf_parallel_coordinates.png')
 plt.show()
@@ -112,6 +96,12 @@ with open('outputs/classification/rf/rf_hyperparameters.json', 'w') as f:
 train_preds = best_model.predict(X_train)
 test_preds = best_model.predict(X_test)
 
+# Correct classes again: add +1 to predictions & real values to get the real rating
+train_preds = train_preds + 1
+test_preds = test_preds + 1
+y_train = y_train + 1
+y_test = y_test + 1
+
 train_preds = pd.DataFrame({'Predicted Overall Rating': train_preds, 'Real Overall Rating': y_train, 'Date Flown': datetime_train['Date Flown']}).set_index('Date Flown')
 test_preds = pd.DataFrame({'Predicted Overall Rating': test_preds, 'Real Overall Rating': y_test, 'Date Flown': datetime_test['Date Flown']}).set_index('Date Flown')
 
@@ -121,6 +111,7 @@ test_preds.to_csv('outputs/classification/rf/rf_test_preds.csv')
 # Making the Confusion Matrix
 predicted_labels = test_preds['Predicted Overall Rating']
 
+logloss = log_loss(y_test, best_model.predict_proba(X_test))
 cm = confusion_matrix(y_test, predicted_labels)
 accuracy = accuracy_score(y_test, predicted_labels)
 classification_report(y_test, predicted_labels)
@@ -133,13 +124,14 @@ scores = {
     'accuracy': accuracy,
     'f1_score': f1_score,
     'precision': precision,
-    'recall': recall
+    'recall': recall,
+    'logloss': logloss
 }
 print(scores)
 with open('outputs/classification/rf/rf_scores.json', 'w') as f:
     json.dump(scores, f)
 
-# To Do: Create ROC & PR curves for classes 1, 5, and 10
+# Create ROC & PR curves for classes 1, 5, and 10
 probabilities = best_model.predict_proba(X_test)
 classes = [1, 5, 10]
 
