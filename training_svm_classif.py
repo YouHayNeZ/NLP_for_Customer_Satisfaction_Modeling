@@ -24,7 +24,8 @@ param_dist = {
     'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
     'gamma': ['scale', 'auto'],
     'degree': randint(1, 10),
-    'class_weight': ['balanced']
+    'class_weight': ['balanced'],
+    'probability': [True]
 }
 
 # Hyperparameter tuning
@@ -158,18 +159,6 @@ for class_num in [1, 5, 10]:
     plt.show()
 
 # No feature importance for SVM (maybe add coefficient based feature importance later)
-
-# Plot predictions vs real values over time (use average rating per 'Date Flown' to make it more readable)
-train_predictions = train_preds.groupby('Date Flown').mean()
-test_predictions = test_preds.groupby('Date Flown').mean()
-
-plt.figure(figsize=(14, 7))
-plt.plot(test_predictions.index, test_predictions['Predicted Overall Rating'], label='Predicted Overall Rating (Test)')
-plt.plot(test_predictions.index, test_predictions['Real Overall Rating'], label='Real Overall Rating (Test)')
-plt.legend()
-plt.title('Predicted vs Real Overall Rating over Time')
-plt.savefig('outputs/classification/rf/rf_train_predictions.png')
-plt.show()
 
 # Plot confusion matrix
 plt.figure(figsize=(14, 7))
