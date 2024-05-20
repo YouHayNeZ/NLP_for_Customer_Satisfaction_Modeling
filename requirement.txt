@@ -9,7 +9,8 @@ xgboost==2.0.3
 transformers==4.40.2
 bert-extractive-summarizer==0.10.1
 textblob==0.18.0.post0
+nltk==3.8.1
 vader-multi==3.2.2.1 
 spacy==3.7.4
 flair==0.13.1
-xgboost==2.0.3
+wordcloud==1.9.3

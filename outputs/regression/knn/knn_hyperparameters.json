@@ -1,0 +1,1 @@
+{"algorithm": "brute", "leaf_size": 180, "metric": "euclidean", "n_neighbors": 15, "p": 22.959818254342153, "weights": "uniform"}

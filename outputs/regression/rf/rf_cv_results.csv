@@ -1,0 +1,3 @@
+,param_n_estimators,param_max_features,param_max_depth,param_min_samples_split,param_min_samples_leaf,param_bootstrap,mean_test_score,std_test_score,rank_test_score
+1,1492,,122,12,23,True,-0.8011802445395979,0.041087090622523706,1
+0,1054,sqrt,180,9,15,True,-1.4120097019738695,0.053110189404081604,2
