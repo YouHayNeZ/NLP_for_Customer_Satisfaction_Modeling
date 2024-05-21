@@ -35,8 +35,27 @@ annotations_1_118 = [1, -1, -1, -1, -1, -1, 1, 1, -1, 1,
 # use 10 annotations per line to not lose track of where you are at
 
 # labels for 119-236 (Niklas)
-annotations_119_236 = [0, 0, 0,
-                       0]
+# to get started
+'''
+data = pd.read_csv('data/test_data_to_be_labeled.csv')
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
+data.drop(columns=['Comment title', 'Rating'], inplace=True)
+data.loc[119:236]
+'''
+annotations_119_236 = [-1, 1, -1, -1, -1, 1, -1, 1, 1, -1, 
+                       -1, -1, -1, -1, -1, 1, 1, -1, -1, 1,
+                       -1, -1, -1, 0, -1, -1, 0, -1, 1, -1, 
+                       1, -1, -1, 0, 1, 1, 1, -1, 0, 0, 
+                       -1, -1, 1, 1, 1, -1, 0, -1, 1, 1,
+                       -1, 1, -1, -1, -1, 0, -1, -1,-1, 1,
+                       -1, 1, -1, 1, 1, -1, -1, 1, -1, 0,
+                       -1, 1, 1, 1, 1, 1, -1, 1, 1, -1, 
+                       -1, 1, -1, 0, 0, -1, 1, 0, -1, -1,
+                       -1, -1, 1, -1, -1, -1, -1, 1, -1, -1,
+                       -1, -1, -1, 1, -1, -1, -1, 1, -1, -1, 
+                       1, -1, -1, 1, -1, -1, -1, -1]
 
 # labels for 237-355 (Pati)
 annotations_237_355 = [0, 0, 0,
