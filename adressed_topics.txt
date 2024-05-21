@@ -18,6 +18,22 @@
 
 # Ece batch (356-472)
 - price performance (good for low cost)
+- delays and cancels
+- good staff
+- bad staff
+- extra fee for normal luggage 'priority'
+- extra fee for printing boarding pass
+- cheap
+- on-time landing song -> kind of annoying for people since they have delays
+- comparison with other airlines (British Airways)
+- no seat allocation
+- improvement (sometimes for staff, sometimes for planes)
+- on-line check-in not working
+- no legroom
+- bad customer service (not taking responsibility when something goes wrong)
+
+
+
 
 Additional variables:
 - binary variable (0/1) if title was "Ryanair customer review" -> usually very positive association
