@@ -17,14 +17,25 @@ data_test = pd.concat([X_test, y_test], axis=1)
 data_test.to_csv('data/test_data_to_be_labeled.csv', index=False)
 
 # To Do: Create list with the labels for the test data (write: 1 = positive, -1 = negative, 0 = neutral)
-
+# use 10 annotations per line to not lose track of where you are at
 # labels for lines 2-118 (Johannes) [line 1 is header]
-annotations_1_118 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,# use 10 annotations per line to not lose track of where you are at
-                     0]
+annotations_1_118 = [1, -1, -1, -1, -1, -1, 1, 1, -1, 1,
+                     -1, 1, 1, 1, -1, -1, 1, -1, 1, 0,
+                     -1, 0, -1, -1, 1, -1, -1, 0, -1, 0,
+                     -1, 1, -1, -1, 1, -1, 1, 1, -1, -1,
+                     -1, -1, -1, -1 1, 1, -1, 1, -1, -1,
+                     1, 1, -1, 1, 1, 1, -1, -1, -1, -1,
+                     1, 1, -1, 0, -1, -1, -1, -1, -1, -1,
+                     1, -1, 0, 1, 1, -1, 1, 1, 1, -1,
+                     1, 1, -1, -1, -1, -1, 1, -1, -1, -1,
+                     0, -1, -1, -1, 1, -1, -1, -1, 1, -1,
+                     0, -1, -1, -1, -1, 1, 1, -1, -1, -1,
+                     -1, 1, 1, -1, -1, 1, 1]
+# My last review (included): Ryanair customer review,Return flight from Manchester to Rome £58
 
 # labels for 119-236 (Niklas)
+# to get started
 '''
-# to get started:
 data = pd.read_csv('data/test_data_to_be_labeled.csv')
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
