@@ -33,17 +33,10 @@ annotations_1_118 = [1, -1, -1, -1, -1, -1, 1, 1, -1, 1,
                      -1, 1, 1, -1, -1, 1, 1]
 # My last review (included): Ryanair customer review,Return flight from Manchester to Rome £58
 
-# labels for 119-236 (Niklas)
+# labels for 119-238 (Niklas)
 # to get started
-'''
-data = pd.read_csv('data/test_data_to_be_labeled.csv')
-pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
-pd.set_option('display.max_colwidth', None)
-data.drop(columns=['Comment title', 'Rating'], inplace=True)
-data.loc[119:236]
-'''
-annotations_119_236 = [-1, 1, -1, -1, -1, 1, -1, 1, 1, -1, 
+
+annotations_119_238 = [1, 1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1, 
                        -1, -1, -1, -1, -1, 1, 1, -1, -1, 1,
                        -1, -1, -1, 0, -1, -1, 0, -1, 1, -1, 
                        1, -1, -1, 0, 1, 1, 1, -1, 0, 0, 
@@ -56,8 +49,10 @@ annotations_119_236 = [-1, 1, -1, -1, -1, 1, -1, 1, 1, -1,
                        -1, -1, -1, 1, -1, -1, -1, 1, -1, -1, 
                        1, -1, -1, 1, -1, -1, -1, -1]
 
-# labels for 237-355 (Pati)
-annotations_237_355 = [0, 0, 0,
+# My last review (included) "customer service is shocking"
+
+# labels for 239-355 (Pati)
+annotations_239_355 = [0, 0, 0,
                        0]
 
 # labels for 356-472 (Ece)

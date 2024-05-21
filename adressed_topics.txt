@@ -7,6 +7,14 @@
 - "you get what you pay for" (fair value)
 - cheap fares
 
+# Niklas batch (119 - 238)
+- hidden costs
+- surprised that everything went smoothly --> they have bad expectations, but get positively surprised
+- kind of sarcasm especially, they think it was like a joke --> hard for sentiment analysis to spot that (bias)
+- too less space
+- 7 days prior checkin
+- too less information, got surprised
+- delays
 
 Additional variables:
 - binary variable (0/1) if title was "Ryanair customer review" -> usually very positive association
