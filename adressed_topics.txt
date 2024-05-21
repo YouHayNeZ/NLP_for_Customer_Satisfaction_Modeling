@@ -16,6 +16,9 @@
 - too less information, got surprised
 - delays
 
+# Ece batch (356-472)
+- price performance (good for low cost)
+
 Additional variables:
 - binary variable (0/1) if title was "Ryanair customer review" -> usually very positive association
 - count variable with numer of explamation marks in comment -> ususually very negative association
