@@ -1,0 +1,14 @@
+# Johannes batch (lines 2-118)
+- online check in (extra fee)
+- too large baggage/carry on (extra fee)
+- special service for people in wheelchair 
+- unfriendly staff
+- delay
+- "you get what you pay for" (fair value)
+- cheap fares
+
+
+Additional variables:
+- binary variable (0/1) if title was "Ryanair customer review" -> usually very positive association
+- count variable with numer of explamation marks in comment -> ususually very negative association
+- length of comment -> usually association between length and degree of meanness/hate in the comment
