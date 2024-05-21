@@ -18,7 +18,7 @@ data_test.to_csv('data/test_data_to_be_labeled.csv', index=False)
 
 # To Do: Create list with the labels for the test data (write: 1 = positive, -1 = negative, 0 = neutral)
 
-# labels for 1-118 (Johannes)
+# labels for lines 2-118 (Johannes) [line 1 is header]
 annotations_1_118 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,# use 10 annotations per line to not lose track of where you are at
                      0]
 
