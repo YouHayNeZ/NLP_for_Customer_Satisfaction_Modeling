@@ -51,9 +51,23 @@ annotations_119_238 = [1, 1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1,
 
 # My last review (included) "customer service is shocking"
 
-# labels for 239-355 (Pati)
-annotations_239_355 = [0, 0, 0,
-                       0]
+# labels for 239-355 (Pati) # last review included: Ryanair customer review	FR9885 from Derry to Liverpool on 30 March. This was the return to my trip made on the 22nd. 
+                            # The flight departed about 20 minutes late due to a delay on the inbound flight however we landed bang on time. 
+                            # Well done to the pilots. Cabin crew were friendly and helpful as always.
+                            # If you don't check in a bag I really do think it's worth paying the extra £10 for priority boarding and a premium seat as it makes your journey a lot smoother and more comfortable.
+annotations_239_355 = [-1, 1, 1, -1, 0, 1, 1, 1,-1, -1,
+                      -1, 1, 1, -1, 1, 1, -1, -1, 1, 1,
+                      1, -1, 0, -1, -1, 0, -1, -1, -1, -1,
+                      -1, 0, 1, 1, -1, -1, -1, -1, 0, 1,
+                      -1, 1, -1, -1, -1, -1, -1, -1, -1, -1,
+                      -1, -1, -1, -1, 1, -1, -1, -1, 1, -1,
+                      1, 1, -1, -1, 1, 1, -1, -1, -1, 1,
+                      -1, 1, 1, -1, -1, -1, 1, -1, -1, -1,
+                      0, 0, -1, -1, 1, 1, 1, -1, -1, 1,
+                      1, -1, -1, -1, 0, 1, -1, -1, -1, -1,
+                      0, 0, -1, 1, -1, -1, -1, -1, -1, -1,
+                      -1, 1, -1, -1, -1, 1, 1] 
+
 
 # My frist review (included) "Ryanair Customer Review - The bad press surrounding Ryanair proved to be totally
 # unjustified on my round trip Madrid-Cagliari-Madrid. Check- in and security was the quickest and most polite ever (
