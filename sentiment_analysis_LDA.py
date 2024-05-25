@@ -47,6 +47,7 @@ def plot_wordclouds(lda_model, feature_names):
         plt.title(f"Topic #{topic_idx}")
         plt.axis("off")
     plt.tight_layout()
+    plt.savefig("outputs/plots/lda_topics.png")
     plt.show()
 
 

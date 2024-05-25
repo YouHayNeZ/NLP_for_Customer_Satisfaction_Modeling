@@ -6,8 +6,8 @@ from textblob import TextBlob
 import re
 
 
-def read_data(path) -> (pd.DataFrame, pd.DataFrame):
-    data = pd.read_csv(path)
+def read_data() -> (pd.DataFrame, pd.DataFrame):
+    data = pd.read_csv("data/ryanair_reviews.csv")
     # data['Comment title'] = data['Comment title'].astype(pd.StringDtype())
     # data['Comment'] = data['Comment'].astype(pd.StringDtype())
     comments = data[["Comment title", "Comment"]].copy()
@@ -203,7 +203,7 @@ if __name__ == '__main__':
     # Change pandas settings to display all columns pd.set_option('display.max_columns', None)
     # Adjust pandas settings to display the full content of each column pd.set_option('display.max_colwidth', None)
 
-    data, comments = read_data("data/ryanair_reviews.csv")
+    data, comments = read_data()
 
     nlp = spacy.load("en_core_web_sm", disable=['parser', 'ner'])
     comments["cleaned_Comment"] = comments["Comment"].apply(spacy_process)
