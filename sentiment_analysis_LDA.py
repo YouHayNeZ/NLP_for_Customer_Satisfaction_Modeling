@@ -72,6 +72,22 @@ def lda_topic_modeling(file_path, num_topics=5):
     feature_names = vectorizer.get_feature_names_out()
     plot_wordclouds(lda, feature_names)
 
+    # Step 6: Extract topic assignments for each comment
+    topic_assignments = lda.transform(dtm)
+    for i in range(num_topics):
+        data[f"Topic_{i+1}_probability"] = topic_assignments[:, i]
+
+    # Step 7: Extract topic name with highest probability for each row
+    topic_names = [f"Topic_{i + 1}" for i in range(num_topics)]
+    max_topic_indices = topic_assignments.argmax(axis=1)
+    max_topic_names = [topic_names[idx] for idx in max_topic_indices]
+
+    # Step 8: Add a new column with the topic name with the highest probability
+    data['Max_Probability_Topic'] = max_topic_names
+
+    # Step 7: Save results to a CSV file
+    data.to_csv("data/lda_topics.csv", index=False)
+
 
 if __name__ == "__main__":
     lda_topic_modeling("data/cleaned_comments.csv", num_topics=5)
