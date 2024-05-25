@@ -1,18 +1,15 @@
 import pandas as pd
-# import nltk
 import seaborn as sns
 import matplotlib.pyplot as plt
-# from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import spacy.cli
 from textblob import TextBlob
 import re
 
 
-def read_data() -> (pd.DataFrame, pd.DataFrame):
-    data = pd.read_csv("data/ryanair_reviews.csv")
+def read_data(path) -> (pd.DataFrame, pd.DataFrame):
+    data = pd.read_csv(path)
     # data['Comment title'] = data['Comment title'].astype(pd.StringDtype())
     # data['Comment'] = data['Comment'].astype(pd.StringDtype())
-    # print(data.head(), data.dtypes)
     comments = data[["Comment title", "Comment"]].copy()
     return data, comments
 
@@ -66,7 +63,6 @@ def final_subjectivity(score):
 
 
 def plot_score_distribution(comments):
-    # Creating 4 subplots
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 
     # Polarity of original comments
@@ -93,8 +89,8 @@ def plot_score_distribution(comments):
     axes[1, 1].set_xlabel('Subjectivity')
     axes[1, 1].set_ylabel('Frequency')
 
-    # Adjust layout
     plt.tight_layout()
+    plt.savefig("outputs/plots/textblob_score_distribution.png")
     plt.show()
 
 
@@ -105,10 +101,8 @@ def plot_pie_distribution(comments):
     subjectivity_proportions = comments["subjectivity_group"].value_counts() / len(comments)
     subjectivity_proportions_cleaned = comments["subjectivity_group_cleaned"].value_counts() / len(comments)
 
-    # Generate a pie chart to visualize the distribution of sentiment_proportions
     fig, axs = plt.subplots(2, 2, figsize=(12, 6))
 
-    # Plot the first pie chart
     axs[0, 0].pie(
         polarity_proportions,
         labels=polarity_proportions.index,
@@ -118,7 +112,6 @@ def plot_pie_distribution(comments):
     )
     axs[0, 0].set_title("Polarity Distribution Using TextBlob Sentiment Analysis")
 
-    # Plot the second pie chart
     axs[0, 1].pie(
         polarity_proportions_cleaned,
         labels=polarity_proportions_cleaned.index,
@@ -146,10 +139,8 @@ def plot_pie_distribution(comments):
     )
     axs[1, 1].set_title("Subjectivity Distribution After Cleaning")
 
-    # Adjust the spacing between subplots
     plt.subplots_adjust(wspace=0.4)
-
-    # Show the combined plot
+    plt.savefig("outputs/plots/textblob_pie_distribution.png")
     plt.show()
 
 
@@ -172,23 +163,48 @@ def analyze_ratings_vs_sentiment(data, comments):
     axs[1].set_ylabel('Cleaned Polarity Score')
     axs[1].set_title('Rating vs. Cleaned Polarity Score')
 
+    # Calculate correlation
+    correlation_cleaned = round(merged['Overall Rating'].corr(merged['cleaned_polarity'], method='spearman'),2)
+    correlation = round(merged['Overall Rating'].corr(merged['polarity'], method='spearman'),2)
+
+    axs[0].text(0.5, 0.95, f'Correlation between Overall Rating and Polarity : {correlation:.2f}', ha='center', va='center', transform=axs[0].transAxes, fontsize=10, color='blue')
+    axs[1].text(0.5, 0.95, f'Correlation between Overall Rating and CLeaned Polarity : {correlation_cleaned:.2f}', ha='center', va='center', transform=axs[1].transAxes, fontsize=10, color='blue')
+
     plt.tight_layout()
+    plt.savefig("outputs/plots/textblob_ratings_vs_scores.png")
     plt.show()
 
-    correlation_cleaned = merged['Overall Rating'].corr(merged['cleaned_polarity'], method='spearman')
-    correlation = merged['Overall Rating'].corr(merged['polarity'], method='spearman')
+""" work in progress
+def plot_sentiment_by_topic(comments):
+    # Read topic information
+    topics_data = pd.read_csv('data/lda_topics.csv')
 
-    print("Correlation between Overall Rating and cleaned_polarity:", correlation_cleaned)  # 0.57
-    print("Correlation between Overall Rating and polarity:", correlation)  # 0.61
+    # Calculate sentiment polarity for each comment
+    comments['cleaned_polarity'] = comments['Comment'].apply(textblob_sentiment)
 
+    # Merge polarity information with topic data, since the indexes are the same
+    merged_data = pd.merge(comments, topics_data, on='Comment', how='left')
+
+    # Group by topic and calculate average polarity
+    grouped_data = merged_data.groupby('Max_Probability_Topic').agg({'cleaned_polarity': 'mean'}).reset_index()
+
+    # Plot polarity for each topic
+    plt.figure(figsize=(10, 6))
+    plt.bar(grouped_data['Max_Probability_Topic'], grouped_data['cleaned_polarity'], color='blue')
+    plt.xlabel('Topic')
+    plt.ylabel('Average Polarity')
+    plt.title('Average Polarity by Topic')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+"""
 
 if __name__ == '__main__':
-    # Change pandas settings to display all columns
-    # pd.set_option('display.max_columns', None)
-    # Adjust pandas settings to display the full content of each column
-    # pd.set_option('display.max_colwidth', None)
-    data, comments = read_data()
-    # Helper function to apply func to a pandas Series
+    # Change pandas settings to display all columns pd.set_option('display.max_columns', None)
+    # Adjust pandas settings to display the full content of each column pd.set_option('display.max_colwidth', None)
+
+    data, comments = read_data("data/ryanair_reviews.csv")
+
     nlp = spacy.load("en_core_web_sm", disable=['parser', 'ner'])
     comments["cleaned_Comment"] = comments["Comment"].apply(spacy_process)
     # comments.loc[:, 'cleaned_Comment'] = comments['Comment'].apply(spacy_process)
@@ -214,116 +230,13 @@ if __name__ == '__main__':
     plot_score_distribution(comments)
     plot_pie_distribution(comments)
 
-    # comments.drop(columns=["score"], inplace=True)
-    # comments.drop(columns=["score_cleaned"], inplace=True)
-    # data_vader = add_vader_scores(data)
-    # data_vader_textblob = add_textblob_scores(data_vader)
-
-    # plot_vader_scores(data_vader)
-    # plot_vader_scores(data_vader_textblob)
-    # plot_textblob_scores(data_vader_textblob)
-
-    # Print the comments with a VADER_Comment_compound score higher than 0.9
-    # high_score_comments = data_vader[data_vader['VADER_Comment_compound'] > 0.9]['Comment']
-    # print("Comments with VADER_Comment_compound score higher than 0.9:")
-    # print(high_score_comments)
-
-    # Print the comments with a VADER_Comment_compound score higher than 0.9
-    # low_score_comments = data_vader[data_vader['VADER_Comment_compound'] < -0.9]['Comment']
-    # print("Comments with VADER_Comment_compound score higher than 0.9:")
-    # print(low_score_comments)
-
     # Filter the dataframe for rows where sentiment and sentiment_cleaned are different
     different_sentiments = comments[comments["polarity_group"] != comments["polarity_group_cleaned"]]
 
-    """pd.set_option('display.max_rows', None)
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.max_colwidth', None)
-    # Access the "cleaned_Comment" and "Comment" columns for the filtered rows
+    """ # Access the "cleaned_Comment" and "Comment" columns for the filtered rows
     difference = different_sentiments[["polarity_group", "Comment", "polarity_group_cleaned", "cleaned_Comment"]]
     difference.to_csv("tx_sentiment_difference.csv")"""
 
     analyze_ratings_vs_sentiment(data, comments)
+    # plot_sentiment_by_topic(comments)
 
-
-"""
-spacy.cli.download("en_core_web_sm")
-nltk.download('stopwords', quiet=True)
-nltk.download('vader_lexicon', quiet=True)
-nltk.download('punkt', quiet=True)
-nltk.download('wordnet', quiet=True)
-nltk.download('omw-1.4', quiet=True)
-
-def add_vader_scores(data: pd.DataFrame) -> pd.DataFrame:
-    # nltk.download('vader_lexicon')
-    # Initialize the VADER sentiment analyzer
-    analyzer = SentimentIntensityAnalyzer()
-    # Apply the function to 'Comment' and 'Comment title' columns and store the results in new columns
-    data['VADER_Comment'] = data['Comment'].apply(lambda x: analyzer.polarity_scores(x))
-    data['VADER_Title'] = data['Comment title'].apply(lambda x: analyzer.polarity_scores(x))
-
-    # Expand the dictionary columns into separate columns for better readability
-    vader_comment_df = data['VADER_Comment'].apply(pd.Series)
-    vader_title_df = data['VADER_Title'].apply(pd.Series)
-
-    # Join the new columns back to the original DataFrame
-    data = pd.concat([data, vader_comment_df.add_prefix('VADER_Comment_'), vader_title_df.add_prefix('VADER_Title_')],
-                     axis=1)
-    return data
-
-
-def plot_vader_scores(data: pd.DataFrame):
-    # Plotting the distributions
-    plt.figure(figsize=(14, 6))
-
-    # Plot for VADER_Comment_compound
-    plt.subplot(1, 2, 1)
-    sns.histplot(data['VADER_Comment_compound'], bins=20, kde=True, color='blue')
-    plt.title('Distribution of VADER Comment Compound Scores')
-    plt.xlabel('VADER Comment Compound Score')
-    plt.ylabel('Frequency')
-    plt.xlim(-1, 1)
-
-    # Plot for VADER_Title_compound
-    plt.subplot(1, 2, 2)
-    sns.histplot(data['VADER_Title_compound'], bins=20, kde=True, color='green')
-    plt.title('Distribution of VADER Title Compound Scores')
-    plt.xlabel('VADER Title Compound Score')
-    plt.ylabel('Frequency')
-    plt.xlim(-1, 1)
-
-    plt.tight_layout()
-    plt.show()
-
-    def add_textblob_scores(data: pd.DataFrame) -> pd.DataFrame:
-    # Apply TextBlob sentiment analysis to 'Comment' and 'Comment title' columns
-    data['TextBlob_Comment_Polarity'] = data['Comment'].apply(lambda x: TextBlob(x).sentiment.polarity)
-    data['TextBlob_Title_Polarity'] = data['Comment title'].apply(lambda x: TextBlob(x).sentiment.polarity)
-    return data
-
-    def plot_textblob_scores(data: pd.DataFrame):
-    # Plotting the distributions
-    plt.figure(figsize=(14, 6))
-
-    # Plot for TextBlob_Comment_Polarity
-    plt.subplot(1, 2, 1)
-    sns.histplot(data['TextBlob_Comment_Polarity'], bins=20, kde=True, color='purple')
-    plt.title('Distribution of TextBlob Comment Polarity Scores')
-    plt.xlabel('TextBlob Comment Polarity Score')
-    plt.ylabel('Frequency')
-    plt.xlim(-1, 1)
-
-    # Plot for TextBlob_Title_Polarity
-    plt.subplot(1, 2, 2)
-    sns.histplot(data['TextBlob_Title_Polarity'], bins=20, kde=True, color='orange')
-    plt.title('Distribution of TextBlob Title Polarity Scores')
-    plt.xlabel('TextBlob Title Polarity Score')
-    plt.ylabel('Frequency')
-    plt.xlim(-1, 1)
-
-    plt.tight_layout()
-    plt.show()
-
-    def textblob_polarity(text):
-        return TextBlob(text).sentiment.polarity
-"""
