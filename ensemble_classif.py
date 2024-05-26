@@ -21,12 +21,13 @@ knn = joblib.load('outputs/classification/knn/knn_model.pkl')
 rf = joblib.load('outputs/classification/rf/rf_model.pkl')
 svm = joblib.load('outputs/classification/svm/svm_model.pkl')
 nb = joblib.load('outputs/classification/nb/nb_model.pkl')
+mlp = joblib.load('outputs/classification/mlp/mlp_model.pkl')
 
 
 
 
 # Create ensemble (unweighted)
-ensemble_unweighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb)], voting='soft', n_jobs=-1)
+ensemble_unweighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb), ('mlp', mlp)], voting='soft', n_jobs=-1)
 ensemble_unweighted.fit(X_train, y_train)
 joblib.dump(ensemble_unweighted, 'outputs/classification/ensemble/ensemble_unweighted_model.pkl')
 
@@ -58,18 +59,19 @@ print(metrics_unweighted)
 # Create ensemble (weighted)
 log_loss_scores = []
 
-while len(log_loss_scores) < 100:
+while len(log_loss_scores) < 10:
     w_rf = random.uniform(0, 1)
     w_knn = random.uniform(0, 1)
     w_svm = random.uniform(0, 1)
     w_nb = random.uniform(0, 1)
-    ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb)], voting='soft', n_jobs=-1, weights=[w_knn, w_rf, w_svm, w_nb])
+    w_mlp = random.uniform(0, 1)
+    ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb), ('mlp', mlp)], voting='soft', n_jobs=-1, weights=[w_knn, w_rf, w_svm, w_nb, w_mlp])
     ensemble_weighted.fit(X_train, y_train)
     log_loss_score = log_loss(y_val, ensemble_weighted.predict_proba(X_val))
-    log_loss_scores.append([w_knn, w_rf, w_svm, w_nb, log_loss_score])
+    log_loss_scores.append([w_knn, w_rf, w_svm, w_nb, w_mlp, log_loss_score])
 
 # Convert the list to a DataFrame
-log_loss_scores_df = pd.DataFrame(log_loss_scores, columns=['w_knn', 'w_rf', 'w_svm', 'w_nb', 'log_loss'])
+log_loss_scores_df = pd.DataFrame(log_loss_scores, columns=['w_knn', 'w_rf', 'w_svm', 'w_nb', 'w_mlp', 'log_loss'])
 
 # Use parallel coordinate plot for weights and log loss scores
 plt.figure(figsize=(14, 7))
@@ -82,7 +84,7 @@ log_loss_scores = log_loss_scores_df.sort_values(by='log_loss', ascending=True)
 log_loss_scores.to_csv('outputs/classification/ensemble/ensemble_weighted_log_loss_scores.csv')
 best_weights = log_loss_scores.iloc[0, :-1].values
 
-ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb)], voting='soft', n_jobs=-1, weights=best_weights)
+ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb), ('mlp', mlp)], voting='soft', n_jobs=-1, weights=best_weights)
 ensemble_weighted.fit(X_train, y_train)
 y_pred_weighted = ensemble_weighted.predict(X_test) + 1
 
@@ -118,21 +120,24 @@ X_train_stacking = pd.DataFrame({
     'knn': knn.predict(X_train) + 1,
     'rf': rf.predict(X_train) + 1,
     'svm': svm.predict(X_train) + 1,
-    'nb': nb.predict(X_train) + 1
+    'nb': nb.predict(X_train) + 1,
+    'mlp': mlp.predict(X_train) + 1
 })
 
 X_val_stacking = pd.DataFrame({
     'knn': knn.predict(X_val) + 1,
     'rf': rf.predict(X_val) + 1,
     'svm': svm.predict(X_val) + 1,
-    'nb': nb.predict(X_val) + 1
+    'nb': nb.predict(X_val) + 1,
+    'mlp': mlp.predict(X_val) + 1
 })
 
 X_test_stacking = pd.DataFrame({
     'knn': knn.predict(X_test) + 1,
     'rf': rf.predict(X_test) + 1,
     'svm': svm.predict(X_test) + 1,
-    'nb': nb.predict(X_test) + 1
+    'nb': nb.predict(X_test) + 1,
+    'mlp': mlp.predict(X_test) + 1
 })
 
 # Concatenate all 3 data frames
@@ -165,7 +170,7 @@ param_dist = {
 # Hyperparameter tuning
 random_search = RandomizedSearchCV(estimator=xgb.XGBClassifier(), 
                                param_distributions=param_dist, 
-                               n_iter=1500, 
+                               n_iter=100, 
                                cv=5, 
                                verbose=2, 
                                scoring='neg_log_loss',

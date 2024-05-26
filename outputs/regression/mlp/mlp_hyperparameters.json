@@ -1,0 +1,1 @@
+{"activation": "relu", "alpha": 0.03259344887239372, "early_stopping": true, "hidden_layer_sizes": [100], "learning_rate": "adaptive", "max_iter": 522, "solver": "sgd"}

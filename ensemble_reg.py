@@ -22,12 +22,12 @@ knn = joblib.load('outputs/regression/knn/knn_model.pkl')
 rf = joblib.load('outputs/regression/rf/rf_model.pkl')
 svm = joblib.load('outputs/regression/svm/svm_model.pkl')
 bayesian_ridge = joblib.load('outputs/regression/bayesian_ridge/bayesian_ridge_model.pkl')
-
+mlp = joblib.load('outputs/regression/mlp/mlp_model.pkl')
 
 
 
 # Create ensemble (unweighted)
-ensemble_unweighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge)], n_jobs=-1)
+ensemble_unweighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge), ('mlp', mlp)], n_jobs=-1)
 ensemble_unweighted.fit(X_train, y_train)
 joblib.dump(ensemble_unweighted, 'outputs/regression/ensemble/ensemble_unweighted_model.pkl')
 
@@ -55,19 +55,20 @@ print(metrics_unweighted)
 # Create ensemble (weighted)
 mae_losses = []
 
-while len(mae_losses) < 100:
+while len(mae_losses) < 10:
     w_rf = random.uniform(0, 1)
     w_knn = random.uniform(0, 1)
     w_svm = random.uniform(0, 1)
     w_bayesian_ridge = random.uniform(0, 1)
-    ensemble_weighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge)], n_jobs=-1, weights=[w_knn, w_rf, w_svm, w_bayesian_ridge])
+    w_mlp = random.uniform(0, 1)
+    ensemble_weighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge), ('mlp', mlp)], n_jobs=-1, weights=[w_knn, w_rf, w_svm, w_bayesian_ridge, w_mlp])
     ensemble_weighted.fit(X_train, y_train)
     y_pred = np.round(ensemble_weighted.predict(X_val) + 1)
     mae = mean_absolute_error(y_val, y_pred)
-    mae_losses.append([w_knn, w_rf, w_svm, w_bayesian_ridge, mae])
+    mae_losses.append([w_knn, w_rf, w_svm, w_bayesian_ridge, w_mlp, mae])
 
 # Convert the list to a DataFrame
-mae_losses_df = pd.DataFrame(mae_losses, columns=['w_knn', 'w_rf', 'w_svm', 'w_bayesian_ridge', 'mae'])
+mae_losses_df = pd.DataFrame(mae_losses, columns=['w_knn', 'w_rf', 'w_svm', 'w_bayesian_ridge', 'w_mlp', 'mae'])
 
 # Use parallel coordinate plot for weights and mae scores
 plt.figure(figsize=(14, 7))
@@ -80,7 +81,7 @@ mae_scores = mae_losses_df.sort_values(by='mae', ascending=True)
 mae_scores.to_csv('outputs/regression/ensemble/ensemble_weighted_mae_scores.csv')
 best_weights = mae_scores.iloc[0, :-1].values
 
-ensemble_weighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge)], n_jobs=-1, weights=best_weights)
+ensemble_weighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge), ('mlp', mlp)], n_jobs=-1, weights=best_weights)
 ensemble_weighted.fit(X_train, y_train)
 y_pred_weighted = np.round(ensemble_weighted.predict(X_test) + 1)
 
@@ -112,21 +113,24 @@ X_train_stacking = pd.DataFrame({
     'knn': np.round(knn.predict(X_train) + 1),
     'rf': np.round(rf.predict(X_train) + 1),
     'svm': np.round(svm.predict(X_train) + 1),
-    'bayesian_ridge': np.round(bayesian_ridge.predict(X_train) + 1)
+    'bayesian_ridge': np.round(bayesian_ridge.predict(X_train) + 1),
+    'mlp': np.round(mlp.predict(X_train) + 1)
 })
 
 X_val_stacking = pd.DataFrame({
     'knn': np.round(knn.predict(X_val) + 1),
     'rf': np.round(rf.predict(X_val) + 1),
     'svm': np.round(svm.predict(X_val) + 1),
-    'bayesian_ridge': np.round(bayesian_ridge.predict(X_val) + 1)
+    'bayesian_ridge': np.round(bayesian_ridge.predict(X_val) + 1),
+    'mlp': np.round(mlp.predict(X_val) + 1)
 })
 
 X_test_stacking = pd.DataFrame({
     'knn': np.round(knn.predict(X_test) + 1),
     'rf': np.round(rf.predict(X_test) + 1),
     'svm': np.round(svm.predict(X_test) + 1),
-    'bayesian_ridge': np.round(bayesian_ridge.predict(X_test) + 1)
+    'bayesian_ridge': np.round(bayesian_ridge.predict(X_test) + 1),
+    'mlp': np.round(mlp.predict(X_test) + 1)
 })
 
 # Concatenate all 3 data frames
@@ -159,7 +163,7 @@ param_dist = {
 # Hyperparameter tuning
 random_search = RandomizedSearchCV(estimator=xgb.XGBRegressor(), 
                                param_distributions=param_dist, 
-                               n_iter=1500, 
+                               n_iter=100, 
                                cv=5, 
                                verbose=2, 
                                scoring='neg_mean_absolute_error',
@@ -222,3 +226,91 @@ plt.show()
 
 # Plot predictions vs real values over time (only regression)
 test_preds_vs_real_over_time(test_preds, 'outputs/regression/ensemble/xgboost_ensemble_predictions.png')
+
+
+
+
+
+
+
+# Stacking models (using XGBoost) - base models only without any ryanair data
+# Define the range of hyperparameters
+param_dist2 = {
+    'n_estimators': randint(100, 2000),
+    'learning_rate': uniform(0.0001, 0.1),  
+    'max_depth': randint(1, 20),  
+    'min_child_weight': randint(1, 21),
+    'colsample_bytree': uniform(0.0, 1.0),  
+    'colsample_bylevel': uniform(0.0, 1.0),
+    'reg_lambda': uniform(0.0001, 10.0),  
+    'reg_alpha': uniform(0.0001, 1.0), 
+    'scale_pos_weight': uniform(0.0, 10.0),  
+    'gamma': uniform(0.0001, 10.0)  
+}
+
+# Hyperparameter tuning
+random_search2 = RandomizedSearchCV(estimator=xgb.XGBRegressor(), 
+                               param_distributions=param_dist2, 
+                               n_iter=100, 
+                               cv=5, 
+                               verbose=2, 
+                               scoring='neg_mean_absolute_error',
+                               random_state=42, 
+                               n_jobs=-1)
+random_search2.fit(X_train_stacking, y_train,
+                    early_stopping_rounds=20,
+                    eval_set=[(X_val_stacking, y_val)],
+                    eval_metric='mae',
+                  )
+
+# Save results of RandomizedSearchCV
+results2 = pd.DataFrame(random_search2.cv_results_)
+interested_columns2 = ['param_' + param for param in param_dist.keys()] + ['mean_test_score', 'std_test_score', 'rank_test_score']
+results2 = results2[interested_columns2]
+results2 = results2.sort_values(by='rank_test_score')
+results['mean_test_score'] = results2['mean_test_score']
+results2.to_csv('outputs/regression/ensemble/xgboost_ensemble_base_only_cv_results.csv')
+
+# Parallel coordinate plot without max_features and bootstrap
+scaler = MinMaxScaler()
+results2 = results2.rename(columns={'param_n_estimators': 'n_estimators', 'param_learning_rate': 'learning_rate', 'param_max_depth': 'max_depth', 'param_min_child_weight': 'min_child_weight', 'param_colsample_bytree': 'colsample_bytree', 'param_colsample_bylevel': 'colsample_bylevel', 'param_reg_lambda': 'reg_lambda', 'param_reg_alpha': 'reg_alpha', 'param_scale_pos_weight': 'scale_pos_weight', 'param_gamma': 'gamma'})
+for param in ['n_estimators', 'learning_rate', 'max_depth', 'min_child_weight', 'colsample_bytree', 'colsample_bylevel', 'reg_lambda', 'reg_alpha', 'scale_pos_weight', 'gamma']:
+    results2[param] = scaler.fit_transform(results[param].values.reshape(-1, 1))
+results2 = results2.drop(columns=['std_test_score', 'rank_test_score'])
+plt.figure(figsize=(14, 7))
+parallel_coordinates(results2, 'mean_test_score', colormap='viridis', alpha = 0.25)
+plt.legend().remove()
+plt.savefig('outputs/regression/ensemble/xgboost_ensemble_base_only_parallel_coordinates.png')
+plt.show()
+# purple = best, yellow = worst
+
+# Best model, hyperparameters and predictions
+best_model2, train_preds2, test_preds2, y_train2, y_test2 = best_model_and_predictions(random_search, X_train_stacking, X_test_stacking, y_train, y_test, datetime_train, datetime_test,
+                            'outputs/regression/ensemble/xgboost_ensemble_base_only_model.pkl',
+                            'outputs/regression/ensemble/xgboost_ensemble_base_only_hyperparameters.json',
+                            'outputs/regression/ensemble/xgboost_ensemble_base_only_train_preds.csv',
+                            'outputs/regression/ensemble/xgboost_ensemble_base_only_test_preds.csv')
+
+# Regression metrics
+regression_metrics(y_test2, test_preds2, 'outputs/regression/ensemble/xgboost_ensemble_base_only_scores.json')
+
+# Create feature importance plot for top 15
+feature_importance2 = best_model.feature_importances_
+features2 = X_train_stacking.columns
+feature_importance_scores2 = dict(zip(features2, feature_importance2))
+feature_importance_df2 = pd.DataFrame(feature_importance_scores2.items(), columns=['Feature', 'Importance'])
+feature_importance_df2 = feature_importance_df2.sort_values(by='Importance', ascending=False)
+feature_importance_df2.to_csv('outputs/regression/ensemble/xgboost_ensemble_base_only_feature_importance.csv', index=False)
+
+feature_importance_scores2 = dict(sorted(feature_importance_scores2.items(), key=lambda x: x[1], reverse=True)[:15])
+plt.figure(figsize=(14, 7))
+plt.bar(feature_importance_scores2.keys(), feature_importance_scores2.values())
+plt.ylabel('Feature Importance')
+plt.xlabel('Feature')
+plt.xticks(rotation=90)
+plt.title('Feature Importance')
+plt.savefig('outputs/regression/ensemble/xgboost_ensemble_base_only_feature_importance.png')
+plt.show()
+
+# Plot predictions vs real values over time (only regression)
+test_preds_vs_real_over_time(test_preds2, 'outputs/regression/ensemble/xgboost_ensemble_base_only_predictions.png')
