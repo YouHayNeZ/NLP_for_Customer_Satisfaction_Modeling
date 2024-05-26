@@ -1,0 +1,6 @@
+Feature,Importance
+knn,0.0
+rf,0.0
+svm,0.0
+bayesian_ridge,0.0
+mlp,0.0
