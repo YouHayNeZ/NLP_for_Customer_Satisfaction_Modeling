@@ -46,7 +46,7 @@ def textblob_sentiment(text):
     return round(blob.sentiment.polarity, 2), blob.sentiment.subjectivity
 
 
-def final_sentiment(score):
+def textblob_final_sentiment(score):
     if score > 0.05:
         return "positive"
     elif score < -0.05:
@@ -55,14 +55,14 @@ def final_sentiment(score):
         return "neutral"
 
 
-def final_subjectivity(score):
+def textblob_final_subjectivity(score):
     if score <= 0.50:
         return "objective"
     elif score > 0.50:
         return "subjective"
 
 
-def plot_score_distribution(comments):
+def textblob_plot_score_distribution(comments):
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 
     # Polarity of original comments
@@ -73,7 +73,7 @@ def plot_score_distribution(comments):
 
     # Polarity of cleaned comments
     axes[0, 1].hist(comments['cleaned_polarity'], bins=20, color='green', edgecolor='black')
-    axes[0, 1].set_title('Polarity of Cleaned Comments')
+    axes[0, 1].set_title('Polarity of Preprocessed Comments')
     axes[0, 1].set_xlabel('Polarity')
     axes[0, 1].set_ylabel('Frequency')
 
@@ -85,16 +85,15 @@ def plot_score_distribution(comments):
 
     # Subjectivity of cleaned comments
     axes[1, 1].hist(comments['cleaned_subjectivity'], bins=20, color='purple', edgecolor='black')
-    axes[1, 1].set_title('Subjectivity of Cleaned Comments')
+    axes[1, 1].set_title('Subjectivity of Preprocessed Comments')
     axes[1, 1].set_xlabel('Subjectivity')
     axes[1, 1].set_ylabel('Frequency')
 
     plt.tight_layout()
-    plt.savefig("outputs/plots/textblob_score_distribution.png")
     plt.show()
 
 
-def plot_pie_distribution(comments):
+def textblob_plot_pie_distribution(comments):
     polarity_proportions = comments["polarity_group"].value_counts() / len(comments)
     polarity_proportions_cleaned = comments["polarity_group_cleaned"].value_counts() / len(comments)
 
@@ -119,7 +118,7 @@ def plot_pie_distribution(comments):
         explode=[0.1, 0, 0],
         autopct='%1.1f%%'
     )
-    axs[0, 1].set_title("Polarity Distribution After Cleaning")
+    axs[0, 1].set_title("Polarity Distribution After Preprocessing")
 
     axs[1, 0].pie(
         subjectivity_proportions,
@@ -137,14 +136,14 @@ def plot_pie_distribution(comments):
         explode=[0.1, 0],
         autopct='%1.1f%%'
     )
-    axs[1, 1].set_title("Subjectivity Distribution After Cleaning")
+    axs[1, 1].set_title("Subjectivity Distribution After Preprocessing")
 
     plt.subplots_adjust(wspace=0.4)
-    plt.savefig("outputs/plots/textblob_pie_distribution.png")
+    #plt.savefig("outputs/plots/textblob_pie_distribution.png")
     plt.show()
 
 
-def analyze_ratings_vs_sentiment(data, comments):
+def textblob_analyze_ratings_vs_sentiment(data, comments):
     pd.reset_option('display.max_rows')
     pd.reset_option('display.max_columns')
     pd.reset_option('display.max_colwidth')
@@ -160,18 +159,18 @@ def analyze_ratings_vs_sentiment(data, comments):
 
     sns.boxplot(data=merged, x="Overall Rating", y="cleaned_polarity", ax=axs[1])
     axs[1].set_xlabel('Rating')
-    axs[1].set_ylabel('Cleaned Polarity Score')
-    axs[1].set_title('Rating vs. Cleaned Polarity Score')
+    axs[1].set_ylabel('Polarity Score After Preprocessing')
+    axs[1].set_title('Rating vs. Polarity Score After Preprocessing')
 
     # Calculate correlation
     correlation_cleaned = round(merged['Overall Rating'].corr(merged['cleaned_polarity'], method='spearman'),2)
     correlation = round(merged['Overall Rating'].corr(merged['polarity'], method='spearman'),2)
 
-    axs[0].text(0.5, 0.95, f'Correlation between Overall Rating and Polarity : {correlation:.2f}', ha='center', va='center', transform=axs[0].transAxes, fontsize=10, color='blue')
-    axs[1].text(0.5, 0.95, f'Correlation between Overall Rating and CLeaned Polarity : {correlation_cleaned:.2f}', ha='center', va='center', transform=axs[1].transAxes, fontsize=10, color='blue')
+    axs[0].text(0.5, -0.15, f'Spearman correlation between Overall Rating and Polarity : {correlation:.2f}', ha='center', va='center', transform=axs[0].transAxes, fontsize=10, color='blue')
+    axs[1].text(0.5, -0.15, f'Spearman correlation between Overall Rating and Cleaned Polarity : {correlation_cleaned:.2f}', ha='center', va='center', transform=axs[1].transAxes, fontsize=10, color='blue')
 
     plt.tight_layout()
-    plt.savefig("outputs/plots/textblob_ratings_vs_scores.png")
+    #plt.savefig("outputs/plots/textblob_ratings_vs_scores.png")
     plt.show()
 
 """ work in progress
@@ -216,19 +215,19 @@ if __name__ == '__main__':
     comments['cleaned_polarity'], comments['cleaned_subjectivity'] = zip(
         *comments['cleaned_Comment'].apply(textblob_sentiment))
 
-    comments["polarity_group"] = comments["polarity"].apply(lambda compound: final_sentiment(compound))
+    comments["polarity_group"] = comments["polarity"].apply(lambda compound: textblob_final_sentiment(compound))
 
-    comments["polarity_group_cleaned"] = comments["cleaned_polarity"].apply(lambda compound: final_sentiment(compound))
+    comments["polarity_group_cleaned"] = comments["cleaned_polarity"].apply(lambda compound: textblob_final_sentiment(compound))
 
-    comments["subjectivity_group"] = comments["subjectivity"].apply(lambda compound: final_subjectivity(compound))
+    comments["subjectivity_group"] = comments["subjectivity"].apply(lambda compound: textblob_final_subjectivity(compound))
 
     comments["subjectivity_group_cleaned"] = comments["cleaned_subjectivity"].apply(
-        lambda compound: final_subjectivity(compound))
+        lambda compound: textblob_final_subjectivity(compound))
 
     # comments.to_csv('data/textblob_comments.csv')
 
-    plot_score_distribution(comments)
-    plot_pie_distribution(comments)
+    textblob_plot_score_distribution(comments)
+    textblob_plot_pie_distribution(comments)
 
     # Filter the dataframe for rows where sentiment and sentiment_cleaned are different
     different_sentiments = comments[comments["polarity_group"] != comments["polarity_group_cleaned"]]
@@ -237,6 +236,6 @@ if __name__ == '__main__':
     difference = different_sentiments[["polarity_group", "Comment", "polarity_group_cleaned", "cleaned_Comment"]]
     difference.to_csv("tx_sentiment_difference.csv")"""
 
-    analyze_ratings_vs_sentiment(data, comments)
+    textblob_analyze_ratings_vs_sentiment(data, comments)
     # plot_sentiment_by_topic(comments)
 

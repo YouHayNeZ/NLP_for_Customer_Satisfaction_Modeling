@@ -14,3 +14,4 @@ vader-multi==3.2.2.1
 spacy==3.7.4
 flair==0.13.1
 wordcloud==1.9.3
+openai==1.30.4 

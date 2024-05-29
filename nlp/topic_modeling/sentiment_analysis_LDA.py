@@ -53,23 +53,21 @@ def plot_wordclouds(lda_model, feature_names):
 
 # Main function for LDA topic modeling
 def lda_topic_modeling(file_path, num_topics=5):
-    # Step 1: Read the data
-    data = read_data(file_path)
 
-    # Step 2: Preprocess the comments
+    # Step 1: Preprocess the comments
     data['processed_comment'] = data['Comment'].apply(preprocess_text)
 
-    # Step 3: Vectorize the comments
+    # Step 2: Vectorize the comments
     vectorizer = CountVectorizer(max_df=0.70, min_df=100, stop_words='english')
     # max_df: the words that appear in more than x % of the texts will not be considered as topics
     # min_df: for the topic to be considered in the modelling it has to be present in at least 100 inputs
     dtm = vectorizer.fit_transform(data['processed_comment'])
 
-    # Step 4: Apply LDA
+    # Step 3: Apply LDA
     lda = LatentDirichletAllocation(n_components=num_topics, random_state=0)
     lda.fit(dtm)
 
-    # Step 5: Print the topics and plot word clouds
+    # Step 4: Print the topics and plot word clouds
     feature_names = vectorizer.get_feature_names_out()
     plot_wordclouds(lda, feature_names)
 
@@ -78,12 +76,12 @@ def lda_topic_modeling(file_path, num_topics=5):
     for i in range(num_topics):
         data[f"Topic_{i+1}_probability"] = topic_assignments[:, i]
 
-    # Step 7: Extract topic name with highest probability for each row
+    # Step 5: Extract topic name with highest probability for each row
     topic_names = [f"Topic_{i + 1}" for i in range(num_topics)]
     max_topic_indices = topic_assignments.argmax(axis=1)
     max_topic_names = [topic_names[idx] for idx in max_topic_indices]
 
-    # Step 8: Add a new column with the topic name with the highest probability
+    # Step 6: Add a new column with the topic name with the highest probability
     data['Max_Probability_Topic'] = max_topic_names
 
     # Step 7: Save results to a CSV file

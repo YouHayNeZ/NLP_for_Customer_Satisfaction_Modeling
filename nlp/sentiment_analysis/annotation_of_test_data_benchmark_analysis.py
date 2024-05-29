@@ -1,8 +1,13 @@
+import os
+import sys
+### Alert!!! We have to change that when we put the preprocessing file anywhere!!!
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 from preprocessing import *
+import pandas as pd
 
 data = import_data('data/ryanair_reviews.csv')
-data = create_datetime(data)
-data = encode_categoricals(data)
+#data = create_datetime(data)
+#data = encode_categoricals(data)
 data = drop_missing_target(data)
 # Splitting the dataset into the Training set and Test set
 X = data[['Comment title', 'Comment']]
@@ -31,6 +36,7 @@ annotations_1_118 = [1, -1, -1, -1, -1, -1, 1, 1, -1, 1,
                      0, -1, -1, -1, 1, -1, -1, -1, 1, -1,
                      0, -1, -1, -1, -1, 1, 1, -1, -1, -1,
                      -1, 1, 1, -1, -1, 1, 1]
+                    
 # My last review (included): Ryanair customer review,Return flight from Manchester to Rome £58
 
 # labels for 119-238 (Niklas)
@@ -76,7 +82,7 @@ annotations_239_355 = [-1, 1, 1, -1, 0, 1, 1, 1,-1, -1,
 # and friendly. No negative comments at all and I'll be only too happy to fly with Ryanair again."
 
 # labels for 356-472 (Ece)
-annotations_356_472 = [1, 1, 0, 1, -1, 1, 1, 1, -1, -1,
+annotations_356_472 = [0, 1, -1, 1, 1, 1, -1, -1,
                        1, -1, -1, -1, -1, 1, -1, -1, 1, 1,
                        1, 1, 1, 1, -1, 1, 1, 1, 0, 1,
                        -1, 1, 1, -1, 1, 1, 1, -1, 1, -1,
@@ -97,5 +103,22 @@ annotations_356_472 = [1, 1, 0, 1, -1, 1, 1, 1, -1, -1,
 # now, and for the price you pay nothing comes close. If you want a weekend away in Europe at a low price why would
 # you look elsewhere?"
 
-# concat annotations
-# annotations = pd.concat([annotations_1_118, annotations_119_238, annotations_239_355, annotations_356_472])
+# Create pandas Series from the lists
+annotations_1_118_series = pd.Series(annotations_1_118, name="annotations_1_118")
+annotations_119_238_series = pd.Series(annotations_119_238, name="annotations_119_238")
+annotations_239_355_series = pd.Series(annotations_239_355, name="annotations_239_355")
+annotations_356_472_series = pd.Series(annotations_356_472, name="annotations_356_472")
+print(annotations_1_118_series.shape, annotations_119_238_series.shape, annotations_239_355_series.shape, annotations_356_472_series.shape)
+
+# Combine the Series with test data into a DataFrame
+annotations = pd.concat([annotations_1_118_series, annotations_119_238_series, annotations_239_355_series, annotations_356_472_series], axis=0)
+annotations.reset_index(drop = True, inplace = True)
+
+data_test.reset_index(drop=True, inplace = True)
+
+# Combine them into a single DataFrame
+annotations_df = pd.concat([data_test, annotations], axis=1)
+annotations_df.columns = list(data_test.columns) + ['annotations']
+
+# save to csv
+annotations_df.to_csv("data/labeled_data_for_benchmark_analysis.csv", index=False)
