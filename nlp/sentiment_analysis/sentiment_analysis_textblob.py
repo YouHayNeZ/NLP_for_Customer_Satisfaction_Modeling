@@ -5,42 +5,6 @@ import spacy.cli
 from textblob import TextBlob
 import re
 
-
-def read_data() -> (pd.DataFrame, pd.DataFrame):
-    data = pd.read_csv("data/ryanair_reviews.csv")
-    # data['Comment title'] = data['Comment title'].astype(pd.StringDtype())
-    # data['Comment'] = data['Comment'].astype(pd.StringDtype())
-    comments = data[["Comment title", "Comment"]].copy()
-    return data, comments
-
-
-# Function to preprocess text using spaCy
-def spacy_process(text):
-    # Remove punctuation: This regular expression finds all characters that are not word characters (\w)
-    # or whitespace (\s) and replaces them with an empty string, effectively removing punctuation.
-    text = re.sub(r'[^\w\s]', '', text)
-
-    # Remove numbers: This regular expression finds all digit characters (\d) and replaces them with an empty string,
-    # effectively removing all numeric characters from the text
-    text = re.sub(r'\d+', '', text)
-
-    # Convert to lowercase: This ensures that all characters in the text are lowercase, making the text
-    # case-insensitive.
-    text = text.lower()
-
-    # Tokenize the text: The spaCy model processes the text and returns a Doc object, which contains a sequence of tokens.
-    doc = nlp(text)
-
-    # Lemmatize and remove stopwords:
-    # - token.lemma_: The lemma (base form) of the token.
-    # - token.is_alpha: Checks if the token consists of alphabetic characters only.
-    # - not token.is_stop: Checks if the token is not a stopword.
-    tokens = [token.lemma_ for token in doc if token.is_alpha and not token.is_stop]
-
-    # Join tokens into a single string with spaces between them: This creates a single string from the list of tokens
-    return ' '.join(tokens)
-
-
 def textblob_sentiment(text):
     blob = TextBlob(text)
     return round(blob.sentiment.polarity, 2), blob.sentiment.subjectivity
@@ -198,6 +162,8 @@ def plot_sentiment_by_topic(comments):
     plt.show()
 """
 
+
+'''
 if __name__ == '__main__':
     # Change pandas settings to display all columns pd.set_option('display.max_columns', None)
     # Adjust pandas settings to display the full content of each column pd.set_option('display.max_colwidth', None)
@@ -238,4 +204,4 @@ if __name__ == '__main__':
 
     textblob_analyze_ratings_vs_sentiment(data, comments)
     # plot_sentiment_by_topic(comments)
-
+'''
