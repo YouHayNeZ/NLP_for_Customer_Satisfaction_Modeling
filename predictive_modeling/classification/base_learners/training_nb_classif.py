@@ -24,7 +24,7 @@ def main():
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(MultinomialNB(), 'outputs/classification/nb/nb_cv_results.csv', param_dist, X_train, y_train)
+    random_search, results = hpo_and_cv_results(MultinomialNB(), 'outputs/predictive_modeling/classification/base_learners/nb/nb_cv_results.csv', param_dist, X_train, y_train)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()
@@ -35,7 +35,7 @@ def main():
     plt.figure(figsize=(14, 7))
     parallel_coordinates(results_pc, 'mean_test_score', colormap='viridis', alpha = 0.25)
     plt.legend().remove()
-    plt.savefig('outputs/classification/nb/nb_parallel_coordinates.png')
+    plt.savefig('outputs/predictive_modeling/classification/base_learners/nb/nb_parallel_coordinates.png')
     plt.show()
     # purple = best, yellow = worst
 
@@ -44,15 +44,15 @@ def main():
 
     # Best model and predictions
     best_model, train_preds, test_preds, y_train, y_test = best_model_and_predictions(random_search, X_train, X_test, y_train, y_test, datetime_train, datetime_test,
-                                'outputs/classification/nb/nb_model.pkl',
-                                'outputs/classification/nb/nb_hyperparameters.json',
-                                'outputs/classification/nb/nb_train_preds.csv',
-                                'outputs/classification/nb/nb_test_preds.csv')
+                                'outputs/predictive_modeling/classification/base_learners/nb/nb_model.pkl',
+                                'outputs/predictive_modeling/classification/base_learners/nb/nb_hyperparameters.json',
+                                'outputs/predictive_modeling/classification/base_learners/nb/nb_train_preds.csv',
+                                'outputs/predictive_modeling/classification/base_learners/nb/nb_test_preds.csv')
 
     # Confusion matrix and metrics
     confusion_matrix_and_metrics(X_test, y_test, test_preds, best_model, 
-                                cm_path = 'outputs/classification/nb/nb_confusion_matrix.png', 
-                                scores_path = 'outputs/classification/nb/nb_scores.json')
+                                cm_path = 'outputs/predictive_modeling/classification/base_learners/nb/nb_confusion_matrix.png', 
+                                scores_path = 'outputs/predictive_modeling/classification/base_learners/nb/nb_scores.json')
 
     # Create ROC & PR curves for classes 1, 5, and 10
     probabilities = best_model.predict_proba(X_test)
@@ -72,7 +72,7 @@ def main():
         plt.ylabel('True Positive Rate')
         plt.title('ROC Curve (Class {})'.format(cls))
         plt.legend(loc="lower right")
-        plt.savefig('outputs/classification/nb/roc_curve_class_{}.png'.format(cls))
+        plt.savefig('outputs/predictive_modeling/classification/base_learners/nb/roc_curve_class_{}.png'.format(cls))
         plt.show()
 
         # Create Precision-Recall curve
@@ -86,7 +86,7 @@ def main():
         plt.ylim([0.0, 1.05])
         plt.xlim([0.0, 1.0])
         plt.title('Precision-Recall Curve (Class {})'.format(cls))
-        plt.savefig('outputs/classification/nb/precision_recall_curve_class_{}.png'.format(cls))
+        plt.savefig('outputs/predictive_modeling/classification/base_learners/nb/precision_recall_curve_class_{}.png'.format(cls))
         plt.show()
 
     # No feature importance plot for Naive Bayes

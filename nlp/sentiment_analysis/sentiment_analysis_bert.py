@@ -42,7 +42,7 @@ def analyze_sentiments():
     df['sentiment_comment_siebert'] = [result['label'] for result in sentiment_comment_siebert]
 
     # Save the results to a new CSV file
-    df.to_csv('data/bert_sentiment_analysis.csv', index=False)
+    df.to_csv('outputs/nlp/sentiment_analysis/bert_sentiment_analysis.csv', index=False)
 
 def bert_plot_sentiment_proportions(df, distilbert_col, siebert_col):
     """

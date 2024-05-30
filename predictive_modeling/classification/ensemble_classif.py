@@ -21,11 +21,11 @@ def main():
     X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews.csv')
 
     # Load models
-    knn = joblib.load('outputs/classification/knn/knn_model.pkl')
-    rf = joblib.load('outputs/classification/rf/rf_model.pkl')
-    svm = joblib.load('outputs/classification/svm/svm_model.pkl')
-    nb = joblib.load('outputs/classification/nb/nb_model.pkl')
-    mlp = joblib.load('outputs/classification/mlp/mlp_model.pkl')
+    knn = joblib.load('outputs/predictive_modeling/classification/base_learners/knn/knn_model.pkl')
+    rf = joblib.load('outputs/predictive_modeling/classification/base_learners/rf/rf_model.pkl')
+    svm = joblib.load('outputs/predictive_modeling/classification/base_learners/svm/svm_model.pkl')
+    nb = joblib.load('outputs/predictive_modeling/classification/base_learners/nb/nb_model.pkl')
+    mlp = joblib.load('outputs/predictive_modeling/classification/base_learners/mlp/mlp_model.pkl')
 
 
 
@@ -33,7 +33,7 @@ def main():
     # Create ensemble (unweighted)
     ensemble_unweighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb), ('mlp', mlp)], voting='soft', n_jobs=-1)
     ensemble_unweighted.fit(X_train, y_train)
-    joblib.dump(ensemble_unweighted, 'outputs/classification/ensemble/ensemble_unweighted_model.pkl')
+    joblib.dump(ensemble_unweighted, 'outputs/predictive_modeling/classification/ensemble/ensemble_unweighted_model.pkl')
 
     # Predictions
     y_pred_unweighted = ensemble_unweighted.predict(X_test) + 1
@@ -51,7 +51,7 @@ def main():
         'recall': recall_unweighted,
         'logloss': log_loss_unweighted
     }
-    with open('outputs/classification/ensemble/ensemble_unweighted_metrics.json', 'w') as f:
+    with open('outputs/predictive_modeling/classification/ensemble/ensemble_unweighted_metrics.json', 'w') as f:
         json.dump(metrics_unweighted, f)
     print(metrics_unweighted)
 
@@ -81,18 +81,18 @@ def main():
     plt.figure(figsize=(14, 7))
     parallel_coordinates(log_loss_scores_df, 'log_loss', colormap='viridis', alpha=0.25)
     plt.legend().remove()
-    plt.savefig('outputs/classification/ensemble/ensemble_parallel_coordinates.png')
+    plt.savefig('outputs/predictive_modeling/classification/ensemble/ensemble_parallel_coordinates.png')
     plt.show()
 
     log_loss_scores = log_loss_scores_df.sort_values(by='log_loss', ascending=True)
-    log_loss_scores.to_csv('outputs/classification/ensemble/ensemble_weighted_log_loss_scores.csv')
+    log_loss_scores.to_csv('outputs/predictive_modeling/classification/ensemble/ensemble_weighted_log_loss_scores.csv')
     best_weights = log_loss_scores.iloc[0, :-1].values
 
     ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb), ('mlp', mlp)], voting='soft', n_jobs=-1, weights=best_weights)
     ensemble_weighted.fit(X_train, y_train)
     y_pred_weighted = ensemble_weighted.predict(X_test) + 1
 
-    joblib.dump(ensemble_weighted, 'outputs/classification/ensemble/ensemble_weighted_model.pkl')
+    joblib.dump(ensemble_weighted, 'outputs/predictive_modeling/classification/ensemble/ensemble_weighted_model.pkl')
 
     # Metrics
     accuracy_weighted = accuracy_score(y_test + 1, y_pred_weighted)
@@ -107,7 +107,7 @@ def main():
         'recall': recall_weighted,
         'logloss': log_loss_weighted
     }
-    with open('outputs/classification/ensemble/ensemble_weighted_metrics.json', 'w') as f:
+    with open('outputs/predictive_modeling/classification/ensemble/ensemble_weighted_metrics.json', 'w') as f:
         json.dump(metrics_weighted, f)
     print(metrics_weighted)
 
@@ -152,10 +152,10 @@ def main():
     data = pd.read_csv('data/ryanair_reviews.csv')
     data = data.dropna(subset=['Overall Rating'])
     data = pd.concat([data, X_stacked], axis=1)
-    data.to_csv('outputs/classification/ensemble/stacking_data.csv', index=False)
+    data.to_csv('outputs/predictive_modeling/classification/ensemble/stacking_data.csv', index=False)
 
     # Preprocess stacking data
-    X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('outputs/classification/ensemble/stacking_data.csv')
+    X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('outputs/predictive_modeling/classification/ensemble/stacking_data.csv')
 
     # Define the range of hyperparameters
     param_dist = {
@@ -192,7 +192,7 @@ def main():
     results = results[interested_columns]
     results = results.sort_values(by='rank_test_score')
     results['mean_test_score'] = results['mean_test_score']
-    results.to_csv('outputs/classification/ensemble/xgboost_ensemble_cv_results.csv')
+    results.to_csv('outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_cv_results.csv')
 
     # Parallel coordinate plot without max_features and bootstrap
     scaler = MinMaxScaler()
@@ -203,21 +203,21 @@ def main():
     plt.figure(figsize=(14, 7))
     parallel_coordinates(results, 'mean_test_score', colormap='viridis', alpha = 0.25)
     plt.legend().remove()
-    plt.savefig('outputs/classification/ensemble/xgboost_ensemble_parallel_coordinates.png')
+    plt.savefig('outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_parallel_coordinates.png')
     plt.show()
     # purple = best, yellow = worst
 
     # Best model, hyperparameters and predictions
     best_model, train_preds, test_preds, y_train, y_test = best_model_and_predictions(random_search, X_train, X_test, y_train, y_test, datetime_train, datetime_test, 
-                            'outputs/classification/ensemble/xgboost_ensemble_model.pkl', 
-                            'outputs/classification/ensemble/xgboost_ensemble_hyperparameters.json', 
-                            'outputs/classification/ensemble/xgboost_ensemble_train_preds.csv', 
-                            'outputs/classification/ensemble/xgboost_ensemble_test_preds.csv')
+                            'outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_model.pkl', 
+                            'outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_hyperparameters.json', 
+                            'outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_train_preds.csv', 
+                            'outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_test_preds.csv')
 
     # Confusion matrix and metrics
     confusion_matrix_and_metrics(X_test, y_test, test_preds, best_model, 
-                                cm_path = 'outputs/classification/ensemble/xgboost_ensemble_confusion_matrix.png',
-                                scores_path = 'outputs/classification/ensemble/xgboost_ensemble_scores.json')
+                                cm_path = 'outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_confusion_matrix.png',
+                                scores_path = 'outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_scores.json')
                                 
     # Create ROC & PR curves for classes 1, 5, and 10
     probabilities = best_model.predict_proba(X_test)
@@ -237,7 +237,7 @@ def main():
         plt.ylabel('True Positive Rate')
         plt.title('ROC Curve (Class {})'.format(cls))
         plt.legend(loc="lower right")
-        plt.savefig('outputs/classification/ensemble/roc_curve_class_{}.png'.format(cls))
+        plt.savefig('outputs/predictive_modeling/classification/ensemble/roc_curve_class_{}.png'.format(cls))
         plt.show()
 
         # Create Precision-Recall curve
@@ -251,7 +251,7 @@ def main():
         plt.ylim([0.0, 1.05])
         plt.xlim([0.0, 1.0])
         plt.title('Precision-Recall Curve (Class {})'.format(cls))
-        plt.savefig('outputs/classification/ensemble/precision_recall_curve_class_{}.png'.format(cls))
+        plt.savefig('outputs/predictive_modeling/classification/ensemble/precision_recall_curve_class_{}.png'.format(cls))
         plt.show()
 
     # Create feature importance plot for top 15
@@ -260,7 +260,7 @@ def main():
     feature_importance_scores = dict(zip(features, feature_importance))
     feature_importance_df = pd.DataFrame(feature_importance_scores.items(), columns=['Feature', 'Importance'])
     feature_importance_df = feature_importance_df.sort_values(by='Importance', ascending=False)
-    feature_importance_df.to_csv('outputs/classification/ensemble/xgboost_ensemble_feature_importance.csv', index=False)
+    feature_importance_df.to_csv('outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_feature_importance.csv', index=False)
 
     feature_importance_scores = dict(sorted(feature_importance_scores.items(), key=lambda x: x[1], reverse=True)[:15])
     plt.figure(figsize=(14, 7))
@@ -269,7 +269,7 @@ def main():
     plt.xlabel('Feature')
     plt.xticks(rotation=90)
     plt.title('Feature Importance')
-    plt.savefig('outputs/classification/ensemble/xgboost_ensemble_feature_importance.png')
+    plt.savefig('outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_feature_importance.png')
     plt.show()
 
 
@@ -313,7 +313,7 @@ def main():
     results2 = results2[interested_columns2]
     results2 = results2.sort_values(by='rank_test_score')
     results2['mean_test_score'] = results2['mean_test_score']
-    results2.to_csv('outputs/classification/ensemble/xgboost_ensemble_only_base_cv_results.csv')
+    results2.to_csv('outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_only_base_cv_results.csv')
 
     # Parallel coordinate plot without max_features and bootstrap
     scaler2 = MinMaxScaler()
@@ -324,21 +324,21 @@ def main():
     plt.figure(figsize=(14, 7))
     parallel_coordinates(results2, 'mean_test_score', colormap='viridis', alpha=0.25)
     plt.legend().remove()
-    plt.savefig('outputs/classification/ensemble/xgboost_ensemble_only_base_parallel_coordinates.png')
+    plt.savefig('outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_only_base_parallel_coordinates.png')
     plt.show()
     # purple = best, yellow = worst
 
     # Best model, hyperparameters and predictions
     best_model2, train_preds2, test_preds2, y_train, y_test = best_model_and_predictions(random_search2, X_train_stacking, X_test_stacking, y_train, y_test, datetime_train, datetime_test, 
-                            'outputs/classification/ensemble/xgboost_ensemble_only_base_model.pkl', 
-                            'outputs/classification/ensemble/xgboost_ensemble_only_base_hyperparameters.json', 
-                            'outputs/classification/ensemble/xgboost_ensemble_only_base_train_preds.csv', 
-                            'outputs/classification/ensemble/xgboost_ensemble_only_base_test_preds.csv')
+                            'outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_only_base_model.pkl', 
+                            'outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_only_base_hyperparameters.json', 
+                            'outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_only_base_train_preds.csv', 
+                            'outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_only_base_test_preds.csv')
 
     # Confusion matrix and metrics
     confusion_matrix_and_metrics(X_test_stacking, y_test, test_preds2, best_model2, 
-                                cm_path = 'outputs/classification/ensemble/xgboost_ensemble_only_base_confusion_matrix.png',
-                                scores_path = 'outputs/classification/ensemble/xgboost_ensemble_only_base_scores.json')
+                                cm_path = 'outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_only_base_confusion_matrix.png',
+                                scores_path = 'outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_only_base_scores.json')
                                 
     # Create ROC & PR curves for classes 1, 5, and 10
     probabilities2 = best_model2.predict_proba(X_test_stacking)
@@ -358,7 +358,7 @@ def main():
         plt.ylabel('True Positive Rate')
         plt.title('ROC Curve (Class {})'.format(cls))
         plt.legend(loc="lower right")
-        plt.savefig('outputs/classification/ensemble/roc_curve_class_{}_only_base.png'.format(cls))
+        plt.savefig('outputs/predictive_modeling/classification/ensemble/roc_curve_class_{}_only_base.png'.format(cls))
         plt.show()
 
         # Create Precision-Recall curve
@@ -372,7 +372,7 @@ def main():
         plt.ylim([0.0, 1.05])
         plt.xlim([0.0, 1.0])
         plt.title('Precision-Recall Curve (Class {})'.format(cls))
-        plt.savefig('outputs/classification/ensemble/precision_recall_curve_class_{}_only_base.png'.format(cls))
+        plt.savefig('outputs/predictive_modeling/classification/ensemble/precision_recall_curve_class_{}_only_base.png'.format(cls))
         plt.show()
 
     # Create feature importance plot for top 15
@@ -381,7 +381,7 @@ def main():
     feature_importance_scores2 = dict(zip(features2, feature_importance2))
     feature_importance_df2 = pd.DataFrame(feature_importance_scores2.items(), columns=['Feature', 'Importance'])
     feature_importance_df2 = feature_importance_df2.sort_values(by='Importance', ascending=False)
-    feature_importance_df2.to_csv('outputs/classification/ensemble/xgboost_ensemble_only_base_feature_importance.csv', index=False)
+    feature_importance_df2.to_csv('outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_only_base_feature_importance.csv', index=False)
 
     feature_importance_scores2 = dict(sorted(feature_importance_scores2.items(), key=lambda x: x[1], reverse=True)[:15])
     plt.figure(figsize=(14, 7))
@@ -390,7 +390,7 @@ def main():
     plt.xlabel('Feature')
     plt.xticks(rotation=90)
     plt.title('Feature Importance')
-    plt.savefig('outputs/classification/ensemble/xgboost_ensemble_only_base_feature_importance.png')
+    plt.savefig('outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_only_base_feature_importance.png')
     plt.show()
 
 if __name__ == '__main__':

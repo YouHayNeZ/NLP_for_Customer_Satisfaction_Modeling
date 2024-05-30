@@ -1,11 +1,11 @@
 # Feature Engineering
 
 import pandas as pd
-import numpy as np
-from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
 
 # Load data
 data = pd.read_csv('data/ryanair_reviews.csv')
+data = data.dropna(subset=['Overall Rating'])
 
 # Regular feature engineering
 def regular_feature_engineering(df):
@@ -27,20 +27,25 @@ def regular_feature_engineering(df):
     # Check if "again" is in the 'comment' column (True/False) -> usually negative association
     df['again'] = df['Comment'].apply(lambda x: 'again' in x)
 
-    # Add more if you can think of anything
-    #...
-    #...
-    #...
+    # Check if "online" is in the 'comment' column (True/False) -> usually positive association
+    df['online'] = df['Comment'].apply(lambda x: 'online' in x)
 
-    # Normalize continuous variables
-    scaler = StandardScaler()
-    df[['exclamation_marks', 'question_marks', 'comment_length']] = scaler.fit_transform(df[['exclamation_marks', 'question_marks', 'comment_length']])
-    
+    # Check if "delayed" is in the 'comment' column (True/False) -> usually negative association
+    df['delayed'] = df['Comment'].apply(lambda x: 'delayed' in x)
+
+    # Check if "cheap" is in the 'comment' column (True/False) -> usually positive association
+    df['cheap'] = df['Comment'].apply(lambda x: 'cheap' in x)
+
+    # Check if "legroom" is in the 'comment' column (True/False) -> usually negative association
+    df['legroom'] = df['Comment'].apply(lambda x: 'legroom' in x)
     return df
 
 # Sentiment feature engineering
 def sentiment_feature_engineering(df):
-    #df['sentiment'] = ... # Sentiment analysis results
+    sentiments_data = pd.read_csv('outputs/nlp/sentiment_analysis/openai_sentiment_analysis.csv')
+    sentiments_data = sentiments_data.dropna(subset=['Overall Rating'])
+    openai_sentiment = sentiments_data['openai_sentiment']
+    df['Sentiment'] = openai_sentiment
     return df
 
 # Topic feature engineering
@@ -56,5 +61,5 @@ data = regular_feature_engineering(data)
 data = sentiment_feature_engineering(data)
 data = topic_feature_engineering(data)
 
-
-
+# Save data (TOPIC MODELING TO BE ADDED!)
+data.to_csv('data/ryanair_reviews_some_features.csv', index=False)

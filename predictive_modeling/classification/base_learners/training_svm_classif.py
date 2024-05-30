@@ -28,7 +28,7 @@ def main():
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(SVC(), 'outputs/classification/svm/svm_cv_results.csv', param_dist, X_train, y_train)
+    random_search, results = hpo_and_cv_results(SVC(), 'outputs/predictive_modeling/classification/base_learners/svm/svm_cv_results.csv', param_dist, X_train, y_train)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()
@@ -39,7 +39,7 @@ def main():
     plt.figure(figsize=(14, 7))
     parallel_coordinates(results_pc, 'mean_test_score', colormap='viridis', alpha = 0.25)
     plt.legend().remove()
-    plt.savefig('outputs/classification/svm/svm_parallel_coordinates.png')
+    plt.savefig('outputs/predictive_modeling/classification/base_learners/svm/svm_parallel_coordinates.png')
     plt.show()
     # purple = best, yellow = worst
 
@@ -48,15 +48,15 @@ def main():
 
     # Best model and predictions
     best_model, train_preds, test_preds, y_train, y_test = best_model_and_predictions(random_search, X_train, X_test, y_train, y_test, datetime_train, datetime_test, 
-                            'outputs/classification/svm/svm_model.pkl', 
-                            'outputs/classification/svm/svm_hyperparameters.json', 
-                            'outputs/classification/svm/svm_train_preds.csv', 
-                            'outputs/classification/svm/svm_test_preds.csv')
+                            'outputs/predictive_modeling/classification/base_learners/svm/svm_model.pkl', 
+                            'outputs/predictive_modeling/classification/base_learners/svm/svm_hyperparameters.json', 
+                            'outputs/predictive_modeling/classification/base_learners/svm/svm_train_preds.csv', 
+                            'outputs/predictive_modeling/classification/base_learners/svm/svm_test_preds.csv')
 
     # Confusion matrix and metrics
     confusion_matrix_and_metrics(X_test, y_test, test_preds, best_model, 
-                                cm_path = 'outputs/classification/svm/svm_confusion_matrix.png', 
-                                scores_path = 'outputs/classification/svm/svm_scores.json')
+                                cm_path = 'outputs/predictive_modeling/classification/base_learners/svm/svm_confusion_matrix.png', 
+                                scores_path = 'outputs/predictive_modeling/classification/base_learners/svm/svm_scores.json')
 
     # Create ROC & PR curves for classes 1, 5, and 10
     for class_num in [1, 5, 10]:
@@ -76,7 +76,7 @@ def main():
         plt.ylabel('True Positive Rate')
         plt.title('ROC Curve (Class {})'.format(class_num))
         plt.legend(loc="lower right")
-        plt.savefig('outputs/classification/svm/roc_curve_class_{}.png'.format(class_num))
+        plt.savefig('outputs/predictive_modeling/classification/base_learners/svm/roc_curve_class_{}.png'.format(class_num))
         plt.show()
 
         # Create Precision-Recall curve
@@ -90,7 +90,7 @@ def main():
         plt.ylim([0.0, 1.05])
         plt.xlim([0.0, 1.0])
         plt.title('Precision-Recall Curve (Class {})'.format(class_num))
-        plt.savefig('outputs/classification/svm/precision_recall_curve_class_{}.png'.format(class_num))
+        plt.savefig('outputs/predictive_modeling/classification/base_learners/svm/precision_recall_curve_class_{}.png'.format(class_num))
         plt.show()
 
     # No feature importance for SVM (maybe add coefficient based feature importance later)

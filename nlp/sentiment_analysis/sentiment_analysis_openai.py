@@ -34,7 +34,7 @@ def classify_sentiments(api_key: str):
     df["openai_sentiment"] = openai_classification
     
     # Save the DataFrame to a new CSV file
-    df.to_csv("data/openai_sentiment_analysis.csv")
+    df.to_csv("outputs/nlp/sentiment_analysis/openai_sentiment_analysis.csv")
 
 
 def openai_plot_sentiment_proportions(df, sentiment_col):

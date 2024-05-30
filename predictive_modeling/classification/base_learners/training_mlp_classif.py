@@ -29,7 +29,7 @@ def main():
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(MLPClassifier(), 'outputs/classification/mlp/mlp_cv_results.csv', param_dist, X_train, y_train, n_iter=50)
+    random_search, results = hpo_and_cv_results(MLPClassifier(), 'outputs/predictive_modeling/classification/base_learners/mlp/mlp_cv_results.csv', param_dist, X_train, y_train, n_iter=50)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()
@@ -40,7 +40,7 @@ def main():
     plt.figure(figsize=(14, 7))
     parallel_coordinates(results_pc, 'mean_test_score', colormap='viridis', alpha=0.25)
     plt.legend().remove()
-    plt.savefig('outputs/classification/mlp/mlp_parallel_coordinates.png')
+    plt.savefig('outputs/predictive_modeling/classification/base_learners/mlp/mlp_parallel_coordinates.png')
     plt.show()
     # purple = best, yellow = worst
 
@@ -50,15 +50,15 @@ def main():
 
     # Best model, hyperparameters and predictions
     best_model, train_preds, test_preds, y_train, y_test = best_model_and_predictions(random_search, X_train, X_test, y_train, y_test, datetime_train, datetime_test, 
-                            'outputs/classification/mlp/mlp_model.pkl', 
-                            'outputs/classification/mlp/mlp_hyperparameters.json', 
-                            'outputs/classification/mlp/mlp_train_preds.csv', 
-                            'outputs/classification/mlp/mlp_test_preds.csv')
+                            'outputs/predictive_modeling/classification/base_learners/mlp/mlp_model.pkl', 
+                            'outputs/predictive_modeling/classification/base_learners/mlp/mlp_hyperparameters.json', 
+                            'outputs/predictive_modeling/classification/base_learners/mlp/mlp_train_preds.csv', 
+                            'outputs/predictive_modeling/classification/base_learners/mlp/mlp_test_preds.csv')
 
     # Confusion matrix and metrics
     confusion_matrix_and_metrics(X_test, y_test, test_preds, best_model,
-                                    cm_path = 'outputs/classification/mlp/mlp_confusion_matrix.png',
-                                    scores_path = 'outputs/classification/mlp/mlp_scores.json')
+                                    cm_path = 'outputs/predictive_modeling/classification/base_learners/mlp/mlp_confusion_matrix.png',
+                                    scores_path = 'outputs/predictive_modeling/classification/base_learners/mlp/mlp_scores.json')
 
     # Create ROC & PR curves for classes 1, 5, and 10
     probabilities = best_model.predict_proba(X_test)
@@ -78,7 +78,7 @@ def main():
         plt.ylabel('True Positive Rate')
         plt.title('ROC Curve (Class {})'.format(cls))
         plt.legend(loc="lower right")
-        plt.savefig('outputs/classification/mlp/roc_curve_class_{}.png'.format(cls))
+        plt.savefig('outputs/predictive_modeling/classification/base_learners/mlp/roc_curve_class_{}.png'.format(cls))
         plt.show()
 
         # Create Precision-Recall curve
@@ -92,7 +92,7 @@ def main():
         plt.ylim([0.0, 1.05])
         plt.xlim([0.0, 1.0])
         plt.title('Precision-Recall Curve (Class {})'.format(cls))
-        plt.savefig('outputs/classification/mlp/precision_recall_curve_class_{}.png'.format(cls))
+        plt.savefig('outputs/predictive_modeling/classification/base_learners/mlp/precision_recall_curve_class_{}.png'.format(cls))
         plt.show()
     
 if __name__ == '__main__':

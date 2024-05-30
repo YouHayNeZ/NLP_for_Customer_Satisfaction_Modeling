@@ -22,18 +22,18 @@ def main():
     X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews.csv')
 
     # Load models
-    knn = joblib.load('outputs/regression/knn/knn_model.pkl')
-    rf = joblib.load('outputs/regression/rf/rf_model.pkl')
-    svm = joblib.load('outputs/regression/svm/svm_model.pkl')
-    bayesian_ridge = joblib.load('outputs/regression/bayesian_ridge/bayesian_ridge_model.pkl')
-    mlp = joblib.load('outputs/regression/mlp/mlp_model.pkl')
+    knn = joblib.load('outputs/predictive_modeling/regression/knn/knn_model.pkl')
+    rf = joblib.load('outputs/predictive_modeling/regression/rf/rf_model.pkl')
+    svm = joblib.load('outputs/predictive_modeling/regression/svm/svm_model.pkl')
+    bayesian_ridge = joblib.load('outputs/predictive_modeling/regression/bayesian_ridge/bayesian_ridge_model.pkl')
+    mlp = joblib.load('outputs/predictive_modeling/regression/mlp/mlp_model.pkl')
 
 
 
     # Create ensemble (unweighted)
     ensemble_unweighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge), ('mlp', mlp)], n_jobs=-1)
     ensemble_unweighted.fit(X_train, y_train)
-    joblib.dump(ensemble_unweighted, 'outputs/regression/ensemble/ensemble_unweighted_model.pkl')
+    joblib.dump(ensemble_unweighted, 'outputs/predictive_modeling/regression/ensemble/ensemble_unweighted_model.pkl')
 
     # Predictions
     y_pred_unweighted = np.round(ensemble_unweighted.predict(X_test) + 1)
@@ -47,7 +47,7 @@ def main():
         'mse': mse_unweighted,
         'r2': r2_unweighted
     }
-    with open('outputs/regression/ensemble/ensemble_unweighted_metrics.json', 'w') as f:
+    with open('outputs/predictive_modeling/regression/ensemble/ensemble_unweighted_metrics.json', 'w') as f:
         json.dump(metrics_unweighted, f)
     print(metrics_unweighted)
 
@@ -78,18 +78,18 @@ def main():
     plt.figure(figsize=(14, 7))
     parallel_coordinates(mae_losses_df, 'mae', colormap='viridis', alpha=0.25)
     plt.legend().remove()
-    plt.savefig('outputs/regression/ensemble/ensemble_parallel_coordinates.png')
+    plt.savefig('outputs/predictive_modeling/regression/ensemble/ensemble_parallel_coordinates.png')
     plt.show()
 
     mae_scores = mae_losses_df.sort_values(by='mae', ascending=True)
-    mae_scores.to_csv('outputs/regression/ensemble/ensemble_weighted_mae_scores.csv')
+    mae_scores.to_csv('outputs/predictive_modeling/regression/ensemble/ensemble_weighted_mae_scores.csv')
     best_weights = mae_scores.iloc[0, :-1].values
 
     ensemble_weighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge), ('mlp', mlp)], n_jobs=-1, weights=best_weights)
     ensemble_weighted.fit(X_train, y_train)
     y_pred_weighted = np.round(ensemble_weighted.predict(X_test) + 1)
 
-    joblib.dump(ensemble_weighted, 'outputs/regression/ensemble/ensemble_weighted_model.pkl')
+    joblib.dump(ensemble_weighted, 'outputs/predictive_modeling/regression/ensemble/ensemble_weighted_model.pkl')
 
     # Metrics
     mae_weighted = mean_absolute_error(y_test, y_pred_weighted)
@@ -100,7 +100,7 @@ def main():
         'mse': mse_weighted,
         'r2': r2_weighted
     }
-    with open('outputs/regression/ensemble/ensemble_weighted_metrics.json', 'w') as f:
+    with open('outputs/predictive_modeling/regression/ensemble/ensemble_weighted_metrics.json', 'w') as f:
         json.dump(metrics_weighted, f)
     print(metrics_weighted)
 
@@ -145,10 +145,10 @@ def main():
     data = pd.read_csv('data/ryanair_reviews.csv')
     data = data.dropna(subset=['Overall Rating'])
     data = pd.concat([data, X_stacked], axis=1)
-    data.to_csv('outputs/regression/ensemble/stacking_data.csv', index=False)
+    data.to_csv('outputs/predictive_modeling/regression/ensemble/stacking_data.csv', index=False)
 
     # Preprocess stacking data
-    X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('outputs/regression/ensemble/stacking_data.csv')
+    X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('outputs/predictive_modeling/regression/ensemble/stacking_data.csv')
 
     # Define the range of hyperparameters
     param_dist = {
@@ -185,7 +185,7 @@ def main():
     results = results[interested_columns]
     results = results.sort_values(by='rank_test_score')
     results['mean_test_score'] = results['mean_test_score']
-    results.to_csv('outputs/regression/ensemble/xgboost_ensemble_cv_results.csv')
+    results.to_csv('outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_cv_results.csv')
 
     # Parallel coordinate plot without max_features and bootstrap
     scaler = MinMaxScaler()
@@ -196,19 +196,19 @@ def main():
     plt.figure(figsize=(14, 7))
     parallel_coordinates(results, 'mean_test_score', colormap='viridis', alpha = 0.25)
     plt.legend().remove()
-    plt.savefig('outputs/regression/ensemble/xgboost_ensemble_parallel_coordinates.png')
+    plt.savefig('outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_parallel_coordinates.png')
     plt.show()
     # purple = best, yellow = worst
 
     # Best model, hyperparameters and predictions
     best_model, train_preds, test_preds, y_train, y_test = best_model_and_predictions(random_search, X_train, X_test, y_train, y_test, datetime_train, datetime_test,
-                                'outputs/regression/ensemble/xgboost_ensemble_model.pkl',
-                                'outputs/regression/ensemble/xgboost_ensemble_hyperparameters.json',
-                                'outputs/regression/ensemble/xgboost_ensemble_train_preds.csv',
-                                'outputs/regression/ensemble/xgboost_ensemble_test_preds.csv')
+                                'outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_model.pkl',
+                                'outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_hyperparameters.json',
+                                'outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_train_preds.csv',
+                                'outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_test_preds.csv')
 
     # Regression metrics
-    regression_metrics(y_test, test_preds, 'outputs/regression/ensemble/xgboost_ensemble_scores.json')
+    regression_metrics(y_test, test_preds, 'outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_scores.json')
 
     # Create feature importance plot for top 15
     feature_importance = best_model.feature_importances_
@@ -216,7 +216,7 @@ def main():
     feature_importance_scores = dict(zip(features, feature_importance))
     feature_importance_df = pd.DataFrame(feature_importance_scores.items(), columns=['Feature', 'Importance'])
     feature_importance_df = feature_importance_df.sort_values(by='Importance', ascending=False)
-    feature_importance_df.to_csv('outputs/regression/ensemble/xgboost_ensemble_feature_importance.csv', index=False)
+    feature_importance_df.to_csv('outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_feature_importance.csv', index=False)
 
     feature_importance_scores = dict(sorted(feature_importance_scores.items(), key=lambda x: x[1], reverse=True)[:15])
     plt.figure(figsize=(14, 7))
@@ -225,11 +225,11 @@ def main():
     plt.xlabel('Feature')
     plt.xticks(rotation=90)
     plt.title('Feature Importance')
-    plt.savefig('outputs/regression/ensemble/xgboost_ensemble_feature_importance.png')
+    plt.savefig('outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_feature_importance.png')
     plt.show()
 
     # Plot predictions vs real values over time (only regression)
-    test_preds_vs_real_over_time(test_preds, 'outputs/regression/ensemble/xgboost_ensemble_predictions.png')
+    test_preds_vs_real_over_time(test_preds, 'outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_predictions.png')
 
 
 
@@ -273,7 +273,7 @@ def main():
     results2 = results2[interested_columns2]
     results2 = results2.sort_values(by='rank_test_score')
     results['mean_test_score'] = results2['mean_test_score']
-    results2.to_csv('outputs/regression/ensemble/xgboost_ensemble_base_only_cv_results.csv')
+    results2.to_csv('outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_base_only_cv_results.csv')
 
     # Parallel coordinate plot without max_features and bootstrap
     scaler = MinMaxScaler()
@@ -284,19 +284,19 @@ def main():
     plt.figure(figsize=(14, 7))
     parallel_coordinates(results2, 'mean_test_score', colormap='viridis', alpha = 0.25)
     plt.legend().remove()
-    plt.savefig('outputs/regression/ensemble/xgboost_ensemble_base_only_parallel_coordinates.png')
+    plt.savefig('outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_base_only_parallel_coordinates.png')
     plt.show()
     # purple = best, yellow = worst
 
     # Best model, hyperparameters and predictions
     best_model2, train_preds2, test_preds2, y_train2, y_test2 = best_model_and_predictions(random_search2, X_train_stacking, X_test_stacking, y_train, y_test, datetime_train, datetime_test,
-                                'outputs/regression/ensemble/xgboost_ensemble_base_only_model.pkl',
-                                'outputs/regression/ensemble/xgboost_ensemble_base_only_hyperparameters.json',
-                                'outputs/regression/ensemble/xgboost_ensemble_base_only_train_preds.csv',
-                                'outputs/regression/ensemble/xgboost_ensemble_base_only_test_preds.csv')
+                                'outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_base_only_model.pkl',
+                                'outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_base_only_hyperparameters.json',
+                                'outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_base_only_train_preds.csv',
+                                'outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_base_only_test_preds.csv')
 
     # Regression metrics
-    regression_metrics(y_test2, test_preds2, 'outputs/regression/ensemble/xgboost_ensemble_base_only_scores.json')
+    regression_metrics(y_test2, test_preds2, 'outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_base_only_scores.json')
 
     # Create feature importance plot for top 15
     feature_importance2 = best_model2.feature_importances_
@@ -304,7 +304,7 @@ def main():
     feature_importance_scores2 = dict(zip(features2, feature_importance2))
     feature_importance_df2 = pd.DataFrame(feature_importance_scores2.items(), columns=['Feature', 'Importance'])
     feature_importance_df2 = feature_importance_df2.sort_values(by='Importance', ascending=False)
-    feature_importance_df2.to_csv('outputs/regression/ensemble/xgboost_ensemble_base_only_feature_importance.csv', index=False)
+    feature_importance_df2.to_csv('outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_base_only_feature_importance.csv', index=False)
 
     feature_importance_scores2 = dict(sorted(feature_importance_scores2.items(), key=lambda x: x[1], reverse=True)[:15])
     plt.figure(figsize=(14, 7))
@@ -313,11 +313,11 @@ def main():
     plt.xlabel('Feature')
     plt.xticks(rotation=90)
     plt.title('Feature Importance')
-    plt.savefig('outputs/regression/ensemble/xgboost_ensemble_base_only_feature_importance.png')
+    plt.savefig('outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_base_only_feature_importance.png')
     plt.show()
 
     # Plot predictions vs real values over time (only regression)
-    test_preds_vs_real_over_time(test_preds2, 'outputs/regression/ensemble/xgboost_ensemble_base_only_predictions.png')
+    test_preds_vs_real_over_time(test_preds2, 'outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_base_only_predictions.png')
 
 if __name__ == '__main__':
     main()
