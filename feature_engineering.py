@@ -2,20 +2,21 @@
 
 import pandas as pd
 import numpy as np
+from sklearn.preprocessing import StandardScaler
 
 # Load data
 data = pd.read_csv('data/ryanair_reviews.csv')
 
 # Regular feature engineering
 def regular_feature_engineering(df):
+    # Check if 'title' is "Ryanair customer review" (True/False) -> usually positive association
+    df['ryanair_review'] = df['Comment title'].apply(lambda x: x == 'Ryanair customer review')
+
     # Count number of "!" in the 'comment' column (int) -> catch aggression (negative association)
     df['exclamation_marks'] = df['Comment'].apply(lambda x: x.count('!'))
 
     # Count number of "?" in the 'comment' column (int) -> catch sarcasm, rhetorical questions (negative association)
     df['question_marks'] = df['Comment'].apply(lambda x: x.count('?'))
-
-    # Check if 'title' is "Ryanair customer review" (True/False) -> usually positive association
-    df['ryanair_review'] = df['Comment title'].apply(lambda x: x == 'Ryanair customer review')
 
     # Find the length of the 'comment' column (int) -> longer comments usually complain more (negative association)
     df['comment_length'] = df['Comment'].apply(lambda x: len(x))
@@ -30,6 +31,11 @@ def regular_feature_engineering(df):
     #...
     #...
     #...
+
+    # Normalize continuous variables
+    scaler = StandardScaler()
+    df[['exclamation_marks', 'question_marks', 'comment_length']] = scaler.fit_transform(df[['exclamation_marks', 'question_marks', 'comment_length']])
+    
     return df
 
 # Sentiment feature engineering
