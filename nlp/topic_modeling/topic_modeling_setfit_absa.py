@@ -5,14 +5,11 @@
 import spacy
 import pandas as pd
 
-
-from sentiment_analysis_textblob import read_data
-
-# Load the English NER model
-nlp = spacy.load("en_core_web_sm")
-
-
 def extract_aspects(text):
+
+    # Load the English NER model
+    nlp = spacy.load("en_core_web_sm")
+    
     # Process the text with spaCy
     doc = nlp(text)
 
@@ -28,9 +25,8 @@ def extract_aspects(text):
 
     return aspects, labels
 
-
+'''
 if __name__ == '__main__':
-    data, comments = read_data()
 
     comments = comments.head(10)
 
@@ -38,3 +34,5 @@ if __name__ == '__main__':
     comments[['Aspects', 'Labels']] = comments['Comment'].apply(lambda x: pd.Series(extract_aspects(x)))
 
     comments.to_csv("data/setfit_temp.csv")
+
+'''
