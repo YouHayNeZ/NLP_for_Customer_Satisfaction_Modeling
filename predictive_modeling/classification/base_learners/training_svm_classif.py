@@ -7,8 +7,11 @@ from sklearn.preprocessing import MinMaxScaler, label_binarize
 from pandas.plotting import parallel_coordinates
 import matplotlib.pyplot as plt
 from scipy.stats import randint, uniform
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 from preprocessing import *
-from training_helper_func import *
+from predictive_modeling.training_helper_func import *
 
 def main():
     # Prepare data for training

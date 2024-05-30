@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.ensemble import VotingRegressor
-from preprocessing import create_pipeline
 import json
 import random
 import matplotlib.pyplot as plt
@@ -12,7 +11,11 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import RandomizedSearchCV
 import xgboost as xgb
 from scipy.stats import randint, uniform
-from training_helper_func import *
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+from preprocessing import *
+from predictive_modeling.training_helper_func import *
 
 def main():
     # Prepare data for training

@@ -2,12 +2,15 @@
 
 # Importing the libraries
 from sklearn.neighbors import KNeighborsRegressor
-from preprocessing import *
 from scipy.stats import randint, uniform
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from pandas.plotting import parallel_coordinates
-from training_helper_func import *
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
+from preprocessing import *
+from predictive_modeling.training_helper_func import *
 
 def main():
     # Prepare data for training

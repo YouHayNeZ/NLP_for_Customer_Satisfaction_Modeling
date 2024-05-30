@@ -2,7 +2,6 @@ import joblib
 import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_curve, auc, log_loss, precision_recall_curve
 from sklearn.ensemble import VotingClassifier
-from preprocessing import *
 import json
 import random
 import matplotlib.pyplot as plt
@@ -11,7 +10,11 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import RandomizedSearchCV
 import xgboost as xgb
 from scipy.stats import randint, uniform
-from training_helper_func import *
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+from preprocessing import *
+from predictive_modeling.training_helper_func import *
 
 def main():
     # Prepare data for training
