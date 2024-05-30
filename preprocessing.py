@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder
 
 # Import data
 def import_data(file_path):
@@ -221,13 +222,42 @@ def create_datetime(data):
     data['Day Flown'] = data['Date Flown'].dt.day
     return data
 
-# Encode categorical variables
-def encode_categoricals(data):
-    # encode all columns except for Overall rating, Comment title, Comment
-    for col in data.columns:
-        if col not in ['Comment title', 'Comment', 'Overall Rating', 'Date Published', 'Date Flown', 'exclamation_marks', 'question_marks', 'comment_length']:
-            data = pd.get_dummies(data, columns=[col], prefix=col)
-    return data
+# # Encode categorical variables
+# def encode_categoricals(data):
+#     # encode all columns except for Overall rating, Comment title, Comment
+#     for col in data.columns:
+#         if col not in ['Comment title', 'Comment', 'Overall Rating', 'Date Published', 'Date Flown', 'exclamation_marks', 'question_marks', 'comment_length']:
+#             data = pd.get_dummies(data, columns=[col], prefix=col)
+#     return data
+
+# One-hot encoding of categorical variables
+def one_hot_encode(X_train, X_val, X_test):
+    # Save non-categorical columns
+    non_categorical_columns = ['Comment title', 'Comment', 'Overall Rating', 'Date Published', 'Date Flown', 'exclamation_marks', 'question_marks', 'comment_length']
+    X_train_non_categorical = X_train[non_categorical_columns]
+    X_val_non_categorical = X_val[non_categorical_columns]
+    X_test_non_categorical = X_test[non_categorical_columns]
+    
+    # Drop non-categorical columns
+    X_train = X_train.drop(columns=non_categorical_columns)
+    X_val = X_val.drop(columns=non_categorical_columns)
+    X_test = X_test.drop(columns=non_categorical_columns)
+
+    # One-hot encode categorical columns
+    encoder = OneHotEncoder(handle_unknown='ignore', sparse=False)
+    X_train_encoded = encoder.fit_transform(X_train)
+    X_val_encoded = encoder.transform(X_val)
+    X_test_encoded = encoder.transform(X_test)
+
+    # Combine one-hot encoded columns with non-categorical columns
+    X_train_encoded = pd.DataFrame(X_train_encoded, index=X_train.index)
+    X_val_encoded = pd.DataFrame(X_val_encoded, index=X_val.index)
+    X_test_encoded = pd.DataFrame(X_test_encoded, index=X_test.index)
+    X_train = pd.concat([X_train_encoded, X_train_non_categorical], axis=1)
+    X_val = pd.concat([X_val_encoded, X_val_non_categorical], axis=1)
+    X_test = pd.concat([X_test_encoded, X_test_non_categorical], axis=1)
+    
+    return X_train, X_val, X_test
 
 # Drop highly correlated column (see exploration.py) -> nothing to be dropped b/c all correlations < abs(0.8)
 
@@ -249,7 +279,7 @@ def create_pipeline(file_path):
     data = import_data(file_path)
     data = clean_data(data)
     data = create_datetime(data)
-    data = encode_categoricals(data)
+    #data = encode_categoricals(data)
     data = drop_missing_target(data)
 
     # Splitting the dataset into the Training set, Validation set, and Test set using stratified sampling
@@ -262,6 +292,9 @@ def create_pipeline(file_path):
 
     # Normalize continuous variables
     X_train, X_val, X_test = normalize_continuous(X_train, X_val, X_test)
+
+    # One-hot encode categorical variables
+    X_train, X_val, X_test = one_hot_encode(X_train, X_val, X_test)
     
     # Adjust the target labels to start from 0 instead of 1
     y_train = y_train.astype(int) - 1
@@ -284,8 +317,3 @@ def create_pipeline(file_path):
     X_test = X_test.drop(columns=['Comment title', 'Comment'])
 
     return X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data
-
-
-
-
-
