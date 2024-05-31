@@ -18,7 +18,7 @@ from predictive_modeling.training_helper_func import *
 
 def main():
     # Prepare data for training
-    X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews.csv')
+    X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv')
 
     # Load models
     knn = joblib.load('outputs/predictive_modeling/classification/base_learners/knn/knn_model.pkl')
@@ -149,7 +149,7 @@ def main():
     X_stacked = X_stacked.reset_index(drop=True)
 
     # Load original data
-    data = pd.read_csv('data/ryanair_reviews.csv')
+    data = pd.read_csv('data/ryanair_reviews_with_extra_features.csv')
     data = data.dropna(subset=['Overall Rating'])
     data = pd.concat([data, X_stacked], axis=1)
     data.to_csv('outputs/predictive_modeling/classification/ensemble/stacking_data.csv', index=False)

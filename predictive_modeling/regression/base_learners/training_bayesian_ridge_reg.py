@@ -14,7 +14,7 @@ from predictive_modeling.training_helper_func import *
 
 def main():
     # Prepare data for training
-    X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews.csv')
+    X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv')
 
     # Define the range of hyperparameters
     param_dist = {

@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+from sklearn.impute import KNNImputer, SimpleImputer
 
 # Import data
 def import_data(file_path):
@@ -199,12 +200,15 @@ def clean_data(data):
         'Steven Bouchere16th September 2013': np.nan
     })
 
-    # Bin categories that make up less than 0.5% of observations
-    for column in ['Aircraft', 'Origin', 'Destination', 'Passenger Country']:
-        country_counts = data[column].value_counts().to_dict()
-        for country, count in country_counts.items():
-            if count < 5:
-                data[column] = data[column].replace({country: 'Other'})
+    # # Bin categories that make up less than 0.5% of observations
+    # for column in ['Aircraft', 'Origin', 'Destination', 'Passenger Country']:
+    #     country_counts = data[column].value_counts().to_dict()
+    #     for country, count in country_counts.items():
+    #         if count < 5:
+    #             data[column] = data[column].replace({country: 'Other'})
+
+    # Drop columns that are not used
+    data = data.drop(columns=['Comment', 'Comment title'])
 
     return data
 
@@ -220,46 +224,10 @@ def create_datetime(data):
     data['Year Flown'] = data['Date Flown'].dt.year
     data['Month Flown'] = data['Date Flown'].dt.month
     data['Day Flown'] = data['Date Flown'].dt.day
+
+    data = data.drop(columns=['Date Flown'])
+
     return data
-
-# # Encode categorical variables
-# def encode_categoricals(data):
-#     # encode all columns except for Overall rating, Comment title, Comment
-#     for col in data.columns:
-#         if col not in ['Comment title', 'Comment', 'Overall Rating', 'Date Published', 'Date Flown', 'exclamation_marks', 'question_marks', 'comment_length']:
-#             data = pd.get_dummies(data, columns=[col], prefix=col)
-#     return data
-
-# One-hot encoding of categorical variables
-def one_hot_encode(X_train, X_val, X_test):
-    # Save non-categorical columns
-    non_categorical_columns = ['Comment title', 'Comment', 'Overall Rating', 'Date Published', 'Date Flown', 'exclamation_marks', 'question_marks', 'comment_length']
-    X_train_non_categorical = X_train[non_categorical_columns]
-    X_val_non_categorical = X_val[non_categorical_columns]
-    X_test_non_categorical = X_test[non_categorical_columns]
-    
-    # Drop non-categorical columns
-    X_train = X_train.drop(columns=non_categorical_columns)
-    X_val = X_val.drop(columns=non_categorical_columns)
-    X_test = X_test.drop(columns=non_categorical_columns)
-
-    # One-hot encode categorical columns
-    encoder = OneHotEncoder(handle_unknown='ignore', sparse=False)
-    X_train_encoded = encoder.fit_transform(X_train)
-    X_val_encoded = encoder.transform(X_val)
-    X_test_encoded = encoder.transform(X_test)
-
-    # Combine one-hot encoded columns with non-categorical columns
-    X_train_encoded = pd.DataFrame(X_train_encoded, index=X_train.index)
-    X_val_encoded = pd.DataFrame(X_val_encoded, index=X_val.index)
-    X_test_encoded = pd.DataFrame(X_test_encoded, index=X_test.index)
-    X_train = pd.concat([X_train_encoded, X_train_non_categorical], axis=1)
-    X_val = pd.concat([X_val_encoded, X_val_non_categorical], axis=1)
-    X_test = pd.concat([X_test_encoded, X_test_non_categorical], axis=1)
-    
-    return X_train, X_val, X_test
-
-# Drop highly correlated column (see exploration.py) -> nothing to be dropped b/c all correlations < abs(0.8)
 
 # Drop missing values in target 'Overall Rating'
 def drop_missing_target(data):
@@ -274,12 +242,112 @@ def normalize_continuous(X_train, X_val, X_test):
     X_test[['exclamation_marks', 'question_marks', 'comment_length']] = scaler.transform(X_test[['exclamation_marks', 'question_marks', 'comment_length']])
     return X_train, X_val, X_test
 
+# Impute missing values
+def impute_missing_values(X_train, X_val, X_test):
+    # Dataframes to store imputed values
+    X_train_imputed = X_train.copy()
+    X_val_imputed = X_val.copy()
+    X_test_imputed = X_test.copy()
+
+    # High missing value rate > 0.30: encode N/A as a new category '-1'
+    high_missing_columns_str = ['Aircraft', 'Trip_verified']
+    high_missing_columns_int = ['Inflight Entertainment', 'Wifi & Connectivity', 'Food & Beverages']
+    for col in high_missing_columns_str:
+        X_train_imputed[col] = X_train[col].fillna('Missing')
+        X_val_imputed[col] = X_val[col].fillna('Missing')
+        X_test_imputed[col] = X_test[col].fillna('Missing')
+    for col in high_missing_columns_int:
+        X_train_imputed[col] = X_train[col].fillna(-1)
+        X_val_imputed[col] = X_val[col].fillna(-1)
+        X_test_imputed[col] = X_test[col].fillna(-1)
+    
+    # Moderate missing value rate < 0.30 and > 0.05: KNN imputation
+    knn_impute_columns = ['Year Flown', 'Month Flown', 'Day Flown', 'Destination', 'Origin', 'Ground Service', 'Cabin Staff Service', 'Type Of Traveller']
+    
+    # One-hot encode categorical columns
+    encoder = OneHotEncoder(handle_unknown='ignore')
+    X_train_encoded = encoder.fit_transform(X_train[knn_impute_columns])
+    X_val_encoded = encoder.transform(X_val[knn_impute_columns])
+    X_test_encoded = encoder.transform(X_test[knn_impute_columns])
+
+    # Convert to DataFrame
+    X_train_encoded_df = pd.DataFrame(X_train_encoded.toarray(), columns=encoder.get_feature_names_out(knn_impute_columns))
+    X_val_encoded_df = pd.DataFrame(X_val_encoded.toarray(), columns=encoder.get_feature_names_out(knn_impute_columns))
+    X_test_encoded_df = pd.DataFrame(X_test_encoded.toarray(), columns=encoder.get_feature_names_out(knn_impute_columns))
+
+    # KNN imputer
+    knn_imputer = KNNImputer(n_neighbors=10, weights='distance')
+    
+    # Apply KNN imputer to encoded data
+    X_train_knn_imputed = knn_imputer.fit_transform(X_train_encoded_df)
+    X_val_knn_imputed = knn_imputer.transform(X_val_encoded_df)
+    X_test_knn_imputed = knn_imputer.transform(X_test_encoded_df)
+    
+    # Convert back to DataFrame
+    X_train_knn_imputed_df = pd.DataFrame(X_train_knn_imputed, columns=X_train_encoded_df.columns)
+    X_val_knn_imputed_df = pd.DataFrame(X_val_knn_imputed, columns=X_val_encoded_df.columns)
+    X_test_knn_imputed_df = pd.DataFrame(X_test_knn_imputed, columns=X_test_encoded_df.columns)
+
+    # Inverse transform one-hot encoded columns
+    X_train_knn_imputed_df = encoder.inverse_transform(X_train_knn_imputed_df)
+    X_val_knn_imputed_df = encoder.inverse_transform(X_val_knn_imputed_df)
+    X_test_knn_imputed_df = encoder.inverse_transform(X_test_knn_imputed_df)
+
+    # Assign imputed values to original DataFrames
+    X_train_imputed[knn_impute_columns] = X_train_knn_imputed_df
+    X_val_imputed[knn_impute_columns] = X_val_knn_imputed_df
+    X_test_imputed[knn_impute_columns] = X_test_knn_imputed_df
+
+    # Low missing value rate < 0.05: mode and mean imputation
+    low_missing_columns = ['Value For Money', 'Seat Comfort']
+    imputer = SimpleImputer(strategy='most_frequent')
+    
+    for col in low_missing_columns:
+        X_train_imputed[col] = imputer.fit_transform(X_train[[col]])
+        X_val_imputed[col] = imputer.transform(X_val[[col]])
+        X_test_imputed[col] = imputer.transform(X_test[[col]])
+
+    # Rename dataframes back to original
+    X_train = X_train_imputed
+    X_val = X_val_imputed
+    X_test = X_test_imputed
+    
+    return X_train, X_val, X_test
+
+# One-hot encoding of categorical variables
+def one_hot_encode(X_train, X_val, X_test):
+    # Save non-categorical columns
+    non_categorical_columns = ['Date Published', 'exclamation_marks', 'question_marks', 'comment_length']
+    X_train_non_categorical = X_train[non_categorical_columns]
+    X_val_non_categorical = X_val[non_categorical_columns]
+    X_test_non_categorical = X_test[non_categorical_columns]
+    
+    # Drop non-categorical columns
+    X_train = X_train.drop(columns=non_categorical_columns)
+    X_val = X_val.drop(columns=non_categorical_columns)
+    X_test = X_test.drop(columns=non_categorical_columns)
+
+    # One-hot encode categorical columns
+    encoder = OneHotEncoder(handle_unknown='ignore')
+    X_train_encoded = encoder.fit_transform(X_train)
+    X_val_encoded = encoder.transform(X_val)
+    X_test_encoded = encoder.transform(X_test)
+
+    # Combine one-hot encoded columns with non-categorical columns
+    X_train_encoded = pd.DataFrame(X_train_encoded, index=X_train.index)
+    X_val_encoded = pd.DataFrame(X_val_encoded, index=X_val.index)
+    X_test_encoded = pd.DataFrame(X_test_encoded, index=X_test.index)
+    X_train = pd.concat([X_train_encoded, X_train_non_categorical], axis=1)
+    X_val = pd.concat([X_val_encoded, X_val_non_categorical], axis=1)
+    X_test = pd.concat([X_test_encoded, X_test_non_categorical], axis=1)
+    
+    return X_train, X_val, X_test
+
 # Create pipeline
 def create_pipeline(file_path):
     data = import_data(file_path)
     data = clean_data(data)
     data = create_datetime(data)
-    #data = encode_categoricals(data)
     data = drop_missing_target(data)
 
     # Splitting the dataset into the Training set, Validation set, and Test set using stratified sampling
@@ -293,6 +361,15 @@ def create_pipeline(file_path):
     # Normalize continuous variables
     X_train, X_val, X_test = normalize_continuous(X_train, X_val, X_test)
 
+    # Impute missing values
+    X_train, X_val, X_test = impute_missing_values(X_train, X_val, X_test)
+
+    # print missing values per column
+    print(X_train.isnull().sum())
+
+    # save X_train as csv
+    X_train.to_csv('X_train.csv', index=False)
+
     # One-hot encode categorical variables
     X_train, X_val, X_test = one_hot_encode(X_train, X_val, X_test)
     
@@ -302,18 +379,13 @@ def create_pipeline(file_path):
     y_test = y_test.astype(int) - 1
 
     # Extract dates from train, validation, and test sets
-    datetime_train = X_train[['Date Flown']]
-    datetime_val = X_val[['Date Flown']]
-    datetime_test = X_test[['Date Flown']]
+    datetime_train = X_train[['Date Published']]
+    datetime_val = X_val[['Date Published']]
+    datetime_test = X_test[['Date Published']]
 
     # Remove dates from train, validation, and test sets
-    X_train = X_train.drop(columns=['Date Published', 'Date Flown'])
-    X_val = X_val.drop(columns=['Date Published', 'Date Flown'])
-    X_test = X_test.drop(columns=['Date Published', 'Date Flown'])
-
-    # Remove 'Comment title' and 'Comment' columns
-    X_train = X_train.drop(columns=['Comment title', 'Comment'])
-    X_val = X_val.drop(columns=['Comment title', 'Comment'])
-    X_test = X_test.drop(columns=['Comment title', 'Comment'])
+    X_train = X_train.drop(columns=['Date Published'])
+    X_val = X_val.drop(columns=['Date Published'])
+    X_test = X_test.drop(columns=['Date Published'])
 
     return X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data
