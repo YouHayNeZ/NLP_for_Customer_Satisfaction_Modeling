@@ -5,7 +5,9 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
-from sklearn.impute import KNNImputer, SimpleImputer
+from sklearn.impute import SimpleImputer
+from sklearn.neighbors import KNeighborsClassifier
+
 
 # Import data
 def import_data(file_path):
@@ -244,6 +246,7 @@ def normalize_continuous(X_train, X_val, X_test):
 
 # Impute missing values
 def impute_missing_values(X_train, X_val, X_test):
+    
     # Dataframes to store imputed values
     X_train_imputed = X_train.copy()
     X_val_imputed = X_val.copy()
@@ -261,42 +264,115 @@ def impute_missing_values(X_train, X_val, X_test):
         X_val_imputed[col] = X_val[col].fillna(-1)
         X_test_imputed[col] = X_test[col].fillna(-1)
     
-    # Moderate missing value rate < 0.30 and > 0.05: KNN imputation
+    # Moderate missing value rate < 0.30 and > 0.05: KNN Classifier
     knn_impute_columns = ['Year Flown', 'Month Flown', 'Day Flown', 'Destination', 'Origin', 'Ground Service', 'Cabin Staff Service', 'Type Of Traveller']
     
-    # One-hot encode categorical columns
-    encoder = OneHotEncoder(handle_unknown='ignore')
-    X_train_encoded = encoder.fit_transform(X_train[knn_impute_columns])
-    X_val_encoded = encoder.transform(X_val[knn_impute_columns])
-    X_test_encoded = encoder.transform(X_test[knn_impute_columns])
+    # Extract 'Date Published' column
+    train_date_published = X_train['Date Published']
+    val_date_published = X_val['Date Published']
+    test_date_published = X_test['Date Published']
 
-    # Convert to DataFrame
-    X_train_encoded_df = pd.DataFrame(X_train_encoded.toarray(), columns=encoder.get_feature_names_out(knn_impute_columns))
-    X_val_encoded_df = pd.DataFrame(X_val_encoded.toarray(), columns=encoder.get_feature_names_out(knn_impute_columns))
-    X_test_encoded_df = pd.DataFrame(X_test_encoded.toarray(), columns=encoder.get_feature_names_out(knn_impute_columns))
+    # Drop 'Date Published' column
+    X_train = X_train.drop(columns=['Date Published'])
+    X_val = X_val.drop(columns=['Date Published'])
+    X_test = X_test.drop(columns=['Date Published'])
 
-    # KNN imputer
-    knn_imputer = KNNImputer(n_neighbors=10, weights='distance')
-    
-    # Apply KNN imputer to encoded data
-    X_train_knn_imputed = knn_imputer.fit_transform(X_train_encoded_df)
-    X_val_knn_imputed = knn_imputer.transform(X_val_encoded_df)
-    X_test_knn_imputed = knn_imputer.transform(X_test_encoded_df)
-    
-    # Convert back to DataFrame
-    X_train_knn_imputed_df = pd.DataFrame(X_train_knn_imputed, columns=X_train_encoded_df.columns)
-    X_val_knn_imputed_df = pd.DataFrame(X_val_knn_imputed, columns=X_val_encoded_df.columns)
-    X_test_knn_imputed_df = pd.DataFrame(X_test_knn_imputed, columns=X_test_encoded_df.columns)
+    for col in knn_impute_columns:
+        train_target = X_train[col]
+        val_target = X_val[col]
+        test_target = X_test[col]
 
-    # Inverse transform one-hot encoded columns
-    X_train_knn_imputed_df = encoder.inverse_transform(X_train_knn_imputed_df)
-    X_val_knn_imputed_df = encoder.inverse_transform(X_val_knn_imputed_df)
-    X_test_knn_imputed_df = encoder.inverse_transform(X_test_knn_imputed_df)
+        # Label encode target column
+        le = LabelEncoder()
+        train_target = le.fit_transform(train_target)
 
-    # Assign imputed values to original DataFrames
-    X_train_imputed[knn_impute_columns] = X_train_knn_imputed_df
-    X_val_imputed[knn_impute_columns] = X_val_knn_imputed_df
-    X_test_imputed[knn_impute_columns] = X_test_knn_imputed_df
+        # Create dictionary to map target values to original values
+        target_dict = dict(zip(le.classes_, le.transform(le.classes_)))
+        val_target = val_target.map(target_dict)
+        test_target = test_target.map(target_dict)
+
+        # Encode target column values as -1 if they are not present in training set
+        val_target = val_target.apply(lambda x: x if x in le.transform(le.classes_) else '-1')
+        test_target = test_target.apply(lambda x: x if x in le.transform(le.classes_) else '-1')
+
+        # Drop target column from training, validation, and test sets
+        X_train_rest = X_train.drop(columns=[col])
+        X_val_rest = X_val.drop(columns=[col])
+        X_test_rest = X_test.drop(columns=[col])
+
+        # Save non-categorical columns
+        non_categorical_columns = ['exclamation_marks', 'question_marks', 'comment_length']
+        X_train_non_categorical = X_train_rest[non_categorical_columns]
+        X_val_non_categorical = X_val_rest[non_categorical_columns]
+        X_test_non_categorical = X_test_rest[non_categorical_columns]
+
+        # Drop non-categorical columns
+        X_train_rest = X_train_rest.drop(columns=non_categorical_columns)
+        X_val_rest = X_val_rest.drop(columns=non_categorical_columns)
+        X_test_rest = X_test_rest.drop(columns=non_categorical_columns)
+
+        # Encode categorical features
+        encoder = OneHotEncoder(handle_unknown='ignore')
+        X_train_rest_encoded = encoder.fit_transform(X_train_rest)
+        X_val_rest_encoded = encoder.transform(X_val_rest)
+        X_test_rest_encoded = encoder.transform(X_test_rest)
+
+        # Combine one-hot encoded columns with non-categorical columns
+        X_train_rest_encoded = pd.DataFrame(X_train_rest_encoded.toarray(), index=X_train_rest.index)
+        X_val_rest_encoded = pd.DataFrame(X_val_rest_encoded.toarray(), index=X_val_rest.index)
+        X_test_rest_encoded = pd.DataFrame(X_test_rest_encoded.toarray(), index=X_test.index)
+        X_train_rest = pd.concat([X_train_rest_encoded, X_train_non_categorical], axis=1)
+        X_val_rest = pd.concat([X_val_rest_encoded, X_val_non_categorical], axis=1)
+        X_test_rest = pd.concat([X_test_rest_encoded, X_test_non_categorical], axis=1)
+        
+        # Convert column names to strings
+        X_train_rest.columns = X_train_rest.columns.astype(str)
+        X_val_rest.columns = X_val_rest.columns.astype(str)
+        X_test_rest.columns = X_test_rest.columns.astype(str)
+        
+        # KNN fitting
+        knn = KNeighborsClassifier(n_neighbors=10, weights='distance')
+        knn.fit(X_train_rest, train_target)
+        
+        train_pred = knn.predict(X_train_rest)
+        val_pred = knn.predict(X_val_rest)
+        test_pred = knn.predict(X_test_rest)
+
+        # Create dataframe with target and predictions columns
+        train_df = pd.DataFrame({col: train_target, 'pred': train_pred})
+        val_df = pd.DataFrame({col: val_target, 'pred': val_pred})
+        test_df = pd.DataFrame({col: test_target, 'pred': test_pred})
+        print(f'{col} before replacement: {train_df[col].isnull().sum()} missing values')
+        print(train_df[col].value_counts())
+        print(val_df[col].value_counts())
+
+        # If target has value 'nan_value', replace with prediction
+        keys = target_dict.keys()
+        nan_value = len(keys) - 1
+        train_df[col] = train_df.apply(lambda x: x['pred'] if x[col] == nan_value else x[col], axis=1)
+        val_df[col] = val_df.apply(lambda x: x['pred'] if x[col] == nan_value else x[col], axis=1)
+        test_df[col] = test_df.apply(lambda x: x['pred'] if x[col] == nan_value else x[col], axis=1)
+        print(f'{col} after replacement: {train_df[col].isnull().sum()} missing values')
+        print(train_df[col].value_counts())
+        print(val_df[col].value_counts())
+        print(nan_value)
+
+
+
+
+        #################### here is the bug somehow ####################
+        
+        # Add target to X_train_imputed, X_val_imputed, X_test_imputed
+        X_train_imputed[col] = train_df[col]
+        X_val_imputed[col] = val_df[col]
+        X_test_imputed[col] = test_df[col]
+        print(f'{col} after merging with X_train_imputed: {X_train_imputed[col].isnull().sum()} missing values')
+
+        #################### here is the bug somehow ####################
+
+
+
+        
 
     # Low missing value rate < 0.05: mode and mean imputation
     low_missing_columns = ['Value For Money', 'Seat Comfort']
@@ -311,6 +387,11 @@ def impute_missing_values(X_train, X_val, X_test):
     X_train = X_train_imputed
     X_val = X_val_imputed
     X_test = X_test_imputed
+
+    # Add 'Date Published' column back to X_train, X_val, X_test
+    X_train['Date Published'] = train_date_published
+    X_val['Date Published'] = val_date_published
+    X_test['Date Published'] = test_date_published
     
     return X_train, X_val, X_test
 
