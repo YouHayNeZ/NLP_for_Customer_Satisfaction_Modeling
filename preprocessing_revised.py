@@ -416,11 +416,14 @@ def impute_low_missing_values(X_train, X_val, X_test):
 
 # Convert specified columns in a DataFrame to string type
 def convert_columns_to_string(X_train, X_val, X_test):
-    columns = ['Year Flown', 'Month Flown', 'Day Flown', 'Destination', 'Origin', 'Ground Service', 'Cabin Staff Service', 'Type Of Traveller', 'Aircraft', 'Trip verified', 'Inflight Entertainment', 'Wifi & Connectivity', 'Food & Beverages', 'Value For Money', 'Seat Comfort']
+    columns = ['Year Flown', 'Month Flown', 'Day Flown', 'Destination', 'Origin', 'Ground Service', 'Cabin Staff Service', 'Type Of Traveller', 'Aircraft', 'Trip_verified', 'Inflight Entertainment', 'Wifi & Connectivity', 'Food & Beverages', 'Value For Money', 'Seat Comfort']
     for column in columns:
-        X_train[column] = X_train[column].astype(str)
-        X_val[column] = X_val[column].astype(str)
-        X_test[column] = X_test[column].astype(str)
+        if column in X_train.columns:
+            X_train[column] = X_train[column].astype(str)
+        if column in X_val.columns:
+            X_val[column] = X_val[column].astype(str)
+        if column in X_test.columns:
+            X_test[column] = X_test[column].astype(str)
     return X_train, X_val, X_test
 
 # One-hot encoding of categorical variables

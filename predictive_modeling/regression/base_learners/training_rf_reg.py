@@ -10,7 +10,7 @@ import json
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
-from preprocessing import *
+from preprocessing_revised import *
 from predictive_modeling.training_helper_func import *
 
 def main():

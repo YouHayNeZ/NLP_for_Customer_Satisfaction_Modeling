@@ -452,7 +452,7 @@ def create_pipeline(file_path):
     X_train.to_csv('X_train.csv', index=False)
 
     # One-hot encode categorical variables
-    X_train, X_val, X_test = one_hot_encode(X_train, X_val, X_test)
+    #X_train, X_val, X_test = one_hot_encode(X_train, X_val, X_test)
     
     # Adjust the target labels to start from 0 instead of 1
     y_train = y_train.astype(int) - 1
