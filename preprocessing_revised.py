@@ -276,7 +276,6 @@ def impute_often_missing_values(X_train, X_val, X_test):
 
     return X_train_imputed, X_val_imputed, X_test_imputed
 
-
 # Impute missing values
 def impute_missing_values_with_knn(X_train, X_val, X_test):
     
@@ -309,29 +308,14 @@ def impute_missing_values_with_knn(X_train, X_val, X_test):
 
         # Create dictionary to map target values to original values
         target_dict = dict(zip(le.classes_, le.transform(le.classes_)))
-        #print(target_dict)
-        #{2014.0: 0, 2015.0: 1, 2016.0: 2, 2017.0: 3, 2018.0: 4, 2019.0: 5, 2020.0: 6, 2021.0: 7, 2022.0: 8, 2023.0: 9, 2024.0: 10, nan: 11}
-
-
         val_target = val_target.map(target_dict)
-        #print(val_target.unique())
-        #[ 6 11  9  1  4  2  3  5  7  8 10  0] -> 11 for na 
-
         test_target = test_target.map(target_dict)
-
-        # Encode target column values as -1 if they are not present in training set
-        #val_target = val_target.apply(lambda x: x if x in le.transform(le.classes_) else '-1')
-        #test_target = test_target.apply(lambda x: x if x in le.transform(le.classes_) else '-1')
-        #print(val_target.unique())
-        # [ 6 11  9  1  4  2  3  5  7  8 10  0] --> no change
-
 
         # Drop target column from training, validation, and test sets
         X_train_rest = X_train.copy().drop(columns=[col])
         X_val_rest = X_val.copy().drop(columns=[col])
         X_test_rest = X_test.copy().drop(columns=[col])
 
-        
         # Save non-categorical columns
         non_categorical_columns = ['exclamation_marks', 'question_marks', 'comment_length']
         X_train_non_categorical = X_train_rest[non_categorical_columns]
@@ -362,8 +346,6 @@ def impute_missing_values_with_knn(X_train, X_val, X_test):
         X_val_rest.columns = X_val_rest.columns.astype(str)
         X_test_rest.columns = X_test_rest.columns.astype(str)
         
-
-
         # KNN fitting
         knn = KNeighborsClassifier(n_neighbors=10, weights='distance')
         fitted_X_train_rest = X_train_rest.copy()
@@ -374,24 +356,17 @@ def impute_missing_values_with_knn(X_train, X_val, X_test):
             if pd.isna(key):
                 nan_value = value
                 break
-        
-        #print(target_dict)
-        #print(nan_value)
+
         # Create a mask to filter out rows where train_target has the value 11
         mask = fitted_train_target != nan_value
 
         # Filter the DataFrame and the NumPy array using the mask
         fitted_X_train_rest = fitted_X_train_rest[mask]
         fitted_train_target = fitted_train_target[mask]
-        #print(np.unique(fitted_train_target))
-
 
         knn.fit(fitted_X_train_rest, fitted_train_target)
         
         train_pred = knn.predict(X_train_rest)
-        #print(np.unique(train_pred))
-        # [ 0  1  2  3  4  5  6  7  8  9 10 11] --> you predict the class na
-
         val_pred = knn.predict(X_val_rest)
         test_pred = knn.predict(X_test_rest)
 
@@ -399,40 +374,20 @@ def impute_missing_values_with_knn(X_train, X_val, X_test):
         train_df = pd.DataFrame({col: train_target, 'pred': train_pred})
         val_df = pd.DataFrame({col: val_target, 'pred': val_pred})
         test_df = pd.DataFrame({col: test_target, 'pred': test_pred})
-        #print(f'{col} before replacement: {train_df[col].isnull().sum()} missing values')
-        #print(train_df[col].value_counts())
-        #print(val_df[col].value_counts())
-
-        # If target has value 'nan_value', replace with prediction
  
         # Apply the transformation directly
         train_df["fixed"] = train_df.apply(lambda x: x['pred'] if x[col] == nan_value else x[col], axis=1)
-        #print("important")
-        #print(train_df["fixed"].unique())
         val_df["fixed"] = val_df.apply(lambda x: x['pred'] if x[col] == nan_value else x[col], axis=1)
         test_df["fixed"] = test_df.apply(lambda x: x['pred'] if x[col] == nan_value else x[col], axis=1)
-        #print(f'{col} after replacement: {train_df["fixed"].isnull().sum()} missing values')
         train_df.index = X_train_imputed.index
-        #print(train_df)
         val_df.index = X_val_imputed.index
         test_df.index = X_test_imputed.index       
-        #print(val_df["fixed"].value_counts())
-        #print(nan_value)
-
-
-
-
-        #################### here is the bug somehow ####################
-        
+       
         # Add target to X_train_imputed, X_val_imputed, X_test_imputed
         X_train_imputed[col] = train_df["fixed"]
         X_val_imputed[col] = val_df["fixed"]
         X_test_imputed[col] = test_df["fixed"]
-        #print(f'{col} after merging with X_train_imputed: {X_train_imputed[col].isnull().sum()} missing values')
-
-        #################### here is the bug somehow ####################
-
-
+  
     # Rename dataframes back to original
     X_train = X_train_imputed
     X_val = X_val_imputed
@@ -459,9 +414,9 @@ def impute_low_missing_values(X_train, X_val, X_test):
     
     return X_train, X_val, X_test
 
-# Convert specified columns in a DataFrame to string type.
+# Convert specified columns in a DataFrame to string type
 def convert_columns_to_string(X_train, X_val, X_test):
-    columns = [] # To-Do: Specify the columns which should be transformed as strings!! @Johannes
+    columns = ['Year Flown', 'Month Flown', 'Day Flown', 'Destination', 'Origin', 'Ground Service', 'Cabin Staff Service', 'Type Of Traveller', 'Aircraft', 'Trip verified', 'Inflight Entertainment', 'Wifi & Connectivity', 'Food & Beverages', 'Value For Money', 'Seat Comfort']
     for column in columns:
         X_train[column] = X_train[column].astype(str)
         X_val[column] = X_val[column].astype(str)
@@ -502,7 +457,6 @@ def one_hot_encode(X_train, X_val, X_test):
 
     return X_train_encoded, X_val_encoded, X_test_encoded
 
-
 # Create pipeline
 def create_pipeline(file_path):
     data = import_data(file_path)
@@ -539,7 +493,7 @@ def create_pipeline(file_path):
     X_train.to_csv('X_train.csv', index=False)
 
     # One-hot encode categorical variables
-    #X_train, X_val, X_test = one_hot_encode(X_train, X_val, X_test)
+    X_train, X_val, X_test = one_hot_encode(X_train, X_val, X_test)
     
     # Adjust the target labels to start from 0 instead of 1
     y_train = y_train.astype(int) - 1
