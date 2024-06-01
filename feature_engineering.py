@@ -40,6 +40,7 @@ def regular_feature_engineering(df):
     df['legroom'] = df['Comment'].apply(lambda x: 'legroom' in x)
     return df
 
+####### TO-DO: revise if it is really the right mapping, maybe merge on index or comment to make sure that the mapping is correctly!!
 # Sentiment feature engineering
 def sentiment_feature_engineering(df):
     sentiments_data = pd.read_csv('outputs/nlp/sentiment_analysis/openai_sentiment_analysis.csv')
