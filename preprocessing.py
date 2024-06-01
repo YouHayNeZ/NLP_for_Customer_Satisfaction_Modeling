@@ -1,5 +1,4 @@
 # Preprocessing
-
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -236,6 +235,17 @@ def drop_missing_target(data):
     data = data.dropna(subset=['Overall Rating'])
     return data
 
+def splitting_data(data):
+    # Splitting the dataset into the Training set, Validation set, and Test set using stratified sampling
+    X = data.drop(columns=['Overall Rating'])
+    y = data['Overall Rating']
+    
+    # Stratified split to maintain class balance
+    X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.33, stratify=y, random_state=42)
+    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, stratify=y_temp, random_state=42)
+
+    return X_train, X_val, X_test, y_train, y_val, y_test
+
 # Normalization of continuous variables
 def normalize_continuous(X_train, X_val, X_test):
     scaler = StandardScaler()
@@ -245,7 +255,7 @@ def normalize_continuous(X_train, X_val, X_test):
     return X_train, X_val, X_test
 
 # Impute missing values
-def impute_missing_values(X_train, X_val, X_test):
+def impute_often_missing_values(X_train, X_val, X_test):
     
     # Dataframes to store imputed values
     X_train_imputed = X_train.copy()
@@ -263,7 +273,17 @@ def impute_missing_values(X_train, X_val, X_test):
         X_train_imputed[col] = X_train[col].fillna(-1)
         X_val_imputed[col] = X_val[col].fillna(-1)
         X_test_imputed[col] = X_test[col].fillna(-1)
+
+    return X_train_imputed, X_val_imputed, X_test_imputed
+
+# Impute missing values
+def impute_missing_values_with_knn(X_train, X_val, X_test):
     
+    # Dataframes to store imputed values
+    X_train_imputed = X_train.copy()
+    X_val_imputed = X_val.copy()
+    X_test_imputed = X_test.copy()
+  
     # Moderate missing value rate < 0.30 and > 0.05: KNN Classifier
     knn_impute_columns = ['Year Flown', 'Month Flown', 'Day Flown', 'Destination', 'Origin', 'Ground Service', 'Cabin Staff Service', 'Type Of Traveller']
     
@@ -278,9 +298,9 @@ def impute_missing_values(X_train, X_val, X_test):
     X_test = X_test.drop(columns=['Date Published'])
 
     for col in knn_impute_columns:
-        train_target = X_train[col]
-        val_target = X_val[col]
-        test_target = X_test[col]
+        train_target = X_train.copy()[col]
+        val_target = X_val.copy()[col]
+        test_target = X_test.copy()[col]
 
         # Label encode target column
         le = LabelEncoder()
@@ -291,14 +311,10 @@ def impute_missing_values(X_train, X_val, X_test):
         val_target = val_target.map(target_dict)
         test_target = test_target.map(target_dict)
 
-        # Encode target column values as -1 if they are not present in training set
-        val_target = val_target.apply(lambda x: x if x in le.transform(le.classes_) else '-1')
-        test_target = test_target.apply(lambda x: x if x in le.transform(le.classes_) else '-1')
-
         # Drop target column from training, validation, and test sets
-        X_train_rest = X_train.drop(columns=[col])
-        X_val_rest = X_val.drop(columns=[col])
-        X_test_rest = X_test.drop(columns=[col])
+        X_train_rest = X_train.copy().drop(columns=[col])
+        X_val_rest = X_val.copy().drop(columns=[col])
+        X_test_rest = X_test.copy().drop(columns=[col])
 
         # Save non-categorical columns
         non_categorical_columns = ['exclamation_marks', 'question_marks', 'comment_length']
@@ -332,7 +348,23 @@ def impute_missing_values(X_train, X_val, X_test):
         
         # KNN fitting
         knn = KNeighborsClassifier(n_neighbors=10, weights='distance')
-        knn.fit(X_train_rest, train_target)
+        fitted_X_train_rest = X_train_rest.copy()
+        fitted_train_target = train_target.copy()
+        nan_value = None
+
+        for key, value in target_dict.items():
+            if pd.isna(key):
+                nan_value = value
+                break
+
+        # Create a mask to filter out rows where train_target has the value 11
+        mask = fitted_train_target != nan_value
+
+        # Filter the DataFrame and the NumPy array using the mask
+        fitted_X_train_rest = fitted_X_train_rest[mask]
+        fitted_train_target = fitted_train_target[mask]
+
+        knn.fit(fitted_X_train_rest, fitted_train_target)
         
         train_pred = knn.predict(X_train_rest)
         val_pred = knn.predict(X_val_rest)
@@ -342,47 +374,20 @@ def impute_missing_values(X_train, X_val, X_test):
         train_df = pd.DataFrame({col: train_target, 'pred': train_pred})
         val_df = pd.DataFrame({col: val_target, 'pred': val_pred})
         test_df = pd.DataFrame({col: test_target, 'pred': test_pred})
-        print(f'{col} before replacement: {train_df[col].isnull().sum()} missing values')
-        print(train_df[col].value_counts())
-        print(val_df[col].value_counts())
-
-        # If target has value 'nan_value', replace with prediction
-        keys = target_dict.keys()
-        nan_value = len(keys) - 1
-        train_df[col] = train_df.apply(lambda x: x['pred'] if x[col] == nan_value else x[col], axis=1)
-        val_df[col] = val_df.apply(lambda x: x['pred'] if x[col] == nan_value else x[col], axis=1)
-        test_df[col] = test_df.apply(lambda x: x['pred'] if x[col] == nan_value else x[col], axis=1)
-        print(f'{col} after replacement: {train_df[col].isnull().sum()} missing values')
-        print(train_df[col].value_counts())
-        print(val_df[col].value_counts())
-        print(nan_value)
-
-
-
-
-        #################### here is the bug somehow ####################
-        
+ 
+        # Apply the transformation directly
+        train_df["fixed"] = train_df.apply(lambda x: x['pred'] if x[col] == nan_value else x[col], axis=1)
+        val_df["fixed"] = val_df.apply(lambda x: x['pred'] if x[col] == nan_value else x[col], axis=1)
+        test_df["fixed"] = test_df.apply(lambda x: x['pred'] if x[col] == nan_value else x[col], axis=1)
+        train_df.index = X_train_imputed.index
+        val_df.index = X_val_imputed.index
+        test_df.index = X_test_imputed.index       
+       
         # Add target to X_train_imputed, X_val_imputed, X_test_imputed
-        X_train_imputed[col] = train_df[col]
-        X_val_imputed[col] = val_df[col]
-        X_test_imputed[col] = test_df[col]
-        print(f'{col} after merging with X_train_imputed: {X_train_imputed[col].isnull().sum()} missing values')
-
-        #################### here is the bug somehow ####################
-
-
-
-        
-
-    # Low missing value rate < 0.05: mode and mean imputation
-    low_missing_columns = ['Value For Money', 'Seat Comfort']
-    imputer = SimpleImputer(strategy='most_frequent')
-    
-    for col in low_missing_columns:
-        X_train_imputed[col] = imputer.fit_transform(X_train[[col]])
-        X_val_imputed[col] = imputer.transform(X_val[[col]])
-        X_test_imputed[col] = imputer.transform(X_test[[col]])
-
+        X_train_imputed[col] = train_df["fixed"]
+        X_val_imputed[col] = val_df["fixed"]
+        X_test_imputed[col] = test_df["fixed"]
+  
     # Rename dataframes back to original
     X_train = X_train_imputed
     X_val = X_val_imputed
@@ -395,34 +400,65 @@ def impute_missing_values(X_train, X_val, X_test):
     
     return X_train, X_val, X_test
 
-# One-hot encoding of categorical variables
-def one_hot_encode(X_train, X_val, X_test):
-    # Save non-categorical columns
-    non_categorical_columns = ['Date Published', 'exclamation_marks', 'question_marks', 'comment_length']
-    X_train_non_categorical = X_train[non_categorical_columns]
-    X_val_non_categorical = X_val[non_categorical_columns]
-    X_test_non_categorical = X_test[non_categorical_columns]
+# Impute low missing values
+def impute_low_missing_values(X_train, X_val, X_test):
+        
+    # Low missing value rate < 0.05: mode and mean imputation
+    low_missing_columns = ['Value For Money', 'Seat Comfort']
+    imputer = SimpleImputer(strategy='most_frequent')
     
-    # Drop non-categorical columns
-    X_train = X_train.drop(columns=non_categorical_columns)
-    X_val = X_val.drop(columns=non_categorical_columns)
-    X_test = X_test.drop(columns=non_categorical_columns)
-
-    # One-hot encode categorical columns
-    encoder = OneHotEncoder(handle_unknown='ignore')
-    X_train_encoded = encoder.fit_transform(X_train)
-    X_val_encoded = encoder.transform(X_val)
-    X_test_encoded = encoder.transform(X_test)
-
-    # Combine one-hot encoded columns with non-categorical columns
-    X_train_encoded = pd.DataFrame(X_train_encoded, index=X_train.index)
-    X_val_encoded = pd.DataFrame(X_val_encoded, index=X_val.index)
-    X_test_encoded = pd.DataFrame(X_test_encoded, index=X_test.index)
-    X_train = pd.concat([X_train_encoded, X_train_non_categorical], axis=1)
-    X_val = pd.concat([X_val_encoded, X_val_non_categorical], axis=1)
-    X_test = pd.concat([X_test_encoded, X_test_non_categorical], axis=1)
+    for col in low_missing_columns:
+        X_train[col] = imputer.fit_transform(X_train[[col]])
+        X_val[col] = imputer.transform(X_val[[col]])
+        X_test[col] = imputer.transform(X_test[[col]])
     
     return X_train, X_val, X_test
+
+# Convert specified columns in a DataFrame to string type
+def convert_columns_to_string(X_train, X_val, X_test):
+    columns = ['Year Flown', 'Month Flown', 'Day Flown', 'Destination', 'Origin', 'Ground Service', 'Cabin Staff Service', 'Type Of Traveller', 'Aircraft', 'Trip_verified', 'Inflight Entertainment', 'Wifi & Connectivity', 'Food & Beverages', 'Value For Money', 'Seat Comfort']
+    for column in columns:
+        if column in X_train.columns:
+            X_train[column] = X_train[column].astype(str)
+        if column in X_val.columns:
+            X_val[column] = X_val[column].astype(str)
+        if column in X_test.columns:
+            X_test[column] = X_test[column].astype(str)
+    return X_train, X_val, X_test
+
+# One-hot encoding of categorical variables
+def one_hot_encode(X_train, X_val, X_test):
+
+    # Identify categorical columns (type 'object')
+    categorical_columns = X_train.select_dtypes(include=['object']).columns.tolist()
+    
+    # Select only categorical columns for encoding
+    X_train_categorical = X_train[categorical_columns]
+    X_val_categorical = X_val[categorical_columns]
+    X_test_categorical = X_test[categorical_columns]
+
+    # One-hot encode categorical columns
+    encoder = OneHotEncoder(handle_unknown='ignore', sparse_output = False)
+    X_train_encoded = encoder.fit_transform(X_train_categorical)
+    X_val_encoded = encoder.transform(X_val_categorical)
+    X_test_encoded = encoder.transform(X_test_categorical)
+    
+    # Convert encoded arrays to DataFrames
+    X_train_encoded = pd.DataFrame(X_train_encoded, index=X_train.index, columns=encoder.get_feature_names_out(categorical_columns))
+    X_val_encoded = pd.DataFrame(X_val_encoded, index=X_val.index, columns=encoder.get_feature_names_out(categorical_columns))
+    X_test_encoded = pd.DataFrame(X_test_encoded, index=X_test.index, columns=encoder.get_feature_names_out(categorical_columns))
+
+    # Drop original categorical columns
+    X_train = X_train.drop(columns=categorical_columns)
+    X_val = X_val.drop(columns=categorical_columns)
+    X_test = X_test.drop(columns=categorical_columns)
+
+    # Concatenate encoded columns with original data
+    X_train_encoded = pd.concat([X_train, X_train_encoded], axis=1)
+    X_val_encoded = pd.concat([X_val, X_val_encoded], axis=1)
+    X_test_encoded = pd.concat([X_test, X_test_encoded], axis=1)
+
+    return X_train_encoded, X_val_encoded, X_test_encoded
 
 # Create pipeline
 def create_pipeline(file_path):
@@ -443,16 +479,18 @@ def create_pipeline(file_path):
     X_train, X_val, X_test = normalize_continuous(X_train, X_val, X_test)
 
     # Impute missing values
-    X_train, X_val, X_test = impute_missing_values(X_train, X_val, X_test)
+    X_train, X_val, X_test = impute_often_missing_values(X_train, X_val, X_test)
+    X_train, X_val, X_test = impute_missing_values_with_knn(X_train, X_val, X_test)
+    X_train, X_val, X_test = impute_low_missing_values(X_train, X_val, X_test)
 
-    # print missing values per column
-    print(X_train.isnull().sum())
-
-    # save X_train as csv
-    X_train.to_csv('X_train.csv', index=False)
+    # Prepare data for one-hot-encoding
+    X_train, X_val, X_test = convert_columns_to_string(X_train, X_val, X_test)
 
     # One-hot encode categorical variables
-    #X_train, X_val, X_test = one_hot_encode(X_train, X_val, X_test)
+    X_train, X_val, X_test = one_hot_encode(X_train, X_val, X_test)
+
+    # One-hot encode categorical variables
+    X_train, X_val, X_test = one_hot_encode(X_train, X_val, X_test)
     
     # Adjust the target labels to start from 0 instead of 1
     y_train = y_train.astype(int) - 1
