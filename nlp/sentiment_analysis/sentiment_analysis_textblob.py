@@ -1,9 +1,7 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import spacy.cli
 from textblob import TextBlob
-import re
 
 def textblob_sentiment(text):
     blob = TextBlob(text)
@@ -162,71 +160,3 @@ def textblob_analyze_ratings_vs_sentiment(data, comments):
     #plt.savefig("outputs/plots/textblob_ratings_vs_scores.png")
     plt.show()
 
-""" work in progress
-def plot_sentiment_by_topic(comments):
-    # Read topic information
-    topics_data = pd.read_csv('data/lda_topics.csv')
-
-    # Calculate sentiment polarity for each comment
-    comments['cleaned_polarity'] = comments['Comment'].apply(textblob_sentiment)
-
-    # Merge polarity information with topic data, since the indexes are the same
-    merged_data = pd.merge(comments, topics_data, on='Comment', how='left')
-
-    # Group by topic and calculate average polarity
-    grouped_data = merged_data.groupby('Max_Probability_Topic').agg({'cleaned_polarity': 'mean'}).reset_index()
-
-    # Plot polarity for each topic
-    plt.figure(figsize=(10, 6))
-    plt.bar(grouped_data['Max_Probability_Topic'], grouped_data['cleaned_polarity'], color='blue')
-    plt.xlabel('Topic')
-    plt.ylabel('Average Polarity')
-    plt.title('Average Polarity by Topic')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.show()
-"""
-
-
-'''
-if __name__ == '__main__':
-    # Change pandas settings to display all columns pd.set_option('display.max_columns', None)
-    # Adjust pandas settings to display the full content of each column pd.set_option('display.max_colwidth', None)
-
-    data, comments = read_data()
-
-    nlp = spacy.load("en_core_web_sm", disable=['parser', 'ner'])
-    comments["cleaned_Comment"] = comments["Comment"].apply(spacy_process)
-    # comments.loc[:, 'cleaned_Comment'] = comments['Comment'].apply(spacy_process)
-    comments.to_csv('data/cleaned_comments.csv')
-
-    comments = pd.read_csv('cleaned_comments.csv')
-    comments['polarity'], comments['subjectivity'] = zip(*comments['Comment'].apply(textblob_sentiment))
-
-    comments['cleaned_polarity'], comments['cleaned_subjectivity'] = zip(
-        *comments['cleaned_Comment'].apply(textblob_sentiment))
-
-    comments["polarity_group"] = comments["polarity"].apply(lambda compound: textblob_final_sentiment(compound))
-
-    comments["polarity_group_cleaned"] = comments["cleaned_polarity"].apply(lambda compound: textblob_final_sentiment(compound))
-
-    comments["subjectivity_group"] = comments["subjectivity"].apply(lambda compound: textblob_final_subjectivity(compound))
-
-    comments["subjectivity_group_cleaned"] = comments["cleaned_subjectivity"].apply(
-        lambda compound: textblob_final_subjectivity(compound))
-
-    # comments.to_csv('data/textblob_comments.csv')
-
-    textblob_plot_score_distribution(comments)
-    textblob_plot_pie_distribution(comments)
-
-    # Filter the dataframe for rows where sentiment and sentiment_cleaned are different
-    different_sentiments = comments[comments["polarity_group"] != comments["polarity_group_cleaned"]]
-
-    """ # Access the "cleaned_Comment" and "Comment" columns for the filtered rows
-    difference = different_sentiments[["polarity_group", "Comment", "polarity_group_cleaned", "cleaned_Comment"]]
-    difference.to_csv("tx_sentiment_difference.csv")"""
-
-    textblob_analyze_ratings_vs_sentiment(data, comments)
-    # plot_sentiment_by_topic(comments)
-'''
