@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 data = pd.read_csv('data/ryanair_reviews.csv')
 data = data.dropna(subset=['Overall Rating'])
 
+
 # Regular feature engineering
 def regular_feature_engineering(df):
     # Check if 'title' is "Ryanair customer review" (True/False) -> usually positive association
@@ -40,6 +41,7 @@ def regular_feature_engineering(df):
     df['legroom'] = df['Comment'].apply(lambda x: 'legroom' in x)
     return df
 
+
 # Sentiment feature engineering
 def sentiment_feature_engineering(df):
     sentiments_data = pd.read_csv('outputs/nlp/sentiment_analysis/openai_sentiment_analysis.csv')
@@ -48,13 +50,33 @@ def sentiment_feature_engineering(df):
     df['Sentiment'] = openai_sentiment
     return df
 
+
 # Topic feature engineering
 def topic_feature_engineering(df):
-    #df['topic1'] = ... # Topic modeling results
-    #df['topic2'] = ... # Topic modeling results
-    #df['topic3'] = ... # Topic modeling results
-    # ... add as many as needed
+    lda_topic_modeling_data = pd.read_csv('outputs/nlp/topic_modeling/comments_with_lda_topics.csv')
+    """
+    Topic 1: passenger, plane, staff, board, sit, seat, cabin_crew, come, boarding, aircraft
+    Topic 2: pay, seat, airline, book, check, charge, ticket, cheap, people, return
+    Topic 3: bag, pay, check, luggage, hold, hand_luggage, staff, priority, queue, baggage
+    Topic 4: time, delay, hour, plane, minute, wait, late, arrive, leave, people
+    Topic 5: tell, check, airport, try, customer_service, hour, book, refund, ask, cancel
+    Topic 6: time, seat, good, service, staff, price, airline, return, great, problem
+    Topic 7: time, crew, good, return, cabin_crew, boarding, land, arrive, leg_room, journey
+    """
+    # Probability of the topics - numeric
+    df['topic1'] = lda_topic_modeling_data['Topic_1_probability']
+    df['topic2'] = lda_topic_modeling_data['Topic_2_probability']
+    df['topic3'] = lda_topic_modeling_data['Topic_3_probability']
+    df['topic4'] = lda_topic_modeling_data['Topic_4_probability']
+    df['topic5'] = lda_topic_modeling_data['Topic_5_probability']
+    df['topic6'] = lda_topic_modeling_data['Topic_6_probability']
+    df['topic7'] = lda_topic_modeling_data['Topic_7_probability']
+    # Name of the topic with the highest probability - string
+    df['topic'] = lda_topic_modeling_data['Max_Probability_Topic']
+    # Keywords of tha topic - string
+    df['topic_keywords'] = lda_topic_modeling_data['Max_Topic_Words']
     return df
+
 
 # Apply feature engineering
 data = regular_feature_engineering(data)
