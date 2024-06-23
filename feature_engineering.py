@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 
 # Load data
 data = pd.read_csv('data/ryanair_reviews.csv')
-data = data.dropna(subset=['Overall Rating'])
 
 
 # Regular feature engineering
@@ -72,9 +71,9 @@ def topic_feature_engineering(df):
     df['topic6'] = lda_topic_modeling_data['Topic_6_probability']
     df['topic7'] = lda_topic_modeling_data['Topic_7_probability']
     # Name of the topic with the highest probability - string
-    df['topic'] = lda_topic_modeling_data['Max_Probability_Topic']
+    df['main_topic'] = lda_topic_modeling_data['Max_Probability_Topic']
     # Keywords of tha topic - string
-    df['topic_keywords'] = lda_topic_modeling_data['Max_Topic_Words']
+    #df['topic_keywords'] = lda_topic_modeling_data['Max_Topic_Words']
     return df
 
 

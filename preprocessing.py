@@ -249,9 +249,13 @@ def splitting_data(data):
 # Normalization of continuous variables
 def normalize_continuous(X_train, X_val, X_test):
     scaler = StandardScaler()
-    X_train[['exclamation_marks', 'question_marks', 'comment_length']] = scaler.fit_transform(X_train[['exclamation_marks', 'question_marks', 'comment_length']])
-    X_val[['exclamation_marks', 'question_marks', 'comment_length']] = scaler.transform(X_val[['exclamation_marks', 'question_marks', 'comment_length']])
-    X_test[['exclamation_marks', 'question_marks', 'comment_length']] = scaler.transform(X_test[['exclamation_marks', 'question_marks', 'comment_length']])
+    continuous_vars = ['exclamation_marks', 'question_marks', 'comment_length', 'topic1', 'topic2', 'topic3', 'topic4', 'topic5', 'topic6', 'topic7']
+    #####
+    # Add features here if necessary
+    #####
+    X_train[continuous_vars] = scaler.fit_transform(X_train[continuous_vars])
+    X_val[continuous_vars] = scaler.transform(X_val[continuous_vars])
+    X_test[continuous_vars] = scaler.transform(X_test[continuous_vars])
     return X_train, X_val, X_test
 
 # Impute missing values
