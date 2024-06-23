@@ -1,10 +1,9 @@
 import pandas as pd
 import numpy as np
 import itertools
-import matplotlib.pyplot as plt
 from collections import Counter
 import random
-
+import matplotlib.pyplot as plt
 from nltk.corpus import stopwords
 from collections import Counter
 import spacy
@@ -142,15 +141,15 @@ def perform_random_search():
     }
     """
     param_grid = {
-        'num_topics': [5, 6, 7, 8],  # Try a range of topics
+        'num_topics': [5, 6, 7],  # Try a range of topics
         'update_every': [1],
-        'chunksize': [len(comments_df)],
+        'chunksize': [500, 600, 700],
         'passes': [40, 50],
         'alpha': [0.01, 0.05, 0.1],  # Experiment with different alpha values
-        'eta': [0.01, 0.05, 0.1]  # Experiment with different beta values (eta in gensim)
+        'eta': [0.01, 0.05, 0.1]  # Experiment with different beta values (eta in gensim),
     }
 
-    n_iter = 35  # Number of random parameter combinations to try
+    n_iter = 20  # Number of random parameter combinations to try
     param_combinations = random_search(param_grid, n_iter)
     param_names = list(param_grid.keys())
     results = []
@@ -172,31 +171,70 @@ def perform_random_search():
             best_params = param_dict
 
     print(f'Best Params: {best_params} => Coherence: {best_coherence}')
+    plot_search_results(results)
+
+
+def plot_search_results(results):
+    """
+    Plots the results of the parameter search.
+
+    Parameters:
+    - results: List of tuples containing (param_dict, coherence, perplexity)
+    """
+    # Adjust the params and results to make the plot more reaadable
+    params = [str(result[0]).replace('num_topics', 'n').replace('update_every', 'u').replace('chunksize', 'c').replace(
+        'passes', 'p').replace('alpha', 'a').replace('eta', 'e') for result in results]
+    coherence = [round(result[1], 3) for result in results]
+    perplexity = [round(result[2], 3) for result in results]
+
+    fig, ax1 = plt.subplots(figsize=(10, 6))
+
+    # 1st y-axis for Coherence
+    color = 'tab:blue'
+    ax1.set_xlabel('Parameter Combinations')
+    ax1.set_ylabel('Coherence', color=color)
+    ax1.grid(True, which='both', linestyle='--', linewidth=0.5, color='lightblue')
+    ax1.scatter(params, coherence, color=color)
+    ax1.tick_params(axis='y', labelcolor=color)
+
+    # 2nd y-axis for Perplexity
+
+    ax2 = ax1.twinx()
+
+    color = 'tab:red'
+    ax2.set_ylabel('Perplexity', color=color)
+    ax2.grid(True, which='both', linestyle='--', linewidth=0.5, color='lightcoral')
+    ax2.scatter(params, perplexity, color=color)
+    ax2.tick_params(axis='y', labelcolor=color)
+
+    # Adjust the ticks of y axises
+    coherence_ticks = np.linspace(0.45, 0.52, num=10)
+    ax1.set_yticks(coherence_ticks)
+
+    perplexity_ticks = np.linspace(min(perplexity), max(perplexity), num=10)
+    ax2.set_yticks(perplexity_ticks)
+
+    fig.tight_layout()  # otherwise the right y-label is slightly clipped
+    ax1.set_xticks(range(len(params)))
+    ax1.set_xticklabels(params, rotation=45, ha='right', fontsize=5)
+    plt.title('Parameter Search Results for LDA')
+    plt.subplots_adjust(left=0.2, bottom=0.3, top=0.9)  # Adjust the margins
+    plt.savefig("../../outputs/nlp/topic_modeling/coherence_vs_perplexity.png")
+    plt.show()
 
 
 def run_lda_model():
+    # Adjust hyperparameters with the best result from random search
+    num_topics = 7
     lda_model = LdaModel(corpus=corpus,
                          id2word=id2word,
-                         num_topics=5,  # Adjust number of topics
-                         update_every=1,  # More frequent updates
+                         num_topics=num_topics,
+                         update_every=1,
                          random_state=0,
-                         passes=50,  # Increase passes
-                         alpha=0.1,  # Adjust alpha value
-                         eta=0.1,  # Adjust eta value
-                         chunksize=500)  # Set chunksize to number of rows
-
-    """(corpus=corpus,
-                         id2word=id2word,
-                         num_topics=12,
-                         update_every=2,
-                         random_state=0,
-                         passes=20,
-                         alpha=0.01,
-                         chunksize=300,
-                         eta=0.01
-                         )
-                         Perplexity: -13.261134481755496
-Coherence Score: 0.456146487898412"""
+                         passes=40,
+                         alpha=0.1,
+                         eta=0.01,
+                         chunksize=600)
 
     perplexity = lda_model.log_perplexity(corpus)
     print(f'Perplexity: {perplexity}')
@@ -206,7 +244,7 @@ Coherence Score: 0.456146487898412"""
     coherence_lda = coherence_model_lda.get_coherence()
     print(f'Coherence Score: {coherence_lda}')
 
-    topics = lda_model.show_topics(num_topics=7, num_words=10, formatted=False)
+    topics = lda_model.show_topics(num_topics=num_topics, num_words=10, formatted=False)
     topic_dict = {f"Topic_{i + 1}": ", ".join([word for word, prob in words]) for i, (topic_num, words) in
                   enumerate(topics)}
 
@@ -247,7 +285,8 @@ if __name__ == '__main__':
         'from', 'fly', 'flight', 'ryanair', 'travel',
         'like', 'just', 'get', 'got', 'would', 'one', 'also', 'could', 'us', 'said', 'go', 'going', 'see', 'even',
         'much', 'well', 'made', 'make', 'way', 'back', 'think', 'day', 'still', 'take', 'took', 'every', 'always',
-        'really','many', 'say', 'done', 'know', 'look', 'looked', 'bit', 'lot', 'seems', 'seemed', 'etc', 'traveled', 'trip'])
+        'really', 'many', 'say', 'done', 'know', 'look', 'looked', 'bit', 'lot', 'seems', 'seemed', 'etc', 'traveled',
+        'trip'])
 
     # Read the cleaned comments
     comments_df = pd.read_csv("../../outputs/nlp/sentiment_analysis/cleaned_comments.csv")
