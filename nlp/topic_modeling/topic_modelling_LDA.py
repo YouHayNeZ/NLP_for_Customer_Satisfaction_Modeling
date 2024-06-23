@@ -1,32 +1,95 @@
 import pandas as pd
 import numpy as np
 import itertools
-from collections import Counter
 import random
 import matplotlib.pyplot as plt
-from nltk.corpus import stopwords
-from collections import Counter
-import spacy
 import gensim
 import gensim.corpora as corpora
 from gensim.utils import simple_preprocess
 from gensim.models import CoherenceModel
 from gensim.models.ldamodel import LdaModel
 from gensim.models import TfidfModel
-
 import spacy
 from nltk.corpus import stopwords
-
 import pyLDAvis
 import pyLDAvis.gensim
 import pyLDAvis.gensim_models as gensimvis
 
-import warnings
 
-warnings.filterwarnings("ignore", category=DeprecationWarning)
+def topic_modeling():
+    # Read the preprocessed comments for sentiment analysis
+    comments_df = pd.read_csv("../../outputs/nlp/sentiment_analysis/cleaned_comments.csv")
+    if 'Unnamed: 0' in comments_df.columns:
+        comments_df.drop(columns=["Unnamed: 0"], inplace=True)
+
+    # Create the stopwords list
+    stopwords_list = stopwords.words("english")
+
+    # Extend with dataset specific keywords that are too general for topic modeling
+    stopwords_list.extend([
+        'from', 'fly', 'flight', 'ryanair', 'travel',
+        'like', 'just', 'get', 'got', 'would', 'one', 'also', 'could', 'us', 'said', 'go', 'going', 'see', 'even',
+        'much', 'well', 'made', 'make', 'way', 'back', 'think', 'day', 'still', 'take', 'took', 'every', 'always',
+        'really', 'many', 'say', 'done', 'know', 'look', 'looked', 'bit', 'lot', 'seems', 'seemed', 'etc', 'traveled',
+        'trip'])
+
+    # Lemmatize comments
+    comments_df['lemmatized_Comment'] = lemmatization(comments_df['cleaned_Comment'])
+
+    cleaned_comments = comments_df['lemmatized_Comment']
+
+    data_words = gen_words(cleaned_comments)
+    data_words = remove_stopwords(data_words, stopwords_list)
+
+    data_bigrams_trigrams = create_bigram_trigram(data_words)
+
+    id2word = corpora.Dictionary(data_bigrams_trigrams)
+
+    # Check the most frequent words to see if there is something to remove
+    # word_frequencies = Counter({id2word[id]: freq for id, freq in id2word.dfs.items()})
+    # most_common_words = word_frequencies.most_common(20)
+    # for word, freq in most_common_words:
+    #     print(f"{word}: {freq}")
+
+    texts = data_bigrams_trigrams
+
+    corpus = [id2word.doc2bow(text) for text in texts]
+
+    tfidf = TfidfModel(corpus=corpus, id2word=id2word)
+
+    low_value = 0.03
+    words = []
+    words_missing_in_tfidf = []
+
+    for i in range(0, len(corpus)):
+        bow = corpus[i]
+        tfidf_ids = [id for id, value in tfidf[bow]]
+        bow_ids = [id for id, value in bow]
+        low_value_words = [id for id, value in tfidf[bow] if value < low_value]
+        drops = low_value_words + words_missing_in_tfidf  # the words appearing in every comment are going to be removed
+        for item in drops:
+            words.append(id2word[item])
+        words_missing_in_tfidf = [id for id in bow_ids if
+                                  id not in tfidf_ids]  # The words with tf-idf score 0 will be missing
+        new_bow = [b for b in bow if b[0] not in low_value_words and b[0] not in words_missing_in_tfidf]
+        corpus[i] = new_bow
+
+    """
+    Do hyperparameter optimization with a random search implementation.
+    Since RandomizedSearchCV is optimized for the scikit library and gensim is used in this implementation a random search is perform with the following functionality.
+    """
+    # perform_random_search()
+    run_lda_model(comments_df, corpus, id2word, data_bigrams_trigrams)
 
 
 def lemmatization(comments, allowed_postags=["NOUN", "ADJ", "VERB", "ADV"]):
+    """
+    Lemmatize the comments.
+
+    :param comments: List of comments to lemmatize
+    :param allowed_postags: List of part-of-speech tags to consider for lemmatization
+    :return: List of lemmatized comments
+    """
     nlp = spacy.load("en_core_web_sm", disable=["parser", "ner"])
     comments_out = []
     for comment in comments:
@@ -47,17 +110,9 @@ def remove_stopwords(data_words, stopwords_list):
 def gen_words(comments):
     final = []
     for comment in comments:
-        new_comment = gensim.utils.simple_preprocess(comment, deacc=True)
+        new_comment = simple_preprocess(comment, deacc=True)
         final.append(new_comment)
     return final
-
-
-def make_bigrams(data_words, bigram):
-    return [bigram[doc] for doc in data_words]
-
-
-def make_trigrams(data_words, trigram):
-    return [trigram[doc] for doc in data_words]
 
 
 def create_bigram_trigram(data_words):
@@ -67,8 +122,8 @@ def create_bigram_trigram(data_words):
     bigram = gensim.models.phrases.Phraser(bigrams_phrases)
     trigram = gensim.models.phrases.Phraser(trigram_phrases)
 
-    data_bigrams = make_bigrams(data_words, bigram)
-    data_bigrams_trigrams = make_trigrams(data_bigrams, trigram)
+    data_bigrams = [bigram[doc] for doc in data_words]
+    data_bigrams_trigrams = [trigram[doc] for doc in data_bigrams]
     return data_bigrams_trigrams
 
 
@@ -98,46 +153,15 @@ def perform_random_search():
     """
     # 1st Random Search - Online Learning
     # Best Params: {'num_topics': 10, 'update_every': 2, 'chunksize': 200, 'passes': 30, 'alpha': 'auto'} =	 Coherence: 0.5370863931633967
-    param_grid = {
-        'num_topics': [5, 7, 10],
-        'update_every': [1, 2],
-        'chunksize': [100, 200, 300],
-        'passes': [10, 20, 30],
-        'alpha': ['symmetric', 'auto']
-    }
-    """
-    """
+    param_grid = {'num_topics': [5, 7, 10],'update_every': [1, 2],'chunksize': [100, 200, 300], 'passes': [10, 20, 30],'alpha': ['symmetric', 'auto']}
+
     # 2nd Random Search - Batch Learning
     # Best Params: {'num_topics': 10, 'update_every': 1, 'chunksize': 300, 'passes': 20, 'alpha': 'auto'} =	 Coherence: 0.5683360578973087
-    param_grid = {
-        'num_topics': [5, 7, 10],
-        'update_every': [0],
-        'passes': [10, 20, 30],
-        'alpha': ['symmetric', 'auto']
-    }
-    """
+    param_grid = {'num_topics': [5, 7, 10],'update_every': [0],'passes': [10, 20, 30],'alpha': ['symmetric', 'auto']}
 
-    # 3rd Random Search - Online Learning
-    # Added eta parameter
-    # Best Params: {'num_topics': 10, 'update_every': 1, 'chunksize': 300, 'passes': 30, 'alpha': 'auto', 'eta': 'auto'} =	 Coherence: 0.5716926440164103
-    """
-    param_grid = {
-        'num_topics': [5, 7, 10],
-        'update_every': [1, 2],
-        'chunksize': [200, 300],
-        'passes': [20, 30],
-        'alpha': ['auto'],
-        'eta': ["auto", "symmetric"]
-    }
-    """
-    """
-    param_grid = {
-        'num_topics': [5, 7, 10, 15],  # Try a range of topics
-        'update_every': [1, 2],
-        'chunksize': [100, 200, 300],
-        'passes': [10, 20, 30],
-        'alpha': ['symmetric', 'auto', 0.01, 0.1, 0.5],  # Experiment with different alpha values
-        'eta': ['symmetric', 'auto', 0.01, 0.1, 0.5]  # Experiment with different beta values (eta in gensim)
+    param_grid = {'num_topics': [5, 7, 10],'update_every': [1, 2],'chunksize': [200, 300],'passes': [20, 30],'alpha': ['auto'], 'eta': ["auto", "symmetric"]}
+
+    param_grid = { 'num_topics': [5, 7, 10, 15], 'update_every': [1, 2],'chunksize': [100, 200, 300], 'passes': [10, 20, 30], 'alpha': ['symmetric', 'auto', 0.01, 0.1, 0.5], 'eta': ['symmetric', 'auto', 0.01, 0.1, 0.5]
     }
     """
     param_grid = {
@@ -181,7 +205,7 @@ def plot_search_results(results):
     Parameters:
     - results: List of tuples containing (param_dict, coherence, perplexity)
     """
-    # Adjust the params and results to make the plot more reaadable
+    # Adjust the params and results to make the plot more readable
     params = [str(result[0]).replace('num_topics', 'n').replace('update_every', 'u').replace('chunksize', 'c').replace(
         'passes', 'p').replace('alpha', 'a').replace('eta', 'e') for result in results]
     coherence = [round(result[1], 3) for result in results]
@@ -223,7 +247,7 @@ def plot_search_results(results):
     plt.show()
 
 
-def run_lda_model():
+def run_lda_model(comments_df, corpus, id2word, data_bigrams_trigrams):
     # Adjust hyperparameters with the best result from random search
     num_topics = 7
     lda_model = LdaModel(corpus=corpus,
@@ -278,60 +302,4 @@ def run_lda_model():
 
 
 if __name__ == '__main__':
-
-    # add common words in the dataset that are too general to the stopwords
-    stopwords_list = stopwords.words("english")
-    stopwords_list.extend([
-        'from', 'fly', 'flight', 'ryanair', 'travel',
-        'like', 'just', 'get', 'got', 'would', 'one', 'also', 'could', 'us', 'said', 'go', 'going', 'see', 'even',
-        'much', 'well', 'made', 'make', 'way', 'back', 'think', 'day', 'still', 'take', 'took', 'every', 'always',
-        'really', 'many', 'say', 'done', 'know', 'look', 'looked', 'bit', 'lot', 'seems', 'seemed', 'etc', 'traveled',
-        'trip'])
-
-    # Read the cleaned comments
-    comments_df = pd.read_csv("../../outputs/nlp/sentiment_analysis/cleaned_comments.csv")
-    if 'Unnamed: 0' in comments_df.columns:
-        comments_df.drop(columns=["Unnamed: 0"], inplace=True)
-
-    comments_df['lemmatized_Comment'] = lemmatization(comments_df['cleaned_Comment'])
-
-    cleaned_comments = comments_df['lemmatized_Comment']
-
-    data_words = gen_words(cleaned_comments)
-    data_words = remove_stopwords(data_words, stopwords_list)
-
-    data_bigrams_trigrams = create_bigram_trigram(data_words)
-
-    id2word = corpora.Dictionary(data_bigrams_trigrams)
-
-    # Checking the most frequent words to see if there is something to remove
-    # word_frequencies = Counter({id2word[id]: freq for id, freq in id2word.dfs.items()})
-    # most_common_words = word_frequencies.most_common(20)
-    # for word, freq in most_common_words:
-    #     print(f"{word}: {freq}")
-
-    texts = data_bigrams_trigrams
-
-    corpus = [id2word.doc2bow(text) for text in texts]
-
-    tfidf = TfidfModel(corpus=corpus, id2word=id2word)
-
-    low_value = 0.03
-    words = []
-    words_missing_in_tfidf = []
-
-    for i in range(0, len(corpus)):
-        bow = corpus[i]
-        tfidf_ids = [id for id, value in tfidf[bow]]
-        bow_ids = [id for id, value in bow]
-        low_value_words = [id for id, value in tfidf[bow] if value < low_value]
-        drops = low_value_words + words_missing_in_tfidf  # the words appearing in every comment are going to be removed
-        for item in drops:
-            words.append(id2word[item])
-        words_missing_in_tfidf = [id for id in bow_ids if
-                                  id not in tfidf_ids]  # The words with tf-idf score 0 will be missing
-        new_bow = [b for b in bow if b[0] not in low_value_words and b[0] not in words_missing_in_tfidf]
-        corpus[i] = new_bow
-
-    # perform_random_search()
-    run_lda_model()
+    topic_modeling()
