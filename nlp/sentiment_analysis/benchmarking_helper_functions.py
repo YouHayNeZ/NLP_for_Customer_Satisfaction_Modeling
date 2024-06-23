@@ -10,7 +10,7 @@ def plot_sentiment_percentages(merged_sentiments_df):
     percentages = merged_sentiments_df[columns].apply(lambda x: x.value_counts(normalize=True) * 100).fillna(0)
 
     # Plotting the bar charts
-    fig, axes = plt.subplots(nrows=1, ncols=len(columns), figsize=(15, 5))
+    fig, axes = plt.subplots(nrows=1, ncols=len(columns), figsize=(20, 6))
 
     for i, column in enumerate(columns):
         ax = axes[i]
@@ -58,17 +58,18 @@ def plot_metrics(metrics_df):
     nrows = (num_metrics + 1) // 2
     ncols = 2
     
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(15, 10 * nrows))
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(20, 6 * nrows))
     axes = axes.flatten()
 
     for idx, metric in enumerate(metrics):
         sorted_df = metrics_df.sort_values(by=metric, ascending=False)
-        colors = ['green' if i == 0 else 'blue' for i in range(len(sorted_df))]
+        colors = ['green'] + ['C0'] * (len(sorted_df) - 1)  # 'C0' is the default color in Matplotlib
         ax = axes[idx]
         bars = ax.bar(sorted_df.index, sorted_df[metric], color=colors)
-        ax.set_xlabel('Models')
+        ax.set_ylim(0, 1)  # Set the y-axis limit to 1
+        ax.set_xlabel('Sentiment Column')
         ax.set_ylabel(metric.capitalize())
-        ax.set_title(f'{metric.capitalize()} by Model')
+        ax.set_title(f'{metric.capitalize()} by Sentiment Column')
         ax.set_xticklabels(sorted_df.index, rotation=45, ha='right')
         for bar in bars:
             height = bar.get_height()

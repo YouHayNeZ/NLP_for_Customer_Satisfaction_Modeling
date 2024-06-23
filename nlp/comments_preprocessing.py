@@ -66,7 +66,7 @@ def preprocess_comments(text):
 
 def read_dataframes():
     """
-    Reads data from CSV files and returns two DataFrames: data and comments. This method will be invoked in the benchmarking script.
+    Reads data from CSV files and returns two DataFrames: data and comments. This helper method will be invoked in the benchmarking script.
     The method is not meant for be used in the main method here!
 
     Steps:
@@ -85,7 +85,7 @@ def read_dataframes():
     data = pd.read_csv("../../data/ryanair_reviews.csv")
     
     # Read the 'cleaned_comments.csv' file into a DataFrame named 'comments'
-    comments = pd.read_csv("../../data/cleaned_comments.csv")
+    comments = pd.read_csv("../../outputs/nlp/sentiment_analysis/cleaned_comments.csv")
     
     # Check if the 'Unnamed: 0' column exists and drop it if it does
     if 'Unnamed: 0' in comments.columns:
@@ -96,7 +96,7 @@ def read_dataframes():
 
 def read_openai_sentiment_data():
     """
-    This method will be invoked in the benchmarking script!
+    This helper method will be invoked in the benchmarking script!
     The method is not meant for be used in the main method here!
     Reads the 'openai_sentiment_analysis.csv' file into a DataFrame,
     processes it by removing unnecessary columns.
@@ -106,7 +106,7 @@ def read_openai_sentiment_data():
     """
     
     # Read the 'openai_sentiment_analysis.csv' file into a DataFrame named 'openAI'
-    openAI = pd.read_csv("../../data/openai_sentiment_analysis.csv")
+    openAI = pd.read_csv("../../outputs/nlp/sentiment_analysis/openai_sentiment_analysis.csv")
     
     # Check if the 'Unnamed: 0' column exists and drop it if it does
     if 'Unnamed: 0' in openAI.columns:
@@ -130,7 +130,7 @@ def read_bert_sentiment_data():
     """
     
     # Read the 'bert_sentiment_analysis.csv' file into a DataFrame named 'bert'
-    bert = pd.read_csv("../../data/bert_sentiment_analysis.csv")
+    bert = pd.read_csv("../../outputs/nlp/sentiment_analysis/bert_sentiment_analysis.csv")
     
     # Check if the 'Unnamed: 0' column exists and drop it if it does
     if 'Unnamed: 0' in bert.columns:
@@ -143,6 +143,7 @@ def read_bert_sentiment_data():
 def store_preprocessed_comments():
     """
     Preprocesses the comments in the 'data' DataFrame and stores the preprocessed comments in a CSV file.
+    Important: this step is quite time-consuming. Therefore, we store the preprocessed comments in a CSV file to not repeat the preprocessing step every time.
 
     Steps:
     1. Read the 'ryanair_reviews.csv' file into a DataFrame named 'data'.
@@ -161,7 +162,7 @@ def store_preprocessed_comments():
     data = data[["Comment title" , "Comment" ,"cleaned_Comment"]]
 
     # Save the updated DataFrame with the cleaned comments to a CSV file
-    data.to_csv("data/cleaned_commentsII.csv", index=False)
+    data.to_csv("outputs/nlp/sentiment_analysis/cleaned_comments.csv", index=False)
     
 # Store preprocessed comments together with the raw data once in a CSV file
 if __name__ == '__main__':

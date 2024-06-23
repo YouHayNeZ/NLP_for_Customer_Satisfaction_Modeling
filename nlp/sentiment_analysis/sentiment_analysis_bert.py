@@ -66,6 +66,9 @@ def bert_plot_sentiment_proportions(df, distilbert_col, siebert_col):
     distilbert_labels = [sentiment_labels[val] for val in sentiment_proportions_distilbert.index]
     siebert_labels = [sentiment_labels[val] for val in sentiment_proportions_siebert.index]
 
+    # Define lighter colors for the sentiment categories
+    sentiment_colors = ['#ff6666', 'green', '#ffff99']
+
     # Generate pie charts
     fig, axs = plt.subplots(1, 2, figsize=(12, 6))
 
@@ -73,9 +76,10 @@ def bert_plot_sentiment_proportions(df, distilbert_col, siebert_col):
     axs[0].pie(
         sentiment_proportions_distilbert,
         labels=distilbert_labels,
-        colors=['#003f5c', '#ffa600', '#bc5090'],
+        colors=sentiment_colors,
         explode=[0.1 if i == 0 else 0 for i in range(len(distilbert_labels))],  # Explode the first slice
-        autopct='%1.1f%%'
+        autopct='%1.1f%%',
+        startangle=90
     )
     axs[0].set_title("Sentiment Distribution with DistilBERT")
 
@@ -83,14 +87,15 @@ def bert_plot_sentiment_proportions(df, distilbert_col, siebert_col):
     axs[1].pie(
         sentiment_proportions_siebert,
         labels=siebert_labels,
-        colors=['#003f5c', '#ffa600', '#bc5090'],
+        colors=sentiment_colors,
         explode=[0.1 if i == 0 else 0 for i in range(len(siebert_labels))],  # Explode the first slice
-        autopct='%1.1f%%'
+        autopct='%1.1f%%',
+        startangle=90
     )
     axs[1].set_title("Sentiment Distribution with SieBERT")
 
     # Adjust the spacing between subplots
-    plt.subplots_adjust(wspace=0.4)
+    plt.tight_layout()
 
     # Show the combined plot
     plt.show()
