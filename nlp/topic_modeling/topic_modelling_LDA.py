@@ -297,11 +297,6 @@ if __name__ == '__main__':
 
     cleaned_comments = comments_df['lemmatized_Comment']
 
-    # comments_df.to_csv("temp_lem.csv")
-    # add an extra step of lemmatization
-    # lemmatizated_comments = lemmatization(cleaned_comments)
-    # print(lemmatizated_comments)
-
     data_words = gen_words(cleaned_comments)
     data_words = remove_stopwords(data_words, stopwords_list)
 
@@ -340,32 +335,3 @@ if __name__ == '__main__':
 
     # perform_random_search()
     run_lda_model()
-
-    """
-    perform_random_search()
-    # Best Params: {'num_topics': 10, 'update_every': 1, 'chunksize': 300, 'passes': 30, 'alpha': 'auto', 'eta': 'auto'} =	 Coherence: 0.5716926440164103
-    lda_model = gensim.models.ldamodel.LdaModel(corpus=corpus,
-                                                id2word=id2word,
-                                                num_topics=10,
-                                                update_every=1,
-                                                random_state=0,
-                                                passes=30,
-                                                chunksize=300,
-                                                alpha="auto"
-                                                )
-
-
-    with the best params the topic distribution among the comments are not optimal:
-    Coherence Score: 0.5716926440164103
-        Max_Probability_Topic
-        Topic_2     877
-        Topic_9     662
-        Topic_6     430
-        Topic_4     259
-        Topic_7       8
-        Topic_3       7
-        Topic_8       4
-        Topic_5       1
-        Topic_10      1
-        Name: count, dtype: int64
-"""
