@@ -28,7 +28,7 @@ def main():
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(RandomForestClassifier(), 'outputs/predictive_modeling/classification/base_learners/rf/rf_cv_results.csv', param_dist, X_train, y_train)
+    random_search, results = hpo_and_cv_results(RandomForestClassifier(), 'outputs/predictive_modeling/classification/base_learners/rf/rf_cv_results.csv', param_dist, X_train, y_train, n_iter=10)
 
     # Parallel coordinate plot without max_features and bootstrap
     scaler = MinMaxScaler()
