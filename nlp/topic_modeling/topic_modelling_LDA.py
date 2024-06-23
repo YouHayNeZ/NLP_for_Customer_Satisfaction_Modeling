@@ -17,21 +17,13 @@ import pyLDAvis.gensim_models as gensimvis
 
 
 def topic_modeling():
+    """
+    Main function to perform topic modeling on comments.
+    """
     # Read the preprocessed comments for sentiment analysis
     comments_df = pd.read_csv("../../outputs/nlp/sentiment_analysis/cleaned_comments.csv")
     if 'Unnamed: 0' in comments_df.columns:
         comments_df.drop(columns=["Unnamed: 0"], inplace=True)
-
-    # Create the stopwords list
-    stopwords_list = stopwords.words("english")
-
-    # Extend with dataset specific keywords that are too general for topic modeling
-    stopwords_list.extend([
-        'from', 'fly', 'flight', 'ryanair', 'travel',
-        'like', 'just', 'get', 'got', 'would', 'one', 'also', 'could', 'us', 'said', 'go', 'going', 'see', 'even',
-        'much', 'well', 'made', 'make', 'way', 'back', 'think', 'day', 'still', 'take', 'took', 'every', 'always',
-        'really', 'many', 'say', 'done', 'know', 'look', 'looked', 'bit', 'lot', 'seems', 'seemed', 'etc', 'traveled',
-        'trip'])
 
     # Lemmatize comments
     comments_df['lemmatized_Comment'] = lemmatization(comments_df['cleaned_Comment'])
@@ -39,9 +31,9 @@ def topic_modeling():
     cleaned_comments = comments_df['lemmatized_Comment']
 
     data_words = gen_words(cleaned_comments)
-    data_words = remove_stopwords(data_words, stopwords_list)
+    data_words = remove_stopwords(data_words)
 
-    data_bigrams_trigrams = create_bigram_trigram(data_words)
+    data_bigrams_trigrams = make_bigram_trigram(data_words)
 
     id2word = corpora.Dictionary(data_bigrams_trigrams)
 
@@ -84,11 +76,14 @@ def topic_modeling():
 
 def lemmatization(comments, allowed_postags=["NOUN", "ADJ", "VERB", "ADV"]):
     """
-    Lemmatize the comments.
+    Lemmatizes the comments using spaCy.
 
-    :param comments: List of comments to lemmatize
-    :param allowed_postags: List of part-of-speech tags to consider for lemmatization
-    :return: List of lemmatized comments
+    Parameters:
+        comments (list): List of comments to lemmatize.
+        allowed_postags (list): List of part-of-speech tags to consider for lemmatization.
+
+    Returns:
+        list: List of lemmatized comments.
     """
     nlp = spacy.load("en_core_web_sm", disable=["parser", "ner"])
     comments_out = []
@@ -103,11 +98,38 @@ def lemmatization(comments, allowed_postags=["NOUN", "ADJ", "VERB", "ADV"]):
     return comments_out
 
 
-def remove_stopwords(data_words, stopwords_list):
+def remove_stopwords(data_words):
+    """
+    Removes stopwords from the data.
+
+    Parameters:
+        data_words (list): List of tokenized words.
+
+    Returns:
+        list: List of words with stopwords removed.
+    """
+    # Create the stopwords list
+    stopwords_list = stopwords.words("english")
+    # Extend with dataset specific keywords that are too general for topic modeling
+    stopwords_list.extend([
+        'from', 'fly', 'flight', 'ryanair', 'travel',
+        'like', 'just', 'get', 'got', 'would', 'one', 'also', 'could', 'us', 'said', 'go', 'going', 'see', 'even',
+        'much', 'well', 'made', 'make', 'way', 'back', 'think', 'day', 'still', 'take', 'took', 'every', 'always',
+        'really', 'many', 'say', 'done', 'know', 'look', 'looked', 'bit', 'lot', 'seems', 'seemed', 'etc', 'traveled',
+        'trip'])
     return [[word for word in doc if word not in stopwords_list] for doc in data_words]
 
 
 def gen_words(comments):
+    """
+    Generates words from comments.
+
+    Parameters:
+        comments (list): List of comments.
+
+    Returns:
+        list: List of tokenized words.
+    """
     final = []
     for comment in comments:
         new_comment = simple_preprocess(comment, deacc=True)
@@ -115,7 +137,16 @@ def gen_words(comments):
     return final
 
 
-def create_bigram_trigram(data_words):
+def make_bigram_trigram(data_words):
+    """
+    Creates bigrams and trigrams from the data.
+
+    Parameters:
+        data_words (list): List of tokenized words.
+
+    Returns:
+        list: List of words with bigrams and trigrams.
+    """
     bigrams_phrases = gensim.models.Phrases(data_words, min_count=5, threshold=10)
     trigram_phrases = gensim.models.Phrases(bigrams_phrases[data_words], min_count=15, threshold=10)
 
@@ -128,6 +159,18 @@ def create_bigram_trigram(data_words):
 
 
 def compute_coherence_perplexity(corpus, texts, dictionary, params):
+    """
+        Computes coherence and perplexity of the LDA model.
+
+        Parameters:
+            corpus (list): List of document term matrices.
+            texts (list): List of tokenized texts.
+            dictionary (gensim.corpora.Dictionary): Gensim dictionary.
+            params (dict): Parameters for LDA model.
+
+        Returns:
+            tuple: Coherence score, perplexity score, and LDA model.
+    """
     lda_model = LdaModel(corpus=corpus,
                          id2word=dictionary,
                          num_topics=params['num_topics'],
@@ -145,11 +188,25 @@ def compute_coherence_perplexity(corpus, texts, dictionary, params):
 
 # Function for random search
 def random_search(param_grid, n_iter):
+    """
+        Performs random search for hyperparameter optimization.
+
+        Parameters:
+            param_grid (dict): Dictionary of parameter grid.
+            n_iter (int): Number of iterations.
+
+        Returns:
+            list: List of random parameter combinations.
+    """
+
     param_combinations = list(itertools.product(*param_grid.values()))
     return random.sample(param_combinations, n_iter)
 
 
 def perform_random_search():
+    """
+    Performs random search for LDA model hyperparameters.
+    """
     """
     # 1st Random Search - Online Learning
     # Best Params: {'num_topics': 10, 'update_every': 2, 'chunksize': 200, 'passes': 30, 'alpha': 'auto'} =	 Coherence: 0.5370863931633967
@@ -165,12 +222,12 @@ def perform_random_search():
     }
     """
     param_grid = {
-        'num_topics': [5, 6, 7],  # Try a range of topics
+        'num_topics': [5, 6, 7],
         'update_every': [1],
         'chunksize': [500, 600, 700],
         'passes': [40, 50],
-        'alpha': [0.01, 0.05, 0.1],  # Experiment with different alpha values
-        'eta': [0.01, 0.05, 0.1]  # Experiment with different beta values (eta in gensim),
+        'alpha': [0.01, 0.05, 0.1],
+        'eta': [0.01, 0.05, 0.1]
     }
 
     n_iter = 20  # Number of random parameter combinations to try
@@ -178,7 +235,6 @@ def perform_random_search():
     param_names = list(param_grid.keys())
     results = []
 
-    best_model = None
     best_coherence = float('-inf')
     best_params = None
 
@@ -191,7 +247,6 @@ def perform_random_search():
 
         if coherence > best_coherence:
             best_coherence = coherence
-            best_model = lda_model
             best_params = param_dict
 
     print(f'Best Params: {best_params} => Coherence: {best_coherence}')
@@ -203,7 +258,10 @@ def plot_search_results(results):
     Plots the results of the parameter search.
 
     Parameters:
-    - results: List of tuples containing (param_dict, coherence, perplexity)
+        results (list): List of tuples containing (param_dict, coherence, perplexity).
+
+    Returns:
+        None
     """
     # Adjust the params and results to make the plot more readable
     params = [str(result[0]).replace('num_topics', 'n').replace('update_every', 'u').replace('chunksize', 'c').replace(
@@ -248,6 +306,18 @@ def plot_search_results(results):
 
 
 def run_lda_model(comments_df, corpus, id2word, data_bigrams_trigrams):
+    """
+    Runs the LDA model with specified hyperparameters.
+
+    Parameters:
+        comments_df (pd.DataFrame): DataFrame containing comments.
+        corpus (list): List of document term matrices.
+        id2word (gensim.corpora.Dictionary): Gensim dictionary.
+        data_bigrams_trigrams (list): List of words with bigrams and trigrams.
+
+    Returns:
+        None
+    """
     # Adjust hyperparameters with the best result from random search
     num_topics = 7
     lda_model = LdaModel(corpus=corpus,
