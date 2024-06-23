@@ -38,7 +38,7 @@ def main():
     parallel_coordinates(results_pc, 'mean_test_score', colormap='viridis', alpha = 0.25)
     plt.legend().remove()
     plt.savefig('outputs/predictive_modeling/regression/base_learners/svm/svm_parallel_coordinates.png')
-    plt.show()
+    plt.close()
     # purple = best, yellow = worst
 
     # Percentage of each hyperparameter combination (top 10% and bottom 10%)

@@ -19,16 +19,16 @@ def main():
 
     # Define the range of hyperparameters
     param_dist = {
-        'n_neighbors': randint(120, 180),
-        'weights': ['uniform'],
+        'n_neighbors': randint(5, 500),
+        'weights': ['uniform', 'distance'],
         'algorithm': ['ball_tree', 'kd_tree', 'brute'],
-        'leaf_size': randint(1, 200),
-        'p': uniform(1, 30),
-        'metric': ['euclidean', 'manhattan', 'minkowski']
+        'leaf_size': randint(1, 500),
+        'p': uniform(1, 100),
+        'metric': ['euclidean', 'manhattan', 'minkowski', 'chebyshev']
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(KNeighborsClassifier(), 'outputs/predictive_modeling/classification/base_learners/knn/knn_cv_results.csv', param_dist, X_train, y_train)
+    random_search, results = hpo_and_cv_results(KNeighborsClassifier(), 'outputs/predictive_modeling/classification/base_learners/knn/knn_cv_results.csv', param_dist, X_train, y_train, n_iter=500)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()
@@ -40,7 +40,7 @@ def main():
     parallel_coordinates(results_pc, 'mean_test_score', colormap='viridis', alpha = 0.25)
     plt.legend().remove()
     plt.savefig('outputs/predictive_modeling/classification/base_learners/knn/knn_parallel_coordinates.png')
-    plt.show()
+    plt.close()
     # purple = best, yellow = worst
 
     # Count the percentage of each hyperparameter combination (top 10% and bottom 10%)
@@ -77,7 +77,7 @@ def main():
         plt.title('ROC Curve (Class {})'.format(cls))
         plt.legend(loc="lower right")
         plt.savefig('outputs/predictive_modeling/classification/base_learners/knn/roc_curve_class_{}.png'.format(cls))
-        plt.show()
+        plt.close()
 
         # Create Precision-Recall curve
         precision, recall, _ = precision_recall_curve((y_test == cls).astype(int), probabilities[:, cls - 1])
@@ -91,7 +91,7 @@ def main():
         plt.xlim([0.0, 1.0])
         plt.title('Precision-Recall Curve (Class {})'.format(cls))
         plt.savefig('outputs/predictive_modeling/classification/base_learners/knn/precision_recall_curve_class_{}.png'.format(cls))
-        plt.show()
+        plt.close()
 
     # No feature importance for KNN (maybe add later something similar)
 

@@ -37,7 +37,7 @@ def main():
     parallel_coordinates(results, 'mean_test_score', colormap='viridis', alpha=0.25)
     plt.legend().remove()
     plt.savefig('outputs/predictive_modeling/regression/base_learners/bayesian_ridge/bayesian_ridge_parallel_coordinates.png')
-    plt.show()
+    plt.close()
     # purple = best, yellow = worst
 
     # Best model, hyperparameters and predictions

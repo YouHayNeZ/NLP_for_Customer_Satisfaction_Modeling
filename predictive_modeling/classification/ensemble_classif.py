@@ -82,7 +82,7 @@ def main():
     parallel_coordinates(log_loss_scores_df, 'log_loss', colormap='viridis', alpha=0.25)
     plt.legend().remove()
     plt.savefig('outputs/predictive_modeling/classification/ensemble/ensemble_parallel_coordinates.png')
-    plt.show()
+    plt.close()
 
     log_loss_scores = log_loss_scores_df.sort_values(by='log_loss', ascending=True)
     log_loss_scores.to_csv('outputs/predictive_modeling/classification/ensemble/ensemble_weighted_log_loss_scores.csv')
@@ -204,7 +204,7 @@ def main():
     parallel_coordinates(results, 'mean_test_score', colormap='viridis', alpha = 0.25)
     plt.legend().remove()
     plt.savefig('outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_parallel_coordinates.png')
-    plt.show()
+    plt.close()
     # purple = best, yellow = worst
 
     # Best model, hyperparameters and predictions
@@ -238,7 +238,7 @@ def main():
         plt.title('ROC Curve (Class {})'.format(cls))
         plt.legend(loc="lower right")
         plt.savefig('outputs/predictive_modeling/classification/ensemble/roc_curve_class_{}.png'.format(cls))
-        plt.show()
+        plt.close()
 
         # Create Precision-Recall curve
         precision, recall, _ = precision_recall_curve((y_test == cls).astype(int), probabilities[:, cls - 1])
@@ -252,7 +252,7 @@ def main():
         plt.xlim([0.0, 1.0])
         plt.title('Precision-Recall Curve (Class {})'.format(cls))
         plt.savefig('outputs/predictive_modeling/classification/ensemble/precision_recall_curve_class_{}.png'.format(cls))
-        plt.show()
+        plt.close()
 
     # Create feature importance plot for top 15
     feature_importance = best_model.feature_importances_
@@ -270,7 +270,7 @@ def main():
     plt.xticks(rotation=90)
     plt.title('Feature Importance')
     plt.savefig('outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_feature_importance.png')
-    plt.show()
+    plt.close()
 
 
 
@@ -325,7 +325,7 @@ def main():
     parallel_coordinates(results2, 'mean_test_score', colormap='viridis', alpha=0.25)
     plt.legend().remove()
     plt.savefig('outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_only_base_parallel_coordinates.png')
-    plt.show()
+    plt.close()
     # purple = best, yellow = worst
 
     # Best model, hyperparameters and predictions
@@ -359,7 +359,7 @@ def main():
         plt.title('ROC Curve (Class {})'.format(cls))
         plt.legend(loc="lower right")
         plt.savefig('outputs/predictive_modeling/classification/ensemble/roc_curve_class_{}_only_base.png'.format(cls))
-        plt.show()
+        plt.close()
 
         # Create Precision-Recall curve
         precision2, recall2, _ = precision_recall_curve((y_test == cls).astype(int), probabilities2[:, cls - 1])
@@ -373,7 +373,7 @@ def main():
         plt.xlim([0.0, 1.0])
         plt.title('Precision-Recall Curve (Class {})'.format(cls))
         plt.savefig('outputs/predictive_modeling/classification/ensemble/precision_recall_curve_class_{}_only_base.png'.format(cls))
-        plt.show()
+        plt.close()
 
     # Create feature importance plot for top 15
     feature_importance2 = best_model2.feature_importances_
@@ -391,7 +391,7 @@ def main():
     plt.xticks(rotation=90)
     plt.title('Feature Importance')
     plt.savefig('outputs/predictive_modeling/classification/ensemble/xgboost_ensemble_only_base_feature_importance.png')
-    plt.show()
+    plt.close()
 
 if __name__ == '__main__':
     main()

@@ -40,7 +40,7 @@ def main():
     parallel_coordinates(results_pc, 'mean_test_score', colormap='viridis', alpha = 0.25)
     plt.legend().remove()
     plt.savefig('outputs/predictive_modeling/classification/base_learners/svm/svm_parallel_coordinates.png')
-    plt.show()
+    plt.close()
     # purple = best, yellow = worst
 
     # Count the percentage of each hyperparameter combination (top 10% and bottom 10%)
@@ -77,7 +77,7 @@ def main():
         plt.title('ROC Curve (Class {})'.format(class_num))
         plt.legend(loc="lower right")
         plt.savefig('outputs/predictive_modeling/classification/base_learners/svm/roc_curve_class_{}.png'.format(class_num))
-        plt.show()
+        plt.close()
 
         # Create Precision-Recall curve
         precision, recall, _ = precision_recall_curve(y_test_binary[:, 0], predicted_probabilities[:, 0])
@@ -91,7 +91,7 @@ def main():
         plt.xlim([0.0, 1.0])
         plt.title('Precision-Recall Curve (Class {})'.format(class_num))
         plt.savefig('outputs/predictive_modeling/classification/base_learners/svm/precision_recall_curve_class_{}.png'.format(class_num))
-        plt.show()
+        plt.close()
 
     # No feature importance for SVM (maybe add coefficient based feature importance later)
 

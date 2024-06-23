@@ -1,1 +1,1 @@
-{"algorithm": "ball_tree", "leaf_size": 21, "metric": "minkowski", "n_neighbors": 177, "p": 5.679835610086079, "weights": "uniform"}
+{"algorithm": "ball_tree", "leaf_size": 364, "metric": "manhattan", "n_neighbors": 171, "p": 43.42220092469763, "weights": "distance"}

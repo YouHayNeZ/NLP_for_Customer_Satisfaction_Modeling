@@ -79,7 +79,7 @@ def main():
     parallel_coordinates(mae_losses_df, 'mae', colormap='viridis', alpha=0.25)
     plt.legend().remove()
     plt.savefig('outputs/predictive_modeling/regression/ensemble/ensemble_parallel_coordinates.png')
-    plt.show()
+    plt.close()
 
     mae_scores = mae_losses_df.sort_values(by='mae', ascending=True)
     mae_scores.to_csv('outputs/predictive_modeling/regression/ensemble/ensemble_weighted_mae_scores.csv')
@@ -197,7 +197,7 @@ def main():
     parallel_coordinates(results, 'mean_test_score', colormap='viridis', alpha = 0.25)
     plt.legend().remove()
     plt.savefig('outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_parallel_coordinates.png')
-    plt.show()
+    plt.close()
     # purple = best, yellow = worst
 
     # Best model, hyperparameters and predictions
@@ -226,7 +226,7 @@ def main():
     plt.xticks(rotation=90)
     plt.title('Feature Importance')
     plt.savefig('outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_feature_importance.png')
-    plt.show()
+    plt.close()
 
     # Plot predictions vs real values over time (only regression)
     test_preds_vs_real_over_time(test_preds, 'outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_predictions.png')
@@ -285,7 +285,7 @@ def main():
     parallel_coordinates(results2, 'mean_test_score', colormap='viridis', alpha = 0.25)
     plt.legend().remove()
     plt.savefig('outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_base_only_parallel_coordinates.png')
-    plt.show()
+    plt.close()
     # purple = best, yellow = worst
 
     # Best model, hyperparameters and predictions
@@ -314,7 +314,7 @@ def main():
     plt.xticks(rotation=90)
     plt.title('Feature Importance')
     plt.savefig('outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_base_only_feature_importance.png')
-    plt.show()
+    plt.close()
 
     # Plot predictions vs real values over time (only regression)
     test_preds_vs_real_over_time(test_preds2, 'outputs/predictive_modeling/regression/ensemble/xgboost_ensemble_base_only_predictions.png')

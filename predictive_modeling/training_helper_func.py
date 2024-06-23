@@ -63,8 +63,8 @@ def best_model_and_predictions(estimator, X_train, X_test, y_train, y_test, date
     y_train = y_train + 1
     y_test = y_test + 1
 
-    train_preds = pd.DataFrame({'Predicted Overall Rating': train_preds, 'Real Overall Rating': y_train, 'Date Flown': datetime_train['Date Flown']}).set_index('Date Flown')
-    test_preds = pd.DataFrame({'Predicted Overall Rating': test_preds, 'Real Overall Rating': y_test, 'Date Flown': datetime_test['Date Flown']}).set_index('Date Flown')
+    train_preds = pd.DataFrame({'Predicted Overall Rating': train_preds, 'Real Overall Rating': y_train, 'Date Published': datetime_train['Date Published']}).set_index('Date Published')
+    test_preds = pd.DataFrame({'Predicted Overall Rating': test_preds, 'Real Overall Rating': y_test, 'Date Published': datetime_test['Date Published']}).set_index('Date Published')
 
     train_preds.to_csv(train_preds_path)
     test_preds.to_csv(test_preds_path)
@@ -104,7 +104,7 @@ def confusion_matrix_and_metrics(X_test, y_test, test_preds, model, cm_path, sco
         for j in range(cm.shape[1]):
             plt.text(j, i, cm[i, j], ha='center', va='center', color='white')
     plt.savefig(cm_path)
-    plt.show()
+    plt.close()
 
 # Regression metrics (only regression)
 def regression_metrics(y_test, test_preds, scores_path):
@@ -123,7 +123,7 @@ def regression_metrics(y_test, test_preds, scores_path):
 
 # Plot predictions vs real values over time (only regression)
 def test_preds_vs_real_over_time(test_preds, path):
-    test_predictions = test_preds.groupby('Date Flown').mean()
+    test_predictions = test_preds.groupby('Date Published').mean()
 
     plt.figure(figsize=(14, 7))
     plt.plot(test_predictions.index, test_predictions['Predicted Overall Rating'], label='Predicted Overall Rating (Test)')
@@ -131,4 +131,4 @@ def test_preds_vs_real_over_time(test_preds, path):
     plt.legend()
     plt.title('Predicted vs Real Overall Rating over Time')
     plt.savefig(path)
-    plt.show()
+    plt.close()
