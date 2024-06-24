@@ -512,7 +512,7 @@ def create_pipeline(file_path, feature_selection=True):
 
     if feature_selection:
         # Feature selection: only keep 100 features with highest feature importance score (according to optimized random forest model based on all features)
-        all_features = pd.read_csv('outputs/predictive_modeling/classification/base_learners/rf/rf_feature_importance.csv')
+        all_features = pd.read_csv('outputs/predictive_modeling/classification/feature_selection/feature_importance_scores.csv')
         top_100_features = all_features['feature'][:100].tolist()
         X_train = X_train[top_100_features]
         X_val = X_val[top_100_features]

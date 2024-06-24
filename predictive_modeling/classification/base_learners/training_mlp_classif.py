@@ -19,33 +19,34 @@ def main():
     X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv')
 
     # Define the range of layer sizes
-    layer_sizes = [25, 50, 75, 100,125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500]
+    layer_sizes = [50, 75, 100, 150, 175, 200, 250, 275, 300, 350, 375, 400, 425, 450, 475, 500]
 
     # Function to generate hidden layer sizes with random number of layers between 2 and 20
     def random_hidden_layers():
-        num_layers = random.randint(3, 7)
+        num_layers = random.randint(3, 8)
         return tuple(random.choice(layer_sizes) for _ in range(num_layers))
 
     # Define the range of hyperparameters
     param_dist = {
         'hidden_layer_sizes': [random_hidden_layers() for _ in range(100)],
-        'activation': ['tanh', 'relu', 'logistic'],
-        'solver': ['adam', 'sgd'],
-        'alpha': uniform(0.0001, 1.0),
+        'activation': ['tanh'],
+        'solver': ['adam'],
+        'alpha': uniform(0.01, 1.0),
         'learning_rate': ['constant','adaptive', 'invscaling'],
-        'max_iter': randint(50, 5000),
+        'max_iter': [5000],
         'early_stopping': [True],
-        'n_iter_no_change': randint(1, 10),
-        'tol': uniform(0.0001, 0.005)
+        'n_iter_no_change': [10],
+        'tol': [0.001]
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(MLPClassifier(), 'outputs/predictive_modeling/classification/base_learners/mlp/mlp_cv_results.csv', param_dist, X_train, y_train, n_iter=10)
+    random_search, results = hpo_and_cv_results(MLPClassifier(), 'outputs/predictive_modeling/classification/base_learners/mlp/mlp_cv_results.csv', param_dist, X_train, y_train, n_iter=750, cv=10)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()
-    results = results.rename(columns={'param_hidden_layer_sizes': 'hidden_layer_sizes', 'param_activation': 'activation', 'param_solver': 'solver', 'param_alpha': 'alpha', 'param_learning_rate': 'learning_rate', 'param_max_iter': 'max_iter', 'param_early_stopping': 'early_stopping'})
-    for param in ['alpha', 'max_iter']:
+    results = results.rename(columns={'param_hidden_layer_sizes': 'hidden_layer_sizes', 'param_activation': 'activation', 'param_solver': 'solver', 'param_alpha': 'alpha', 'param_learning_rate': 'learning_rate', 'param_max_iter': 'max_iter', 'param_early_stopping': 'early_stopping', 'param_n_iter_no_change': 'n_iter_no_change', 'param_tol': 'tol'})
+    results = results.dropna(subset=['mean_test_score'])
+    for param in ['alpha']:
         results[param] = scaler.fit_transform(results[param].values.reshape(-1, 1))
     results_pc = results.drop(columns=['std_test_score', 'rank_test_score', 'hidden_layer_sizes', 'activation', 'solver', 'learning_rate', 'early_stopping'])
     plt.figure(figsize=(14, 7))

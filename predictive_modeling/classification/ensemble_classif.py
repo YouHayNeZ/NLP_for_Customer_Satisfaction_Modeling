@@ -62,6 +62,7 @@ def main():
 
     # Create ensemble: majority voting (weighted)
     log_loss_scores = []
+    weights = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
     while len(log_loss_scores) < 1:
         w_rf = random.uniform(0, 1)
@@ -74,6 +75,21 @@ def main():
         log_loss_score = log_loss(y_val, ensemble_weighted.predict_proba(X_val))
         log_loss_scores.append([w_knn, w_rf, w_svm, w_nb, w_mlp, log_loss_score])
         print("finished iteration ", len(log_loss_scores))
+
+    # for w_rf in weights:
+    #     for w_knn in weights:
+    #         for w_svm in weights:
+    #             for w_nb in weights:
+    #                 for w_mlp in weights:
+    #                     if w_rf + w_knn + w_svm + w_nb + w_mlp > 1:
+    #                         continue
+    #                     if len(log_loss_scores) >= 100:
+    #                          break
+    #                     ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb), ('mlp', mlp)], voting='soft', n_jobs=-1, weights=[w_knn, w_rf, w_svm, w_nb, w_mlp])
+    #                     ensemble_weighted.fit(X_train, y_train)
+    #                     log_loss_score = log_loss(y_val, ensemble_weighted.predict_proba(X_val))
+    #                     log_loss_scores.append([w_knn, w_rf, w_svm, w_nb, w_mlp, log_loss_score])
+    #                     print("finished iteration ", len(log_loss_scores))
 
     # Convert the list to a DataFrame
     log_loss_scores_df = pd.DataFrame(log_loss_scores, columns=['w_knn', 'w_rf', 'w_svm', 'w_nb', 'w_mlp', 'log_loss'])

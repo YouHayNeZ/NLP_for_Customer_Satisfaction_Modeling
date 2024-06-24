@@ -14,8 +14,9 @@ from preprocessing import *
 from predictive_modeling.training_helper_func import *
 
 def main():
+    feature_selection = True
     # Prepare data for training
-    X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv', feature_selection=False)
+    X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv', feature_selection=feature_selection)
 
     # Define the range of hyperparameters
     param_dist = {
@@ -93,14 +94,17 @@ def main():
         plt.savefig('outputs/predictive_modeling/classification/base_learners/rf/precision_recall_curve_class_{}.png'.format(cls))
         plt.close()
 
-    # Create feature importance plot for top 15
+    # Save feature importance scores
     feature_importance = best_model.feature_importances_
     features = X_train.columns
     feature_importance_scores = dict(zip(features, feature_importance))
     feature_importance_scores = dict(sorted(feature_importance_scores.items(), key=lambda x: x[1], reverse=True))
     feature_importance_df = pd.DataFrame.from_dict(feature_importance_scores, orient='index', columns=['importance'])
     feature_importance_df.index.name = 'feature'
-    feature_importance_df.to_csv('outputs/predictive_modeling/classification/base_learners/rf/rf_feature_importance.csv')
+    if feature_selection:
+        feature_importance_df.to_csv('outputs/predictive_modeling/classification/base_learners/rf/rf_feature_importance.csv')
+    else:
+        feature_importance_df.to_csv('outputs/predictive_modeling/feature_selection/feature_importance_scores.csv')
 
     # Feature imporance plot (with visible feature names, only top 15)
     feature_importance_scores = dict(sorted(feature_importance_scores.items(), key=lambda x: x[1], reverse=True)[:15])
@@ -113,18 +117,19 @@ def main():
     plt.title('Feature Importance Plot (Top 15)')
     plt.savefig('outputs/predictive_modeling/classification/base_learners/rf/rf_feature_importance_top_15.png')
     plt.close()
-
-    # Feature importance plot (without feature names, all features)
-    feature_importance = pd.read_csv('outputs/predictive_modeling/classification/base_learners/rf/rf_feature_importance.csv')['importance']
-    plt.figure(figsize=(14, 7))
-    plt.bar(range(len(feature_importance)), feature_importance)
-    plt.axvline(x=146, color='r', linestyle='--')
-    plt.text(200, 0.05, 'Cutoff Threshold at 100 \n Parameters (Top 50%)', verticalalignment='center', horizontalalignment='center', size=15, color='r')
-    plt.ylabel('Feature Importance')
-    plt.xlabel('Feature')
-    plt.title('Feature Importance (All Features)')
-    plt.savefig('outputs/predictive_modeling/classification/base_learners/rf/rf_feature_importance.png')
-    plt.close()
+    
+    if feature_selection==False:
+        # Feature importance plot (without feature names, all features)
+        feature_importance = pd.read_csv('outputs/predictive_modeling/classification/base_learners/rf/rf_feature_importance.csv')['importance']
+        plt.figure(figsize=(14, 7))
+        plt.bar(range(len(feature_importance)), feature_importance)
+        plt.axvline(x=146, color='r', linestyle='--')
+        plt.text(200, 0.05, 'Cutoff Threshold at 100 \n Parameters (Top 50%)', verticalalignment='center', horizontalalignment='center', size=15, color='r')
+        plt.ylabel('Feature Importance')
+        plt.xlabel('Feature')
+        plt.title('Feature Importance (All Features)')
+        plt.savefig('outputs/predictive_modeling/feature_selection/feature_importance_image.png')
+        plt.close()
 
 if __name__ == '__main__':
     main()
