@@ -21,7 +21,8 @@ def main():
         'alpha_1': uniform(1e-6, 10),
         'alpha_2': uniform(1e-6, 10),
         'lambda_1': uniform(1e-6, 10),
-        'lambda_2': uniform(1e-6, 3)
+        'lambda_2': uniform(1e-6, 3),
+        'tol': [0.0001, 0.005]
     }
 
     # Hyperparameter tuning & CV results
@@ -29,8 +30,8 @@ def main():
 
     # Parallel coordinate plot without max_features and bootstrap
     scaler = MinMaxScaler()
-    results = results.rename(columns={'param_alpha_1': 'alpha_1', 'param_alpha_2': 'alpha_2', 'param_lambda_1': 'lambda_1', 'param_lambda_2': 'lambda_2'})
-    for param in ['alpha_1', 'alpha_2', 'lambda_1', 'lambda_2']:
+    results = results.rename(columns={'param_alpha_1': 'alpha_1', 'param_alpha_2': 'alpha_2', 'param_lambda_1': 'lambda_1', 'param_lambda_2': 'lambda_2', 'param_tol': 'tol'})
+    for param in ['alpha_1', 'alpha_2', 'lambda_1', 'lambda_2', 'tol']:
         results[param] = scaler.fit_transform(results[param].values.reshape(-1, 1))
     results = results.drop(columns=['std_test_score', 'rank_test_score'])
     plt.figure(figsize=(14, 7))

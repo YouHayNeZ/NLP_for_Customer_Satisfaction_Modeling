@@ -16,15 +16,15 @@ from predictive_modeling.training_helper_func import *
 def main():
     # Prepare data for training
     X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv')
-
+    
     # Define the range of hyperparameters (Naive Bayes doesn't have many hyperparameters to tune)
     param_dist = { 
-        'alpha': uniform(0.0, 1.0),
-        'fit_prior': [False, True]
+        'alpha': uniform(2.395, 0.001),
+        'fit_prior': [True]
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(MultinomialNB(), 'outputs/predictive_modeling/classification/base_learners/nb/nb_cv_results.csv', param_dist, X_train, y_train)
+    random_search, results = hpo_and_cv_results(MultinomialNB(), 'outputs/predictive_modeling/classification/base_learners/nb/nb_cv_results.csv', param_dist, X_train, y_train, n_iter=1500)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()

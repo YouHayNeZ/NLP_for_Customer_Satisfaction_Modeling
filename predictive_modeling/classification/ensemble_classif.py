@@ -30,7 +30,7 @@ def main():
 
 
 
-    # Create ensemble (unweighted)
+    # Create ensemble: majority voting (unweighted)
     ensemble_unweighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb), ('mlp', mlp)], voting='soft', n_jobs=-1)
     ensemble_unweighted.fit(X_train, y_train)
     joblib.dump(ensemble_unweighted, 'outputs/predictive_modeling/classification/ensemble/ensemble_unweighted_model.pkl')
@@ -60,10 +60,10 @@ def main():
 
 
 
-    # Create ensemble (weighted)
+    # Create ensemble: majority voting (weighted)
     log_loss_scores = []
 
-    while len(log_loss_scores) < 10:
+    while len(log_loss_scores) < 1:
         w_rf = random.uniform(0, 1)
         w_knn = random.uniform(0, 1)
         w_svm = random.uniform(0, 1)
@@ -73,6 +73,7 @@ def main():
         ensemble_weighted.fit(X_train, y_train)
         log_loss_score = log_loss(y_val, ensemble_weighted.predict_proba(X_val))
         log_loss_scores.append([w_knn, w_rf, w_svm, w_nb, w_mlp, log_loss_score])
+        print("finished iteration ", len(log_loss_scores))
 
     # Convert the list to a DataFrame
     log_loss_scores_df = pd.DataFrame(log_loss_scores, columns=['w_knn', 'w_rf', 'w_svm', 'w_nb', 'w_mlp', 'log_loss'])
@@ -117,7 +118,7 @@ def main():
 
 
 
-    # Stacking models (using XGBoost)
+    # Creating ensemble: Stacking (using XGBoost)
 
     # Create data frame with training predictions of all models and real labels
     X_train_stacking = pd.DataFrame({
@@ -172,18 +173,16 @@ def main():
     }
 
     # Hyperparameter tuning
-    random_search = RandomizedSearchCV(estimator=xgb.XGBClassifier(), 
+    random_search = RandomizedSearchCV(estimator=xgb.XGBClassifier(eval_metric='mlogloss', early_stopping_rounds=5), 
                                 param_distributions=param_dist, 
-                                n_iter=100, 
-                                cv=5, 
+                                n_iter=1, 
+                                cv=10, 
                                 verbose=2, 
                                 scoring='neg_log_loss',
                                 random_state=42, 
                                 n_jobs=-1)
     random_search.fit(X_train, y_train,
-                        early_stopping_rounds=20,
-                        eval_set=[(X_val, y_val)],
-                        eval_metric='mlogloss',
+                        eval_set=[(X_val, y_val)]
                     )
 
     # Save results of RandomizedSearchCV
@@ -277,7 +276,7 @@ def main():
 
 
 
-    # Stacking models (using XGBoost) - base models only without any ryanair data
+    # Create ensemble: stacking (using XGBoost) - base models only without any ryanair data
     # Define the range of hyperparameters
     param_dist2 = {
         'n_estimators': randint(100, 2000),
@@ -293,18 +292,16 @@ def main():
     }
 
     # Hyperparameter tuning
-    random_search2 = RandomizedSearchCV(estimator=xgb.XGBClassifier(), 
+    random_search2 = RandomizedSearchCV(estimator=xgb.XGBClassifier(eval_metric='mlogloss', early_stopping_rounds=5), 
                                 param_distributions=param_dist2, 
-                                n_iter=100, 
-                                cv=5, 
+                                n_iter=1, 
+                                cv=10, 
                                 verbose=2, 
                                 scoring='neg_log_loss',
                                 random_state=42, 
                                 n_jobs=-1)
     random_search2.fit(X_train_stacking, y_train,
-                        early_stopping_rounds=20,
                         eval_set=[(X_val_stacking, y_val)],
-                        eval_metric='mlogloss',
                     )
 
     # Save results of RandomizedSearchCV

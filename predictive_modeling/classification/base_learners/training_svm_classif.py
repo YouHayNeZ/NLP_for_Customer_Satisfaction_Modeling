@@ -19,23 +19,25 @@ def main():
 
     # Define the range of hyperparameters
     param_dist = {
-        'C': uniform(0.000001, 100),
-        'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
-        'gamma': ['scale', 'auto'],
-        'degree': randint(1, 10),
+        'C': uniform(2.5, 1),
+        'kernel': ['rbf'],
+        'gamma': ['auto'],
+        'degree': randint(1, 15),
         'class_weight': ['balanced'],
-        'probability': [True]
+        'probability': [True],
+        'shrinking': [True, False],
+        'tol': uniform(0.001, 0.2),
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(SVC(), 'outputs/predictive_modeling/classification/base_learners/svm/svm_cv_results.csv', param_dist, X_train, y_train)
+    random_search, results = hpo_and_cv_results(SVC(), 'outputs/predictive_modeling/classification/base_learners/svm/svm_cv_results.csv', param_dist, X_train, y_train, n_iter=250)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()
-    results = results.rename(columns={'param_C': 'C', 'param_kernel': 'kernel', 'param_gamma': 'gamma', 'param_degree': 'degree', 'param_class_weight': 'class_weight'})
-    for param in ['C', 'degree']:
+    results = results.rename(columns={'param_C': 'C', 'param_kernel': 'kernel', 'param_gamma': 'gamma', 'param_degree': 'degree', 'param_class_weight': 'class_weight', 'param_shrinking': 'shrinking', 'param_probability': 'probability', 'param_tol': 'tol'})
+    for param in ['C', 'degree', 'tol']:
         results[param] = scaler.fit_transform(results[param].values.reshape(-1, 1))
-    results_pc = results.drop(columns=['std_test_score', 'rank_test_score', 'kernel', 'gamma', 'class_weight'])
+    results_pc = results.drop(columns=['std_test_score', 'rank_test_score', 'kernel', 'gamma', 'class_weight', 'probability', 'shrinking'])
     plt.figure(figsize=(14, 7))
     parallel_coordinates(results_pc, 'mean_test_score', colormap='viridis', alpha = 0.25)
     plt.legend().remove()
@@ -44,7 +46,7 @@ def main():
     # purple = best, yellow = worst
 
     # Count the percentage of each hyperparameter combination (top 10% and bottom 10%)
-    perc_of_hp_combinations(results, ['kernel', 'gamma'])
+    perc_of_hp_combinations(results, ['kernel', 'gamma', 'shrinking', 'probability', 'class_weight'])
 
     # Best model and predictions
     best_model, train_preds, test_preds, y_train, y_test = best_model_and_predictions(random_search, X_train, X_test, y_train, y_test, datetime_train, datetime_test, 
@@ -93,7 +95,7 @@ def main():
         plt.savefig('outputs/predictive_modeling/classification/base_learners/svm/precision_recall_curve_class_{}.png'.format(class_num))
         plt.close()
 
-    # No feature importance for SVM (maybe add coefficient based feature importance later)
+    # No feature importance for SVM
 
 if __name__ == '__main__':
     main()

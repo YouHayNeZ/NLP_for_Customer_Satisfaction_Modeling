@@ -15,11 +15,11 @@ from predictive_modeling.training_helper_func import *
 
 def main():
     # Prepare data for training
-    X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv')
+    X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv', feature_selection=False)
 
     # Define the range of hyperparameters
     param_dist = {
-        'n_estimators': randint(10, 1500),
+        'n_estimators': randint(10, 2000),
         'max_features': ["sqrt", "log2", None],
         'max_depth': randint(1, 200),
         'min_samples_split': randint(2, 40),
@@ -28,7 +28,7 @@ def main():
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(RandomForestRegressor(), 'outputs/predictive_modeling/regression/base_learners/rf/rf_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error')
+    random_search, results = hpo_and_cv_results(RandomForestRegressor(criterion='absolute_error'), 'outputs/predictive_modeling/regression/base_learners/rf/rf_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error')
 
     # Parallel coordinate plot without max_features and bootstrap
     scaler = MinMaxScaler()

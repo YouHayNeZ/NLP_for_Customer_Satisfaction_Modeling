@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import json
 
 # Hyperparameter tuning and CV results
-def hpo_and_cv_results(estimator, cv_results_path, param_dist, X_train, y_train, scoring='neg_log_loss', n_iter=1500, cv=5, verbose=2, random_state=42, n_jobs=-1):
+def hpo_and_cv_results(estimator, cv_results_path, param_dist, X_train, y_train, scoring='neg_log_loss', n_iter=1500, cv=10, verbose=2, random_state=42, n_jobs=-1):
     random_search = RandomizedSearchCV(estimator=estimator, 
                                        param_distributions=param_dist, 
                                        n_iter=n_iter, 

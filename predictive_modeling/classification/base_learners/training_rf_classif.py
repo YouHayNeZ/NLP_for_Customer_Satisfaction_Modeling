@@ -15,20 +15,20 @@ from predictive_modeling.training_helper_func import *
 
 def main():
     # Prepare data for training
-    X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv')
+    X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv', feature_selection=False)
 
     # Define the range of hyperparameters
     param_dist = {
-        'n_estimators': randint(10, 1200),
-        'max_features': ["sqrt", "log2", None],
-        'max_depth': randint(1, 200),
-        'min_samples_split': randint(5, 40),
-        'min_samples_leaf': randint(1, 25),
-        'bootstrap': [True, False]
+        'n_estimators': randint(500, 1900),
+        'max_features': ["sqrt"],
+        'max_depth': randint(50, 500),
+        'min_samples_split': randint(20, 35),
+        'min_samples_leaf': randint(1, 5),
+        'bootstrap': [False]
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(RandomForestClassifier(), 'outputs/predictive_modeling/classification/base_learners/rf/rf_cv_results.csv', param_dist, X_train, y_train, n_iter=10)
+    random_search, results = hpo_and_cv_results(RandomForestClassifier(criterion='log_loss'), 'outputs/predictive_modeling/classification/base_learners/rf/rf_cv_results.csv', param_dist, X_train, y_train, n_iter=500)
 
     # Parallel coordinate plot without max_features and bootstrap
     scaler = MinMaxScaler()
@@ -97,16 +97,32 @@ def main():
     feature_importance = best_model.feature_importances_
     features = X_train.columns
     feature_importance_scores = dict(zip(features, feature_importance))
-    with open('outputs/predictive_modeling/classification/base_learners/rf/rf_feature_importance.json', 'w') as f:
-        json.dump(feature_importance_scores, f)
+    feature_importance_scores = dict(sorted(feature_importance_scores.items(), key=lambda x: x[1], reverse=True))
+    feature_importance_df = pd.DataFrame.from_dict(feature_importance_scores, orient='index', columns=['importance'])
+    feature_importance_df.index.name = 'feature'
+    feature_importance_df.to_csv('outputs/predictive_modeling/classification/base_learners/rf/rf_feature_importance.csv')
 
+    # Feature imporance plot (with visible feature names, only top 15)
     feature_importance_scores = dict(sorted(feature_importance_scores.items(), key=lambda x: x[1], reverse=True)[:15])
     plt.figure(figsize=(14, 7))
     plt.bar(feature_importance_scores.keys(), feature_importance_scores.values())
     plt.ylabel('Feature Importance')
     plt.xlabel('Feature')
     plt.xticks(rotation=90)
-    plt.title('Feature Importance')
+    plt.tight_layout()
+    plt.title('Feature Importance Plot (Top 15)')
+    plt.savefig('outputs/predictive_modeling/classification/base_learners/rf/rf_feature_importance_top_15.png')
+    plt.close()
+
+    # Feature importance plot (without feature names, all features)
+    feature_importance = pd.read_csv('outputs/predictive_modeling/classification/base_learners/rf/rf_feature_importance.csv')['importance']
+    plt.figure(figsize=(14, 7))
+    plt.bar(range(len(feature_importance)), feature_importance)
+    plt.axvline(x=146, color='r', linestyle='--')
+    plt.text(200, 0.05, 'Cutoff Threshold at 100 \n Parameters (Top 50%)', verticalalignment='center', horizontalalignment='center', size=15, color='r')
+    plt.ylabel('Feature Importance')
+    plt.xlabel('Feature')
+    plt.title('Feature Importance (All Features)')
     plt.savefig('outputs/predictive_modeling/classification/base_learners/rf/rf_feature_importance.png')
     plt.close()
 

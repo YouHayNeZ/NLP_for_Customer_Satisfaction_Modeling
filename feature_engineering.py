@@ -44,36 +44,30 @@ def regular_feature_engineering(df):
 # Sentiment feature engineering
 def sentiment_feature_engineering(df):
     sentiments_data = pd.read_csv('outputs/nlp/sentiment_analysis/openai_sentiment_analysis.csv')
-    sentiments_data = sentiments_data.dropna(subset=['Overall Rating'])
     openai_sentiment = sentiments_data['openai_sentiment']
     df['Sentiment'] = openai_sentiment
+    df['Sentiment'] = df['Sentiment'].replace(-1, 'negative')
+    df['Sentiment'] = df['Sentiment'].replace(0, 'neutral')
+    df['Sentiment'] = df['Sentiment'].replace(1, 'positive')
     return df
 
 
 # Topic feature engineering
 def topic_feature_engineering(df):
-    lda_topic_modeling_data = pd.read_csv('outputs/nlp/topic_modeling/comments_with_lda_topics.csv')
+    topics = pd.read_csv('outputs/nlp/topic_modeling/openai_topic_modeling.csv')
     """
-    Topic 1: passenger, plane, staff, board, sit, seat, cabin_crew, come, boarding, aircraft
-    Topic 2: pay, seat, airline, book, check, charge, ticket, cheap, people, return
-    Topic 3: bag, pay, check, luggage, hold, hand_luggage, staff, priority, queue, baggage
-    Topic 4: time, delay, hour, plane, minute, wait, late, arrive, leave, people
-    Topic 5: tell, check, airport, try, customer_service, hour, book, refund, ask, cancel
-    Topic 6: time, seat, good, service, staff, price, airline, return, great, problem
-    Topic 7: time, crew, good, return, cabin_crew, boarding, land, arrive, leg_room, journey
+    All 8 topics:
+    Issues with luggage fees, Problems with boarding process, Good punctuality, Poor customer service, Comfort and seat space issues, Miscellaneous fees and charges, Delays and cancellations, Cleanliness and maintenance concerns
     """
-    # Probability of the topics - numeric
-    df['topic1'] = lda_topic_modeling_data['Topic_1_probability']
-    df['topic2'] = lda_topic_modeling_data['Topic_2_probability']
-    df['topic3'] = lda_topic_modeling_data['Topic_3_probability']
-    df['topic4'] = lda_topic_modeling_data['Topic_4_probability']
-    df['topic5'] = lda_topic_modeling_data['Topic_5_probability']
-    df['topic6'] = lda_topic_modeling_data['Topic_6_probability']
-    df['topic7'] = lda_topic_modeling_data['Topic_7_probability']
-    # Name of the topic with the highest probability - string
-    df['main_topic'] = lda_topic_modeling_data['Max_Probability_Topic']
-    # Keywords of tha topic - string
-    #df['topic_keywords'] = lda_topic_modeling_data['Max_Topic_Words']
+    # Probability of the topics (dummies)
+    df['topic_luggage'] = topics['topics'].apply(lambda x: 'Issues with luggage fees' in x)
+    df['topic_boarding'] = topics['topics'].apply(lambda x: 'Problems with boarding process' in x)
+    df['topic_punctual'] = topics['topics'].apply(lambda x: 'Good punctuality' in x)
+    df['topic_service'] = topics['topics'].apply(lambda x: 'Poor customer service' in x)
+    df['topic_comfort'] = topics['topics'].apply(lambda x: 'Comfort and seat space issues' in x)
+    df['topic_other_fees'] = topics['topics'].apply(lambda x: 'Miscellaneous fees and charges' in x)
+    df['topic_delay'] = topics['topics'].apply(lambda x: 'Delays and cancellations' in x)
+    df['topic_clean'] = topics['topics'].apply(lambda x: 'Cleanliness and maintenance concerns' in x)
     return df
 
 

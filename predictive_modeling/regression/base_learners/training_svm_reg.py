@@ -21,7 +21,7 @@ def main():
         'C': uniform(0.000001, 100),
         'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
         'gamma': ['scale', 'auto'],
-        'degree': randint(1, 10),
+        'degree': randint(1, 15),
         'epsilon': uniform(0.000001, 1),
     }
 

@@ -3,7 +3,8 @@
 # Importing the libraries
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import MinMaxScaler
-from scipy.stats import loguniform, randint
+from scipy.stats import uniform, randint
+import random
 import matplotlib.pyplot as plt
 from pandas.plotting import parallel_coordinates
 import os
@@ -17,19 +18,29 @@ def main():
     # Prepare data for training
     X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv')
 
+    # Define the range of layer sizes
+    layer_sizes = [25, 50, 75, 100,125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500]
+
+    # Function to generate hidden layer sizes with random number of layers between 2 and 20
+    def random_hidden_layers():
+        num_layers = random.randint(3, 7)
+        return tuple(random.choice(layer_sizes) for _ in range(num_layers))
+
     # Define the range of hyperparameters
     param_dist = {
-        'hidden_layer_sizes': [(50,50,50), (50,100,50), (100,)],
+        'hidden_layer_sizes': [random_hidden_layers() for _ in range(100)],
         'activation': ['tanh', 'relu', 'logistic'],
         'solver': ['adam', 'sgd'],
-        'alpha': loguniform(0.0001, 0.1),
-        'learning_rate': ['constant','adaptive'],
-        'max_iter': randint(50, 1000),
-        'early_stopping': [True]
+        'alpha': uniform(0.0001, 1.0),
+        'learning_rate': ['constant','adaptive', 'invscaling'],
+        'max_iter': randint(50, 5000),
+        'early_stopping': [True],
+        'n_iter_no_change': randint(1, 10),
+        'tol': uniform(0.0001, 0.005)
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(MLPClassifier(), 'outputs/predictive_modeling/classification/base_learners/mlp/mlp_cv_results.csv', param_dist, X_train, y_train, n_iter=50)
+    random_search, results = hpo_and_cv_results(MLPClassifier(), 'outputs/predictive_modeling/classification/base_learners/mlp/mlp_cv_results.csv', param_dist, X_train, y_train, n_iter=10)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()

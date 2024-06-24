@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.neighbors import KNeighborsClassifier
@@ -201,12 +201,14 @@ def clean_data(data):
         'Steven Bouchere16th September 2013': np.nan
     })
 
-    # # Bin categories that make up less than 0.5% of observations
-    # for column in ['Aircraft', 'Origin', 'Destination', 'Passenger Country']:
-    #     country_counts = data[column].value_counts().to_dict()
-    #     for country, count in country_counts.items():
-    #         if count < 5:
-    #             data[column] = data[column].replace({country: 'Other'})
+    #### BINNING IS TURNED ON!!! ####
+
+    # Bin categories that make up less than 0.5% of observations
+    for column in ['Aircraft', 'Origin', 'Destination', 'Passenger Country']:
+        country_counts = data[column].value_counts().to_dict()
+        for country, count in country_counts.items():
+            if count < 5:
+                data[column] = data[column].replace({country: 'Other'})
 
     # Drop columns that are not used
     data = data.drop(columns=['Comment', 'Comment title'])
@@ -246,13 +248,10 @@ def splitting_data(data):
 
     return X_train, X_val, X_test, y_train, y_val, y_test
 
-# Normalization of continuous variables
-def normalize_continuous(X_train, X_val, X_test):
-    scaler = StandardScaler()
-    continuous_vars = ['exclamation_marks', 'question_marks', 'comment_length', 'topic1', 'topic2', 'topic3', 'topic4', 'topic5', 'topic6', 'topic7']
-    #####
-    # Add features here if necessary
-    #####
+# Scale of continuous variables
+def scale_continuous(X_train, X_val, X_test):
+    scaler = MinMaxScaler()
+    continuous_vars = ['exclamation_marks', 'question_marks', 'comment_length']
     X_train[continuous_vars] = scaler.fit_transform(X_train[continuous_vars])
     X_val[continuous_vars] = scaler.transform(X_val[continuous_vars])
     X_test[continuous_vars] = scaler.transform(X_test[continuous_vars])
@@ -465,7 +464,7 @@ def one_hot_encode(X_train, X_val, X_test):
     return X_train_encoded, X_val_encoded, X_test_encoded
 
 # Create pipeline
-def create_pipeline(file_path):
+def create_pipeline(file_path, feature_selection=True):
     data = import_data(file_path)
     data = clean_data(data)
     data = create_datetime(data)
@@ -480,7 +479,7 @@ def create_pipeline(file_path):
     X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, stratify=y_temp, random_state=42)
 
     # Normalize continuous variables
-    X_train, X_val, X_test = normalize_continuous(X_train, X_val, X_test)
+    X_train, X_val, X_test = scale_continuous(X_train, X_val, X_test)
 
     # Impute missing values
     X_train, X_val, X_test = impute_often_missing_values(X_train, X_val, X_test)
@@ -510,5 +509,13 @@ def create_pipeline(file_path):
     X_train = X_train.drop(columns=['Date Published'])
     X_val = X_val.drop(columns=['Date Published'])
     X_test = X_test.drop(columns=['Date Published'])
+
+    if feature_selection:
+        # Feature selection: only keep 100 features with highest feature importance score (according to optimized random forest model based on all features)
+        all_features = pd.read_csv('outputs/predictive_modeling/classification/base_learners/rf/rf_feature_importance.csv')
+        top_100_features = all_features['feature'][:100].tolist()
+        X_train = X_train[top_100_features]
+        X_val = X_val[top_100_features]
+        X_test = X_test[top_100_features]
 
     return X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data

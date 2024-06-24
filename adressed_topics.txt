@@ -1,4 +1,3 @@
-# Johannes batch (lines 2-118)
 - online check in (extra fee)
 - too large baggage/carry on (extra fee)
 - special service for people in wheelchair 
@@ -6,28 +5,19 @@
 - delay
 - "you get what you pay for" (fair value)
 - cheap fares
-
-# Niklas batch (119 - 238)
 - hidden costs
 - surprised that everything went smoothly --> they have bad expectations, but get positively surprised
 - kind of sarcasm especially, they think it was like a joke --> hard for sentiment analysis to spot that (bias)
-- too less space
+- too little space
 - 7 days prior checkin
-- too less information, got surprised
-- delays
-
-# Ece batch (356-472)
-- price performance (good for low cost)
-- delays and cancels
+- too little information (surprised)
 - good staff
 - bad staff
-- extra fee for normal luggage 'priority'
 - extra fee for printing boarding pass
-- cheap
 - on-time landing song -> kind of annoying for people since they have delays
 - comparison with other airlines (British Airways)
 - no seat allocation
 - improvement (sometimes for staff, sometimes for planes)
-- on-line check-in not working
+- online check-in not working
 - no legroom
 - bad customer service (not taking responsibility when something goes wrong)

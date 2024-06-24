@@ -73,7 +73,7 @@ print(topics_per_comment)
 
 df["topics"] = topics_per_comment
 # Save the DataFrame to a new CSV file
-df.to_csv("openai_topic_modeling.csv")
+df.to_csv("outputs/nlp/topic_modeling/openai_topic_modeling.csv")
 
 
 

@@ -6,7 +6,7 @@ from sklearn.metrics import roc_curve, auc, precision_recall_curve
 from sklearn.preprocessing import MinMaxScaler
 from pandas.plotting import parallel_coordinates
 import matplotlib.pyplot as plt
-from scipy.stats import uniform, randint
+from scipy.stats import uniform, randint, rv_discrete
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
@@ -17,18 +17,22 @@ def main():
     # Prepare data for training
     X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv')
 
+    # Define a custom distribution for n_neighbors
+    n_neighbors_choices = [randint(5, 21), randint(90, 111), randint(140, 181)]
+
     # Define the range of hyperparameters
     param_dist = {
-        'n_neighbors': randint(5, 500),
-        'weights': ['uniform', 'distance'],
-        'algorithm': ['ball_tree', 'kd_tree', 'brute'],
-        'leaf_size': randint(1, 500),
-        'p': uniform(1, 100),
-        'metric': ['euclidean', 'manhattan', 'minkowski', 'chebyshev']
+        #'n_neighbors': np.random.choice(n_neighbors_choices),
+        'n_neighbors': [98],
+        'weights': ['distance'],
+        'algorithm': ['kd_tree'],
+        'leaf_size': randint(360, 600),
+        'p': uniform(1, 400),
+        'metric': ['manhattan']
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(KNeighborsClassifier(), 'outputs/predictive_modeling/classification/base_learners/knn/knn_cv_results.csv', param_dist, X_train, y_train, n_iter=500)
+    random_search, results = hpo_and_cv_results(KNeighborsClassifier(), 'outputs/predictive_modeling/classification/base_learners/knn/knn_cv_results.csv', param_dist, X_train, y_train, n_iter=1500)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()

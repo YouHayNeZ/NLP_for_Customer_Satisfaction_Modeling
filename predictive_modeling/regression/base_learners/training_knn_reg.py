@@ -18,12 +18,12 @@ def main():
 
     # Define the range of hyperparameters
     param_dist = {
-        'n_neighbors': randint(1, 150),
+        'n_neighbors': randint(5, 500),
         'weights': ['uniform', 'distance'],
-        'algorithm': ['ball_tree', 'kd_tree', 'brute', 'auto'],
-        'leaf_size': randint(1, 200),
-        'p': uniform(1, 30),
-        'metric': ['euclidean', 'manhattan', 'minkowski']
+        'algorithm': ['ball_tree', 'kd_tree', 'brute'],
+        'leaf_size': randint(1, 500),
+        'p': uniform(1, 100),
+        'metric': ['euclidean', 'manhattan', 'minkowski', 'chebyshev']
     }
 
     # Hyperparameter tuning & CV results
