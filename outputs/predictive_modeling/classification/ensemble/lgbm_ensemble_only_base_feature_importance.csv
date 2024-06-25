@@ -1,0 +1,6 @@
+Feature,Importance
+nb,136
+svm,110
+rf,77
+mlp,72
+knn,55
