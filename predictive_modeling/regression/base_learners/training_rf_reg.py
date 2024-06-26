@@ -24,7 +24,7 @@ def main():
         'max_features': ["sqrt"],
         'max_depth': randint(20, 200),
         'min_samples_split': randint(2, 25),
-        'min_samples_leaf': randint(4, 9),
+        'min_samples_leaf': randint(5, 8),
         'bootstrap': [False]
     }
 

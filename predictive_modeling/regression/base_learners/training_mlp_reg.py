@@ -18,32 +18,33 @@ def main():
     X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv', classification=False)
 
     # Define the range of layer sizes
-    layer_sizes = [25, 50, 75, 100,125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500]
+    layer_sizes = [50, 75, 100, 150, 175, 200, 250, 275, 300, 350, 375, 400, 425, 450, 475, 500]
 
     # Function to generate hidden layer sizes with random number of layers between 2 and 20
     def random_hidden_layers():
-        num_layers = random.randint(3, 7)
+        num_layers = random.randint(4, 6)
         return tuple(random.choice(layer_sizes) for _ in range(num_layers))
 
     # Define the range of hyperparameters
     param_dist = {
         'hidden_layer_sizes': [random_hidden_layers() for _ in range(100)],
-        'activation': ['tanh', 'relu', 'logistic'],
+        'activation': ['relu'],
         'solver': ['adam', 'sgd'],
         'alpha': uniform(0.0001, 1.0),
         'learning_rate': ['constant','adaptive', 'invscaling'],
-        'max_iter': randint(50, 5000),
+        'max_iter': [7500],
         'early_stopping': [True],
-        'n_iter_no_change': randint(1, 10),
+        'n_iter_no_change': randint(12, 15),
         'tol': uniform(0.0001, 0.005)
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(MLPRegressor(), 'outputs/predictive_modeling/regression/base_learners/mlp/mlp_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error', n_iter=50)
+    random_search, results = hpo_and_cv_results(MLPRegressor(), 'outputs/predictive_modeling/regression/base_learners/mlp/mlp_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error', n_iter=250, cv=10)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()
     results = results.rename(columns={'param_hidden_layer_sizes': 'hidden_layer_sizes', 'param_activation': 'activation', 'param_solver': 'solver', 'param_alpha': 'alpha', 'param_learning_rate': 'learning_rate', 'param_max_iter': 'max_iter', 'param_early_stopping': 'early_stopping', 'param_n_iter_no_change': 'n_iter_no_change', 'param_tol': 'tol'})
+    results = results.dropna(subset=['mean_test_score'])
     for param in ['alpha', 'max_iter', 'n_iter_no_change', 'tol']:
         results[param] = scaler.fit_transform(results[param].values.reshape(-1, 1))
     results_pc = results.drop(columns=['std_test_score', 'rank_test_score', 'hidden_layer_sizes', 'activation', 'solver', 'learning_rate', 'early_stopping'])

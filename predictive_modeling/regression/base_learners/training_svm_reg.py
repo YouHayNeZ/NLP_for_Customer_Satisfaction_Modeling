@@ -18,11 +18,11 @@ def main():
 
     # Define the range of hyperparameters
     param_dist = {
-        'C': uniform(0.000001, 100),
-        'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
-        'gamma': ['scale', 'auto'],
-        'degree': randint(1, 15),
-        'epsilon': uniform(0.000001, 1),
+        'C': uniform(3.6, 0.2),
+        'kernel': ['rbf'],
+        'gamma': ['auto'],
+        'degree': randint(1, 30),
+        'epsilon': uniform(0.000001, 0.005),
     }
 
     # Hyperparameter tuning & CV results
@@ -31,7 +31,7 @@ def main():
     # Parallel coordinate plot
     scaler = MinMaxScaler()
     results = results.rename(columns={'param_C': 'C', 'param_kernel': 'kernel', 'param_gamma': 'gamma', 'param_degree': 'degree', 'param_epsilon': 'epsilon'})
-    for param in ['C', 'degree']:
+    for param in ['C', 'degree', 'epsilon']:
         results[param] = scaler.fit_transform(results[param].values.reshape(-1, 1))
     results_pc = results.drop(columns=['std_test_score', 'rank_test_score', 'kernel', 'gamma'])
     plt.figure(figsize=(14, 7))

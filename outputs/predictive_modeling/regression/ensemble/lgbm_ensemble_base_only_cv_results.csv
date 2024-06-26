@@ -1,0 +1,2 @@
+,param_n_estimators,param_learning_rate,param_max_depth,param_num_leaves,param_reg_lambda,param_min_child_weight,param_feature_fraction,param_bagging_fraction,param_bagging_freq,mean_test_score,std_test_score,rank_test_score
+0,221,0.07329939418114051,22,78,4.592488919658671,39,0.951207163345817,0.3807947176588889,1,-0.12650973442529337,0.02403770979166961,1

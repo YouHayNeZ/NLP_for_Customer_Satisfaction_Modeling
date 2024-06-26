@@ -18,15 +18,15 @@ def main():
 
     # Define the range of hyperparameters
     param_dist = {
-        'alpha_1': uniform(1e-6, 10),
-        'alpha_2': uniform(1e-6, 10),
-        'lambda_1': uniform(1e-6, 10),
-        'lambda_2': uniform(1e-6, 3),
-        'tol': [0.0001, 0.005]
+        'alpha_1': uniform(1e-6, 20),
+        'alpha_2': uniform(1e-6, 20),
+        'lambda_1': uniform(1e-6, 40),
+        'lambda_2': uniform(1e-6, 0.999),
+        'tol': uniform(0.00001, 0.0005)
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(BayesianRidge(), 'outputs/predictive_modeling/regression/base_learners/bayesian_ridge/bayesian_ridge_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error')
+    random_search, results = hpo_and_cv_results(BayesianRidge(), 'outputs/predictive_modeling/regression/base_learners/bayesian_ridge/bayesian_ridge_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error', n_iter=5000)
 
     # Parallel coordinate plot without max_features and bootstrap
     scaler = MinMaxScaler()

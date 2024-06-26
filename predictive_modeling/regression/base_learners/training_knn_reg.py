@@ -18,16 +18,16 @@ def main():
 
     # Define the range of hyperparameters
     param_dist = {
-        'n_neighbors': randint(5, 500),
-        'weights': ['uniform', 'distance'],
+        'n_neighbors': [12],
+        'weights': ['distance'],
         'algorithm': ['ball_tree', 'kd_tree', 'brute'],
         'leaf_size': randint(1, 500),
         'p': uniform(1, 100),
-        'metric': ['euclidean', 'manhattan', 'minkowski', 'chebyshev']
+        'metric': ['manhattan']
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(KNeighborsRegressor(), 'outputs/predictive_modeling/regression/base_learners/knn/knn_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error')
+    random_search, results = hpo_and_cv_results(KNeighborsRegressor(), 'outputs/predictive_modeling/regression/base_learners/knn/knn_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error', n_iter=500)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()

@@ -1,1 +1,1 @@
-{"C": 15.599453033620264, "degree": 8, "epsilon": 0.3337096111390218, "gamma": "auto", "kernel": "sigmoid"}
+{"C": 3.676387927930579, "degree": 18, "epsilon": 5.3138496987015335e-05, "gamma": "auto", "kernel": "rbf"}
