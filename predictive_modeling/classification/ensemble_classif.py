@@ -16,7 +16,117 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'
 from preprocessing import *
 from predictive_modeling.training_helper_func import *
 
+
+# Random Forest (Regression)
+
+# Importing the libraries
+from sklearn.ensemble import RandomForestRegressor
+from scipy.stats import randint
+from sklearn.preprocessing import MinMaxScaler
+from pandas.plotting import parallel_coordinates
+import matplotlib.pyplot as plt
+import json
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
+from preprocessing import *
+from predictive_modeling.training_helper_func import *
+
+
+
+
+
 def main():
+    feature_selection = False
+    # Prepare data for training
+    X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv', feature_selection=feature_selection)
+
+    # Define the range of hyperparameters
+    param_dist = {
+        'n_estimators': randint(200, 2000),
+        'max_features': ["sqrt"],
+        'max_depth': randint(20, 200),
+        'min_samples_split': randint(2, 35),
+        'min_samples_leaf': randint(4, 9),
+        'bootstrap': [False]
+    }
+
+    # Hyperparameter tuning & CV results
+    random_search, results = hpo_and_cv_results(RandomForestRegressor(criterion='absolute_error'), 'outputs/predictive_modeling/regression/base_learners/rf/rf_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error', n_iter=100, cv=10)
+
+    # Parallel coordinate plot without max_features and bootstrap
+    scaler = MinMaxScaler()
+    results = results.rename(columns={'param_n_estimators': 'n_estimators', 'param_max_features': 'max_features', 'param_max_depth': 'max_depth', 'param_min_samples_split': 'min_samples_split', 'param_min_samples_leaf': 'min_samples_leaf', 'param_bootstrap': 'bootstrap'})
+    for param in ['n_estimators', 'max_depth', 'min_samples_split', 'min_samples_leaf']:
+        results[param] = scaler.fit_transform(results[param].values.reshape(-1, 1))
+    results_pc = results.drop(columns=['max_features', 'bootstrap', 'std_test_score', 'rank_test_score'])
+    plt.figure(figsize=(14, 7))
+    parallel_coordinates(results_pc, 'mean_test_score', colormap='viridis', alpha=0.25)
+    plt.legend().remove()
+    plt.savefig('outputs/predictive_modeling/regression/base_learners/rf/rf_parallel_coordinates.png')
+    plt.close()
+    # purple = best, yellow = worst
+
+    # Percentage of each hyperparameter combination (top 10% and bottom 10%)
+    perc_of_hp_combinations(results, ['max_features', 'bootstrap'])
+
+    # Best model, hyperparameters and predictions
+    best_model, train_preds, test_preds, y_train, y_test = best_model_and_predictions(random_search, X_train, X_test, y_train, y_test, datetime_train, datetime_test, 
+                            'outputs/predictive_modeling/regression/base_learners/rf/rf_model.pkl', 
+                            'outputs/predictive_modeling/regression/base_learners/rf/rf_hyperparameters.json', 
+                            'outputs/predictive_modeling/regression/base_learners/rf/rf_train_preds.csv', 
+                            'outputs/predictive_modeling/regression/base_learners/rf/rf_test_preds.csv')
+
+    # Regression metrics
+    regression_metrics(y_test, test_preds, 'outputs/predictive_modeling/regression/base_learners/rf/rf_scores.json')
+
+    # Plot predictions vs real values over time (only regression)
+    test_preds_vs_real_over_time(test_preds, 'outputs/predictive_modeling/regression/base_learners/rf/rf_train_predictions.png')
+
+    # Save feature importance scores
+    feature_importance = best_model.feature_importances_
+    features = X_train.columns
+    feature_importance_scores = dict(zip(features, feature_importance))
+    feature_importance_scores = dict(sorted(feature_importance_scores.items(), key=lambda x: x[1], reverse=True))
+    feature_importance_df = pd.DataFrame.from_dict(feature_importance_scores, orient='index', columns=['importance'])
+    feature_importance_df.index.name = 'feature'
+    if feature_selection:
+        feature_importance_df.to_csv('outputs/predictive_modeling/regression/base_learners/rf/rf_feature_importance.csv')
+    else:
+        feature_importance_df.to_csv('outputs/predictive_modeling/regression/feature_selection/feature_importance_scores.csv')
+
+    # Feature imporance plot (with visible feature names, only top 15)
+    feature_importance_scores = dict(sorted(feature_importance_scores.items(), key=lambda x: x[1], reverse=True)[:15])
+    plt.figure(figsize=(14, 7))
+    plt.bar(feature_importance_scores.keys(), feature_importance_scores.values())
+    plt.ylabel('Feature Importance')
+    plt.xlabel('Feature')
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.title('Feature Importance Plot (Top 15)')
+    plt.savefig('outputs/predictive_modeling/regression/base_learners/rf/rf_feature_importance_top_15.png')
+    plt.close()
+    
+    if feature_selection==False:
+        # Feature importance plot (without feature names, all features)
+        feature_importance = pd.read_csv('outputs/predictive_modeling/regression/feature_selection/feature_importance_scores.csv')['importance']
+        plt.figure(figsize=(14, 7))
+        plt.bar(range(len(feature_importance)), feature_importance)
+        plt.axvline(x=146, color='r', linestyle='--')
+        plt.text(200, 0.05, 'Cutoff Threshold at 100 \n Parameters (Top 50%)', verticalalignment='center', horizontalalignment='center', size=15, color='r')
+        plt.ylabel('Feature Importance')
+        plt.xlabel('Feature')
+        plt.title('Feature Importance (All Features)')
+        plt.savefig('outputs/predictive_modeling/regression/feature_selection/feature_importance_image.png')
+        plt.close()
+
+
+
+
+
+
+
+
     # Prepare data for training
     X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv')
 
@@ -30,88 +140,87 @@ def main():
 
 
 
-    # # Create ensemble: majority voting (unweighted)
-    # ensemble_unweighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb), ('mlp', mlp)], voting='soft', n_jobs=-1)
-    # ensemble_unweighted.fit(X_train, y_train)
-    # joblib.dump(ensemble_unweighted, 'outputs/predictive_modeling/classification/ensemble/ensemble_unweighted_model.pkl')
+    # Create ensemble: majority voting (unweighted)
+    ensemble_unweighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb), ('mlp', mlp)], voting='soft', n_jobs=-1)
+    ensemble_unweighted.fit(X_train, y_train)
+    joblib.dump(ensemble_unweighted, 'outputs/predictive_modeling/classification/ensemble/ensemble_unweighted_model.pkl')
 
-    # # Predictions
-    # y_pred_unweighted = ensemble_unweighted.predict(X_test) + 1
+    # Predictions
+    y_pred_unweighted = ensemble_unweighted.predict(X_test) + 1
 
-    # # Metrics
-    # accuracy_unweighted = accuracy_score(y_test + 1, y_pred_unweighted)
-    # f1_unweighted = f1_score(y_test + 1, y_pred_unweighted, average='weighted')
-    # precision_unweighted = precision_score(y_test + 1, y_pred_unweighted, average='weighted')
-    # recall_unweighted = recall_score(y_test + 1, y_pred_unweighted, average='weighted')
-    # log_loss_unweighted = log_loss(y_test, ensemble_unweighted.predict_proba(X_test))
-    # metrics_unweighted = {
-    #     'accuracy': accuracy_unweighted,
-    #     'f1': f1_unweighted,
-    #     'precision': precision_unweighted,
-    #     'recall': recall_unweighted,
-    #     'logloss': log_loss_unweighted
-    # }
-    # with open('outputs/predictive_modeling/classification/ensemble/ensemble_unweighted_metrics.json', 'w') as f:
-    #     json.dump(metrics_unweighted, f)
-    # print(metrics_unweighted)
-
-
+    # Metrics
+    accuracy_unweighted = accuracy_score(y_test + 1, y_pred_unweighted)
+    f1_unweighted = f1_score(y_test + 1, y_pred_unweighted, average='weighted')
+    precision_unweighted = precision_score(y_test + 1, y_pred_unweighted, average='weighted')
+    recall_unweighted = recall_score(y_test + 1, y_pred_unweighted, average='weighted')
+    log_loss_unweighted = log_loss(y_test, ensemble_unweighted.predict_proba(X_test))
+    metrics_unweighted = {
+        'accuracy': accuracy_unweighted,
+        'f1': f1_unweighted,
+        'precision': precision_unweighted,
+        'recall': recall_unweighted,
+        'logloss': log_loss_unweighted
+    }
+    with open('outputs/predictive_modeling/classification/ensemble/ensemble_unweighted_metrics.json', 'w') as f:
+        json.dump(metrics_unweighted, f)
+    print(metrics_unweighted)
 
 
 
 
-    # # Create ensemble: majority voting (weighted)
-    # log_loss_scores = []
-    # weights = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
-    # while len(log_loss_scores) < 1000:
-    #     w_rf = random.uniform(0, 1)
-    #     w_knn = random.uniform(0, 1)
-    #     w_svm = random.uniform(0, 1)
-    #     w_nb = random.uniform(0, 1)
-    #     w_mlp = random.uniform(0, 1)
-    #     ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb), ('mlp', mlp)], voting='soft', n_jobs=-1, weights=[w_knn, w_rf, w_svm, w_nb, w_mlp])
-    #     ensemble_weighted.fit(X_train, y_train)
-    #     log_loss_score = log_loss(y_val, ensemble_weighted.predict_proba(X_val))
-    #     log_loss_scores.append([w_knn, w_rf, w_svm, w_nb, w_mlp, log_loss_score])
-    #     print("finished iteration ", len(log_loss_scores))
 
-    # # Convert the list to a DataFrame
-    # log_loss_scores_df = pd.DataFrame(log_loss_scores, columns=['w_knn', 'w_rf', 'w_svm', 'w_nb', 'w_mlp', 'log_loss'])
+    # Create ensemble: majority voting (weighted)
+    log_loss_scores = []
 
-    # # Use parallel coordinate plot for weights and log loss scores
-    # plt.figure(figsize=(14, 7))
-    # parallel_coordinates(log_loss_scores_df, 'log_loss', colormap='viridis', alpha=0.25)
-    # plt.legend().remove()
-    # plt.savefig('outputs/predictive_modeling/classification/ensemble/ensemble_parallel_coordinates.png')
-    # plt.close()
+    while len(log_loss_scores) < 2000:
+        w_rf = random.uniform(0, 1)
+        w_knn = random.uniform(0, 1)
+        w_svm = random.uniform(0, 1)
+        w_nb = random.uniform(0, 1)
+        w_mlp = random.uniform(0, 1)
+        ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb), ('mlp', mlp)], voting='soft', n_jobs=-1, weights=[w_knn, w_rf, w_svm, w_nb, w_mlp])
+        ensemble_weighted.fit(X_train, y_train)
+        log_loss_score = log_loss(y_val, ensemble_weighted.predict_proba(X_val))
+        log_loss_scores.append([w_knn, w_rf, w_svm, w_nb, w_mlp, log_loss_score])
+        print("finished iteration ", len(log_loss_scores))
 
-    # log_loss_scores = log_loss_scores_df.sort_values(by='log_loss', ascending=True)
-    # log_loss_scores.to_csv('outputs/predictive_modeling/classification/ensemble/ensemble_weighted_log_loss_scores.csv')
-    # best_weights = log_loss_scores.iloc[0, :-1].values
+    # Convert the list to a DataFrame
+    log_loss_scores_df = pd.DataFrame(log_loss_scores, columns=['w_knn', 'w_rf', 'w_svm', 'w_nb', 'w_mlp', 'log_loss'])
 
-    # ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb), ('mlp', mlp)], voting='soft', n_jobs=-1, weights=best_weights)
-    # ensemble_weighted.fit(X_train, y_train)
-    # y_pred_weighted = ensemble_weighted.predict(X_test) + 1
+    # Use parallel coordinate plot for weights and log loss scores
+    plt.figure(figsize=(14, 7))
+    parallel_coordinates(log_loss_scores_df, 'log_loss', colormap='viridis', alpha=0.25)
+    plt.legend().remove()
+    plt.savefig('outputs/predictive_modeling/classification/ensemble/ensemble_parallel_coordinates.png')
+    plt.close()
 
-    # joblib.dump(ensemble_weighted, 'outputs/predictive_modeling/classification/ensemble/ensemble_weighted_model.pkl')
+    log_loss_scores = log_loss_scores_df.sort_values(by='log_loss', ascending=True)
+    log_loss_scores.to_csv('outputs/predictive_modeling/classification/ensemble/ensemble_weighted_log_loss_scores.csv')
+    best_weights = log_loss_scores.iloc[0, :-1].values
 
-    # # Metrics
-    # accuracy_weighted = accuracy_score(y_test + 1, y_pred_weighted)
-    # f1_weighted = f1_score(y_test + 1, y_pred_weighted, average='weighted')
-    # precision_weighted = precision_score(y_test + 1, y_pred_weighted, average='weighted')
-    # recall_weighted = recall_score(y_test + 1, y_pred_weighted, average='weighted')
-    # log_loss_weighted = log_loss(y_test, ensemble_weighted.predict_proba(X_test))
-    # metrics_weighted = {
-    #     'accuracy': accuracy_weighted,
-    #     'f1': f1_weighted,
-    #     'precision': precision_weighted,
-    #     'recall': recall_weighted,
-    #     'logloss': log_loss_weighted
-    # }
-    # with open('outputs/predictive_modeling/classification/ensemble/ensemble_weighted_metrics.json', 'w') as f:
-    #     json.dump(metrics_weighted, f)
-    # print(metrics_weighted)
+    ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb), ('mlp', mlp)], voting='soft', n_jobs=-1, weights=best_weights)
+    ensemble_weighted.fit(X_train, y_train)
+    y_pred_weighted = ensemble_weighted.predict(X_test) + 1
+
+    joblib.dump(ensemble_weighted, 'outputs/predictive_modeling/classification/ensemble/ensemble_weighted_model.pkl')
+
+    # Metrics
+    accuracy_weighted = accuracy_score(y_test + 1, y_pred_weighted)
+    f1_weighted = f1_score(y_test + 1, y_pred_weighted, average='weighted')
+    precision_weighted = precision_score(y_test + 1, y_pred_weighted, average='weighted')
+    recall_weighted = recall_score(y_test + 1, y_pred_weighted, average='weighted')
+    log_loss_weighted = log_loss(y_test, ensemble_weighted.predict_proba(X_test))
+    metrics_weighted = {
+        'accuracy': accuracy_weighted,
+        'f1': f1_weighted,
+        'precision': precision_weighted,
+        'recall': recall_weighted,
+        'logloss': log_loss_weighted
+    }
+    with open('outputs/predictive_modeling/classification/ensemble/ensemble_weighted_metrics.json', 'w') as f:
+        json.dump(metrics_weighted, f)
+    print(metrics_weighted)
 
 
 
@@ -156,20 +265,20 @@ def main():
     # Define the range of hyperparameters
     param_dist = {
         'n_estimators': randint(100, 2000),
-        'learning_rate': uniform(0.01, 0.2),  
+        'learning_rate': uniform(0.01, 0.05),  
         'max_depth': randint(2, 50),  
         'num_leaves': randint(4, 200),  
-        'reg_lambda': uniform(0.0001, 10.0),  
-        'min_child_weight': randint(1, 15),
-        'feature_fraction': uniform(0.01, 0.99),
-        'bagging_fraction': uniform(0.4, 0.6),
+        'reg_lambda': uniform(4.5, 7.0),  
+        'min_child_weight': randint(4, 8),
+        'feature_fraction': uniform(0.08, 0.72),
+        'bagging_fraction': uniform(0.6, 0.4),
         'bagging_freq': [1],  
     }
 
     # Hyperparameter tuning
     random_search = RandomizedSearchCV(estimator=lgb.LGBMClassifier(metric='multi_logloss', early_stopping_rounds=5, objective='multiclass'), 
                                 param_distributions=param_dist, 
-                                n_iter=1000, 
+                                n_iter=500, 
                                 cv=10, 
                                 verbose=2, 
                                 scoring='neg_log_loss',
@@ -285,16 +394,16 @@ def main():
         'max_depth': randint(2, 50),  
         'num_leaves': randint(4, 200),  
         'reg_lambda': uniform(0.0001, 10.0),  
-        'min_child_weight': randint(1, 15),
-        'feature_fraction': uniform(0.01, 0.99),
-        'bagging_fraction': uniform(0.4, 0.6),
+        'min_child_weight': randint(1, 6),
+        'feature_fraction': uniform(0.01, 0.79),
+        'bagging_fraction': uniform(0.7, 0.4),
         'bagging_freq': [1],  
     }
 
     # Hyperparameter tuning
     random_search2 = RandomizedSearchCV(estimator=lgb.LGBMClassifier(metric='multi_logloss', early_stopping_rounds=1, objective='multiclass'),
                                 param_distributions=param_dist2, 
-                                n_iter=1000, 
+                                n_iter=500, 
                                 cv=10, 
                                 verbose=2, 
                                 scoring='neg_log_loss',

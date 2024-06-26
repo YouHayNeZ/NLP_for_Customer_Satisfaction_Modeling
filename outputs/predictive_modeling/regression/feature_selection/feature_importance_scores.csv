@@ -1,0 +1,292 @@
+feature,importance
+Recommended_yes,0.1408595127712408
+Recommended_no,0.10483452580525982
+Sentiment_negative,0.1043167605305928
+topic_punctual,0.07648873922999401
+Ground Service_0,0.06925583647392923
+Sentiment_positive,0.06006620965335184
+Value For Money_5.0,0.05106490457607771
+Value For Money_1.0,0.042617192675640785
+Seat Comfort_1.0,0.03274335404261503
+Cabin Staff Service_5,0.032221054607155776
+Cabin Staff Service_1,0.028704128184423198
+Ground Service_4,0.02811659699530352
+Year Published,0.019040660478496417
+Cabin Staff Service_4,0.017586211929460294
+Seat Comfort_4.0,0.014979673688531881
+Sentiment_neutral,0.01268978524277802
+Ground Service_3,0.012137747419980272
+topic_service,0.011423306830246773
+Value For Money_4.0,0.010413956980459467
+Aircraft_Missing,0.00888787585081697
+Trip_verified_Missing,0.008216879327741462
+Seat Comfort_3.0,0.007397294468670597
+ryanair_review,0.0066875733115327445
+Aircraft_Boeing 737-800,0.006282401798905931
+Value For Money_2.0,0.006171721335651904
+Seat Comfort_5.0,0.005966411481774143
+Trip_verified_Trip Verified,0.00549630558925304
+Value For Money_3.0,0.0047901212698699975
+Food & Beverages_4.0,0.00469595551997562
+comment_length,0.004635491569583748
+Year Flown_1,0.004081205598217305
+topic_other_fees,0.004050691132899865
+topic_comfort,0.003881468742906473
+Food & Beverages_1.0,0.003086106795243745
+Ground Service_2,0.0030345585926497562
+Food & Beverages_3.0,0.0027937619957541307
+Cabin Staff Service_2,0.0025077731335326667
+Cabin Staff Service_3,0.0021558323949418573
+Ground Service_1,0.0020465142461725916
+Day Published,0.0020091713777854775
+Seat Comfort_2.0,0.0019493766663276335
+Month Published,0.0015263847121548722
+Food & Beverages_-1.0,0.0015062078926552877
+topic_luggage,0.001495665113505659
+Wifi & Connectivity_1.0,0.0011998226949293674
+Year Flown_5,0.001183888443212354
+Passenger Country_United Kingdom,0.001179647903255977
+topic_boarding,0.0010844412293190004
+Inflight Entertainment_1.0,0.0010321351604768846
+Inflight Entertainment_-1.0,0.0010316979477558292
+topic_delay,0.001025772711112894
+Food & Beverages_5.0,0.0009556736582978639
+Month Flown_5,0.00091145288893257
+Year Flown_2,0.000867838134930164
+Wifi & Connectivity_-1.0,0.0007381955206330092
+Type Of Traveller_1,0.0006958956652921417
+Origin_36,0.0006884269578047602
+Food & Beverages_2.0,0.0006654847038904
+legroom,0.0006592875220000927
+Origin_22,0.0006217422836959087
+exclamation_marks,0.0005653737148657049
+never,0.0005480091775361627
+Passenger Country_United States,0.0005453892985709592
+Type Of Traveller_3,0.000519812584652664
+topic_clean,0.0004966387245844961
+again,0.0004944680254187247
+Food & Beverages_0.0,0.00044662580900080594
+Trip_verified_Not Verified,0.00043764960291113337
+Type Of Traveller_2,0.0004295598366140732
+Month Flown_6,0.0004046408784151049
+Aircraft_Boeing 737,0.000317089552334514
+Passenger Country_Ireland,0.0003070023429447224
+Destination_51,0.00025208819041063027
+Month Flown_9,0.0002490072091474014
+Year Flown_4,0.00024415036203530825
+Month Flown_8,0.000236016585363535
+Month Flown_7,0.00023248029235176297
+question_marks,0.00023218149023179112
+Destination_39,0.00022430930119135613
+online,0.00022395025876126537
+Destination_20,0.00021590275034183683
+Month Flown_10,0.00020178100376454732
+cheap,0.00019580997075864878
+delayed,0.00017344243438017216
+Month Flown_4,0.00015741926282361064
+Trip_verified_Verified Review,0.00015008393518220277
+Type Of Traveller_0,0.00013664974906905158
+Destination_16,0.00011728354308755252
+Origin_44,0.00011473915881198118
+Month Flown_11,0.00010749477066246536
+Year Flown_3,0.00010245436322429711
+Passenger Country_Spain,0.00010144188682642568
+Passenger Country_Portugal,9.676041801868617e-05
+Month Flown_2,9.228881027945793e-05
+Origin_27,8.69346861942635e-05
+Destination_21,7.407848939155683e-05
+Passenger Country_Other,6.979997995245928e-05
+Passenger Country_Germany,5.731331258876185e-05
+Destination_3,5.5882573309422334e-05
+Destination_41,5.057127822329467e-05
+Month Flown_3,4.3126182531774384e-05
+Destination_60,4.2773938449480064e-05
+Month Flown_1,4.2255377088918475e-05
+Month Flown_0,4.0300238663870856e-05
+Year Flown_7,4.012165497043399e-05
+Year Flown_8,3.9753672763890364e-05
+Origin_20,3.967200674716135e-05
+Year Flown_9,3.8938614714558877e-05
+Origin_39,3.586797234997644e-05
+Origin_25,3.247154927697163e-05
+Destination_46,2.8741508441696665e-05
+Origin_32,2.678902990173282e-05
+Aircraft_Boeing 738,2.489855350517844e-05
+Origin_3,2.4320972063710965e-05
+Passenger Country_Greece,2.431204695328677e-05
+Destination_52,2.155056082046322e-05
+Passenger Country_Italy,2.0207306087458275e-05
+Passenger Country_Canada,1.937218618995606e-05
+Destination_43,1.7694400755385796e-05
+Destination_29,1.7637174151650678e-05
+Destination_42,1.5325227710242172e-05
+Year Flown_6,1.321605406049642e-05
+Origin_38,1.1115270863559207e-05
+Passenger Country_Australia,9.874741593598364e-06
+Origin_46,8.641185195992369e-06
+Origin_40,8.588754448684701e-06
+Origin_23,8.52486823140844e-06
+Cabin Staff Service_0,8.426628144937974e-06
+Origin_29,8.421883421883582e-06
+Origin_2,5.7676502217026685e-06
+Destination_24,5.264557158613176e-06
+Destination_11,5.128017727773392e-06
+Passenger Country_France,4.9210693492077466e-06
+Destination_37,4.917769106654537e-06
+Inflight Entertainment_2.0,4.796386053918923e-06
+Origin_26,4.2720935217029635e-06
+Destination_22,4.197273360065885e-06
+Destination_0,3.704395774568232e-06
+Destination_57,3.65468133006318e-06
+Origin_64,3.633992806261395e-06
+Passenger Country_Netherlands,3.027528022382647e-06
+Origin_12,2.475116367127088e-06
+Destination_27,2.4164570390185472e-06
+Destination_10,1.9092330387998164e-06
+Destination_13,1.2882129232677088e-06
+Destination_73,1.2632291674561711e-06
+Destination_63,1.250659723003889e-06
+Destination_34,1.2262344670224468e-06
+Origin_37,1.2168292350524606e-06
+Origin_14,1.2041432159775135e-06
+Origin_5,6.378364587320098e-07
+Origin_31,1.281330699160905e-19
+Destination_2,9.006503666840413e-20
+Passenger Country_Sweden,8.262223908497683e-20
+Destination_5,7.569035456739802e-20
+Origin_53,7.172470151851989e-20
+Origin_54,7.009211241250894e-20
+Passenger Country_India,6.210615653382949e-20
+Origin_6,5.805900911436396e-20
+Origin_59,4.419035961631612e-20
+Origin_13,3.5064275406801445e-20
+Origin_0,2.9302857017426006e-20
+Destination_74,2.352898751158969e-20
+Origin_34,2.1900483871792573e-20
+Passenger Country_Israel,1.8951405447665454e-20
+Seat Type_Economy Class,1.7147873855342755e-20
+Origin_7,1.6715746273629843e-20
+Origin_11,1.5734280432219772e-20
+Origin_24,1.43462067700881e-20
+Origin_65,1.376757950855661e-20
+Destination_15,1.3428919235391257e-20
+Seat Type_Premium Economy,1.2517873032303785e-20
+Destination_76,1.235265591551785e-20
+Origin_33,9.429656292703693e-21
+Destination_25,9.330330798316877e-21
+Destination_7,4.921069109189643e-21
+Destination_33,3.218457551347731e-21
+Origin_35,2.9661819404980334e-21
+Passenger Country_Austria,1.99364190291604e-21
+Origin_60,1.6234818378047758e-21
+Origin_63,3.041373615563107e-22
+Passenger Country_Belarus,0.0
+Passenger Country_Cyprus,0.0
+Passenger Country_Czech Republic,0.0
+Passenger Country_Finland,0.0
+Passenger Country_Hungary,0.0
+Passenger Country_Lithuania,0.0
+Passenger Country_New Zealand,0.0
+Passenger Country_Norway,0.0
+Passenger Country_Poland,0.0
+Passenger Country_Singapore,0.0
+Passenger Country_Slovakia,0.0
+Passenger Country_South Africa,0.0
+Passenger Country_Switzerland,0.0
+Passenger Country_Ukraine,0.0
+Aircraft_Airbus A320,0.0
+Aircraft_Boeing 737 MAX,0.0
+Aircraft_Boeing 747,0.0
+Aircraft_Other,0.0
+Seat Type_Business Class,0.0
+Seat Type_First Class,0.0
+Origin_1,0.0
+Origin_10,0.0
+Origin_17,0.0
+Origin_18,0.0
+Origin_19,0.0
+Origin_21,0.0
+Origin_28,0.0
+Origin_30,0.0
+Origin_4,0.0
+Origin_41,0.0
+Origin_42,0.0
+Origin_43,0.0
+Origin_45,0.0
+Origin_47,0.0
+Origin_49,0.0
+Origin_50,0.0
+Origin_55,0.0
+Origin_56,0.0
+Origin_57,0.0
+Origin_61,0.0
+Origin_62,0.0
+Origin_66,0.0
+Origin_67,0.0
+Origin_8,0.0
+Origin_9,0.0
+Destination_1,0.0
+Destination_12,0.0
+Destination_14,0.0
+Destination_17,0.0
+Destination_18,0.0
+Destination_19,0.0
+Destination_23,0.0
+Destination_26,0.0
+Destination_28,0.0
+Destination_30,0.0
+Destination_31,0.0
+Destination_32,0.0
+Destination_35,0.0
+Destination_36,0.0
+Destination_4,0.0
+Destination_40,0.0
+Destination_44,0.0
+Destination_45,0.0
+Destination_47,0.0
+Destination_48,0.0
+Destination_49,0.0
+Destination_50,0.0
+Destination_53,0.0
+Destination_54,0.0
+Destination_55,0.0
+Destination_56,0.0
+Destination_58,0.0
+Destination_59,0.0
+Destination_6,0.0
+Destination_61,0.0
+Destination_62,0.0
+Destination_64,0.0
+Destination_65,0.0
+Destination_66,0.0
+Destination_67,0.0
+Destination_68,0.0
+Destination_69,0.0
+Destination_70,0.0
+Destination_71,0.0
+Destination_72,0.0
+Destination_75,0.0
+Destination_8,0.0
+Destination_9,0.0
+Seat Comfort_0.0,0.0
+Value For Money_0.0,0.0
+Inflight Entertainment_3.0,0.0
+Inflight Entertainment_4.0,0.0
+Inflight Entertainment_5.0,0.0
+Wifi & Connectivity_2.0,0.0
+Wifi & Connectivity_3.0,0.0
+Wifi & Connectivity_4.0,0.0
+Wifi & Connectivity_5.0,0.0
+Year Flown_0,0.0
+Year Flown_10,0.0
+Day Flown_0,0.0
+Origin_52,-7.616445216133067e-22
+Destination_38,-2.6587142336505826e-21
+Origin_58,-5.889824277900197e-21
+Passenger Country_Romania,-9.48179312603782e-21
+Origin_51,-1.1692290979415941e-20
+Origin_16,-1.2074639357203723e-20
+Passenger Country_Denmark,-1.6088285910205607e-20
+Origin_48,-1.6419422991116285e-20
+Origin_15,-2.951034141162719e-20
+Passenger Country_Belgium,-3.432492448954625e-20

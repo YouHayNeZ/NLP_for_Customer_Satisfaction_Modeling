@@ -120,15 +120,15 @@ def main():
     
     if feature_selection==False:
         # Feature importance plot (without feature names, all features)
-        feature_importance = pd.read_csv('outputs/predictive_modeling/classification/base_learners/rf/rf_feature_importance.csv')['importance']
+        feature_importance = pd.read_csv('outputs/predictive_modeling/classification/feature_selection/feature_importance_scores.csv')['importance']
         plt.figure(figsize=(14, 7))
         plt.bar(range(len(feature_importance)), feature_importance)
-        plt.axvline(x=146, color='r', linestyle='--')
-        plt.text(200, 0.05, 'Cutoff Threshold at 100 \n Parameters (Top 50%)', verticalalignment='center', horizontalalignment='center', size=15, color='r')
+        plt.axvline(x=100, color='r', linestyle='--')
+        plt.text(150, 0.05, 'Cutoff Threshold at 100 \n Parameters (Top 50%)', verticalalignment='center', horizontalalignment='center', size=15, color='r')
         plt.ylabel('Feature Importance')
         plt.xlabel('Feature')
         plt.title('Feature Importance (All Features)')
-        plt.savefig('outputs/predictive_modeling/feature_selection/feature_importance_image.png')
+        plt.savefig('outputs/predictive_modeling/classification/feature_selection/feature_importance_image.png')
         plt.close()
 
 if __name__ == '__main__':

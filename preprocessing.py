@@ -464,7 +464,7 @@ def one_hot_encode(X_train, X_val, X_test):
     return X_train_encoded, X_val_encoded, X_test_encoded
 
 # Create pipeline
-def create_pipeline(file_path, feature_selection=True):
+def create_pipeline(file_path, feature_selection=True, classification=True):
     data = import_data(file_path)
     data = clean_data(data)
     data = create_datetime(data)
@@ -510,9 +510,17 @@ def create_pipeline(file_path, feature_selection=True):
     X_val = X_val.drop(columns=['Date Published'])
     X_test = X_test.drop(columns=['Date Published'])
 
-    if feature_selection:
+    if feature_selection and classification==True:
         # Feature selection: only keep 100 features with highest feature importance score (according to optimized random forest model based on all features)
         all_features = pd.read_csv('outputs/predictive_modeling/classification/feature_selection/feature_importance_scores.csv')
+        top_100_features = all_features['feature'][:100].tolist()
+        X_train = X_train[top_100_features]
+        X_val = X_val[top_100_features]
+        X_test = X_test[top_100_features]
+
+    if feature_selection and classification==False:
+        # Feature selection: only keep 100 features with highest feature importance score (according to optimized random forest model based on all features)
+        all_features = pd.read_csv('outputs/predictive_modeling/regression/feature_selection/feature_importance_scores.csv')
         top_100_features = all_features['feature'][:100].tolist()
         X_train = X_train[top_100_features]
         X_val = X_val[top_100_features]
