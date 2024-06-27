@@ -1,106 +1,106 @@
 Feature,Importance
+Sentiment_negative,49
 comment_length,44
-Month Published,34
-Day Published,29
-Value For Money_1.0,21
-Recommended_yes,20
-Year Published,19
-Cabin Staff Service_5,16
-Sentiment_negative,14
-bayesian_ridge,14
-knn,14
-rf,13
-mlp,12
-Value For Money_5.0,12
-Cabin Staff Service_1,12
-Seat Comfort_1.0,12
-Ground Service_0,11
-topic_other_fees,11
-svm,10
-Seat Comfort_3.0,10
-Ground Service_4,10
-Cabin Staff Service_4,9
-Sentiment_positive,9
-Value For Money_2.0,8
-Aircraft_Missing,7
-topic_comfort,7
-ryanair_review,6
-Passenger Country_United Kingdom,6
-Trip_verified_Trip Verified,5
-again,4
-topic_punctual,4
-Value For Money_4.0,4
-Value For Money_3.0,4
+Recommended_yes,37
+Value For Money_1.0,33
+Month Published,26
+Day Published,26
+Cabin Staff Service_5,25
+Value For Money_5.0,24
+Seat Comfort_1.0,24
+Seat Comfort_5.0,22
+mlp,21
+Year Published,20
+Ground Service_0,19
+knn,18
+Cabin Staff Service_4,18
+Sentiment_positive,18
+Value For Money_4.0,17
+Ground Service_4,17
+Cabin Staff Service_1,15
+topic_other_fees,14
+ryanair_review,14
+svm,14
+Value For Money_2.0,14
+Value For Money_3.0,13
+topic_comfort,13
+Seat Comfort_4.0,12
+Recommended_no,11
+Seat Comfort_3.0,11
+Aircraft_Missing,10
+Passenger Country_United Kingdom,10
+bayesian_ridge,10
+Trip_verified_Trip Verified,10
+again,8
+rf,8
+Cabin Staff Service_3,8
+Origin_44,8
+Ground Service_2,7
+Sentiment_neutral,7
+Seat Comfort_2.0,7
+cheap,6
+Month Flown_8,6
+exclamation_marks,5
+topic_service,5
+topic_punctual,5
+Ground Service_3,5
+Trip_verified_Missing,5
+Month Flown_6,4
+Passenger Country_Germany,4
+Destination_39,4
+online,4
+Type Of Traveller_1,4
+Month Flown_7,4
+Inflight Entertainment_-1.0,4
+Type Of Traveller_0,4
+Year Flown_5,4
+Aircraft_Boeing 737-800,4
+Year Flown_1,4
+Food & Beverages_3.0,4
+Food & Beverages_5.0,3
+Food & Beverages_0.0,3
+Aircraft_Boeing 737,3
+topic_boarding,3
 Origin_36,3
-Food & Beverages_1.0,3
-Type Of Traveller_3,3
-Food & Beverages_-1.0,3
-Seat Comfort_4.0,3
+Year Flown_2,2
 topic_delay,2
-Seat Comfort_2.0,2
-Month Flown_8,2
-topic_service,2
-Cabin Staff Service_3,2
-Sentiment_neutral,2
-Aircraft_Boeing 737-800,1
-Type Of Traveller_2,1
-Origin_44,1
-Year Flown_1,1
-Type Of Traveller_1,1
-Recommended_no,1
-cheap,1
-Month Flown_6,1
-topic_boarding,1
-online,1
-topic_luggage,1
-Year Flown_4,1
-never,1
-Trip_verified_Verified Review,0
-Month Flown_10,0
-delayed,0
-Destination_20,0
-Destination_39,0
-Month Flown_4,0
-Passenger Country_Other,0
-Type Of Traveller_0,0
+Food & Beverages_-1.0,2
+Month Flown_11,2
+Passenger Country_Other,2
+Ground Service_1,2
+Month Flown_10,2
+Destination_51,2
+Cabin Staff Service_2,2
+Food & Beverages_2.0,2
+Passenger Country_Spain,1
+Food & Beverages_4.0,1
+Destination_20,1
+Food & Beverages_1.0,1
+Destination_3,1
+Passenger Country_United States,1
+Type Of Traveller_3,1
+Month Flown_2,0
+Origin_27,0
 Destination_16,0
-Month Flown_11,0
+Destination_21,0
 Year Flown_3,0
-Passenger Country_Spain,0
 Destination_41,0
 Passenger Country_Portugal,0
-Month Flown_2,0
-Destination_3,0
-Origin_27,0
-question_marks,0
-Passenger Country_Germany,0
-Destination_21,0
 legroom,0
-Month Flown_7,0
-Month Flown_9,0
-Ground Service_3,0
-Trip_verified_Missing,0
-Seat Comfort_5.0,0
-Food & Beverages_4.0,0
-Ground Service_2,0
-Food & Beverages_3.0,0
-Cabin Staff Service_2,0
-Ground Service_1,0
-Wifi & Connectivity_1.0,0
-Year Flown_5,0
-Inflight Entertainment_1.0,0
-Inflight Entertainment_-1.0,0
-Food & Beverages_5.0,0
-Year Flown_2,0
-Wifi & Connectivity_-1.0,0
-Food & Beverages_2.0,0
-Origin_22,0
-exclamation_marks,0
-Passenger Country_United States,0
+Trip_verified_Verified Review,0
 topic_clean,0
-Food & Beverages_0.0,0
+topic_luggage,0
+Wifi & Connectivity_1.0,0
+Inflight Entertainment_1.0,0
+Wifi & Connectivity_-1.0,0
+Origin_22,0
+never,0
 Trip_verified_Not Verified,0
-Aircraft_Boeing 737,0
+Month Flown_4,0
+Type Of Traveller_2,0
 Passenger Country_Ireland,0
-Destination_51,0
+Month Flown_9,0
+Year Flown_4,0
+question_marks,0
+delayed,0
 Month Flown_5,0

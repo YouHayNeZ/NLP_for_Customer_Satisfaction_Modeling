@@ -92,7 +92,7 @@ def bert_plot_sentiment_proportions(df, distilbert_col, siebert_col):
         autopct='%1.1f%%',
         startangle=90
     )
-    axs[1].set_title("Sentiment Distribution with SieBERT")
+    axs[1].set_title("Sentiment Distribution with RoBERTa")
 
     # Adjust the spacing between subplots
     plt.tight_layout()

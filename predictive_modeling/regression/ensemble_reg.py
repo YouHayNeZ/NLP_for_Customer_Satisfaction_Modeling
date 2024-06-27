@@ -112,206 +112,206 @@ def main():
 
 
 
-    # # Stacking models (using LightGBM)
+    # Stacking models (using LightGBM)
 
-    # # Create data frame with training predictions of all models and real labels
-    # X_train_stacking = pd.DataFrame({
-    #     'knn': np.round(knn.predict(X_train) + 1),
-    #     'rf': np.round(rf.predict(X_train) + 1),
-    #     'svm': np.round(svm.predict(X_train) + 1),
-    #     'bayesian_ridge': np.round(bayesian_ridge.predict(X_train) + 1),
-    #     'mlp': np.round(mlp.predict(X_train) + 1)
-    # })
+    # Create data frame with training predictions of all models and real labels
+    X_train_stacking = pd.DataFrame({
+        'knn': np.round(knn.predict(X_train) + 1),
+        'rf': np.round(rf.predict(X_train) + 1),
+        'svm': np.round(svm.predict(X_train) + 1),
+        'bayesian_ridge': np.round(bayesian_ridge.predict(X_train) + 1),
+        'mlp': np.round(mlp.predict(X_train) + 1)
+    })
 
-    # X_val_stacking = pd.DataFrame({
-    #     'knn': np.round(knn.predict(X_val) + 1),
-    #     'rf': np.round(rf.predict(X_val) + 1),
-    #     'svm': np.round(svm.predict(X_val) + 1),
-    #     'bayesian_ridge': np.round(bayesian_ridge.predict(X_val) + 1),
-    #     'mlp': np.round(mlp.predict(X_val) + 1)
-    # })
+    X_val_stacking = pd.DataFrame({
+        'knn': np.round(knn.predict(X_val) + 1),
+        'rf': np.round(rf.predict(X_val) + 1),
+        'svm': np.round(svm.predict(X_val) + 1),
+        'bayesian_ridge': np.round(bayesian_ridge.predict(X_val) + 1),
+        'mlp': np.round(mlp.predict(X_val) + 1)
+    })
 
-    # X_test_stacking = pd.DataFrame({
-    #     'knn': np.round(knn.predict(X_test) + 1),
-    #     'rf': np.round(rf.predict(X_test) + 1),
-    #     'svm': np.round(svm.predict(X_test) + 1),
-    #     'bayesian_ridge': np.round(bayesian_ridge.predict(X_test) + 1),
-    #     'mlp': np.round(mlp.predict(X_test) + 1)
-    # })
+    X_test_stacking = pd.DataFrame({
+        'knn': np.round(knn.predict(X_test) + 1),
+        'rf': np.round(rf.predict(X_test) + 1),
+        'svm': np.round(svm.predict(X_test) + 1),
+        'bayesian_ridge': np.round(bayesian_ridge.predict(X_test) + 1),
+        'mlp': np.round(mlp.predict(X_test) + 1)
+    })
 
-    # # Preprocess stacking data
-    # X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv', classification=False)
+    # Preprocess stacking data
+    X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv', classification=False)
 
-    # # Add knn, rf, svm, nb, mlp predictions as features to X_train from X_train_stacking
-    # for model in ['knn', 'rf', 'svm', 'bayesian_ridge', 'mlp']:
-    #     X_train[model] = X_train_stacking[model]
-    #     X_val[model] = X_val_stacking[model]
-    #     X_test[model] = X_test_stacking[model]
+    # Add knn, rf, svm, nb, mlp predictions as features to X_train from X_train_stacking
+    for model in ['knn', 'rf', 'svm', 'bayesian_ridge', 'mlp']:
+        X_train[model] = X_train_stacking[model]
+        X_val[model] = X_val_stacking[model]
+        X_test[model] = X_test_stacking[model]
 
-    # # Define the range of hyperparameters
-    # param_dist = {
-    #     'n_estimators': randint(100, 2000),
-    #     'learning_rate': uniform(0.0001, 0.1),  
-    #     'max_depth': randint(2, 50),  
-    #     'num_leaves': randint(4, 200),  
-    #     'reg_lambda': uniform(0, 10.0),  
-    #     'min_child_weight': randint(1, 40),
-    #     'feature_fraction': uniform(0.01, 0.99),
-    #     'bagging_fraction': uniform(0.01, 0.99),
-    #     'bagging_freq': [1]
-    # }
+    # Define the range of hyperparameters
+    param_dist = {
+        'n_estimators': randint(930, 1250),
+        'learning_rate': uniform(0.04, 0.004),  
+        'max_depth': randint(20, 23),  
+        'num_leaves': randint(7, 9),  
+        'reg_lambda': uniform(5.0, 1.3),  
+        'min_child_weight': randint(27, 29),
+        'feature_fraction': uniform(0.52, 0.025),
+        'bagging_fraction': uniform(0.711, 0.001),
+        'bagging_freq': randint(3, 4)
+    }
 
-    # # Hyperparameter tuning
-    # random_search = RandomizedSearchCV(estimator=lgb.LGBMRegressor(objective='regression', early_stopping_round=5, metric='l1'),
-    #                             param_distributions=param_dist, 
-    #                             n_iter=500, 
-    #                             cv=10, 
-    #                             verbose=2, 
-    #                             scoring='neg_mean_absolute_error',
-    #                             random_state=42, 
-    #                             n_jobs=-1)
-    # random_search.fit(X_train, y_train,
-    #                     eval_set=[(X_val, y_val)]
-    #                 )
+    # Hyperparameter tuning
+    random_search = RandomizedSearchCV(estimator=lgb.LGBMRegressor(objective='regression', early_stopping_round=5, metric='l1'),
+                                param_distributions=param_dist, 
+                                n_iter=500, 
+                                cv=10, 
+                                verbose=2, 
+                                scoring='neg_mean_absolute_error',
+                                random_state=42, 
+                                n_jobs=-1)
+    random_search.fit(X_train, y_train,
+                        eval_set=[(X_val, y_val)]
+                    )
 
-    # # Save results of RandomizedSearchCV
-    # results = pd.DataFrame(random_search.cv_results_)
-    # interested_columns = ['param_' + param for param in param_dist.keys()] + ['mean_test_score', 'std_test_score', 'rank_test_score']
-    # results = results[interested_columns]
-    # results = results.sort_values(by='rank_test_score')
-    # results['mean_test_score'] = results['mean_test_score']
-    # results.to_csv('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_cv_results.csv')
+    # Save results of RandomizedSearchCV
+    results = pd.DataFrame(random_search.cv_results_)
+    interested_columns = ['param_' + param for param in param_dist.keys()] + ['mean_test_score', 'std_test_score', 'rank_test_score']
+    results = results[interested_columns]
+    results = results.sort_values(by='rank_test_score')
+    results['mean_test_score'] = results['mean_test_score']
+    results.to_csv('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_cv_results.csv')
 
-    # # Parallel coordinate plot without max_features and bootstrap
-    # scaler = MinMaxScaler()
-    # results = results.rename(columns={'param_n_estimators': 'n_estimators', 'param_learning_rate': 'learning_rate', 'param_max_depth': 'max_depth', 'param_num_leaves': 'num_leaves', 'param_reg_lambda': 'reg_lambda', 'param_min_child_weight': 'min_child_weight', 'param_feature_fraction': 'feature_fraction', 'param_bagging_fraction': 'bagging_fraction', 'param_bagging_freq': 'bagging_freq'})
-    # results = results.dropna(subset=['mean_test_score'])
-    # for param in ['n_estimators', 'learning_rate', 'max_depth', 'num_leaves', 'reg_lambda', 'min_child_weight', 'feature_fraction', 'bagging_fraction', 'bagging_freq']:
-    #     results[param] = scaler.fit_transform(results[param].values.reshape(-1, 1))
-    # results = results.drop(columns=['std_test_score', 'rank_test_score'])
-    # plt.figure(figsize=(14, 7))
-    # parallel_coordinates(results, 'mean_test_score', colormap='viridis', alpha = 0.25)
-    # plt.legend().remove()
-    # plt.savefig('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_parallel_coordinates.png')
-    # plt.close()
-    # # purple = best, yellow = worst
+    # Parallel coordinate plot without max_features and bootstrap
+    scaler = MinMaxScaler()
+    results = results.rename(columns={'param_n_estimators': 'n_estimators', 'param_learning_rate': 'learning_rate', 'param_max_depth': 'max_depth', 'param_num_leaves': 'num_leaves', 'param_reg_lambda': 'reg_lambda', 'param_min_child_weight': 'min_child_weight', 'param_feature_fraction': 'feature_fraction', 'param_bagging_fraction': 'bagging_fraction', 'param_bagging_freq': 'bagging_freq'})
+    results = results.dropna(subset=['mean_test_score'])
+    for param in ['n_estimators', 'learning_rate', 'max_depth', 'num_leaves', 'reg_lambda', 'min_child_weight', 'feature_fraction', 'bagging_fraction', 'bagging_freq']:
+        results[param] = scaler.fit_transform(results[param].values.reshape(-1, 1))
+    results = results.drop(columns=['std_test_score', 'rank_test_score'])
+    plt.figure(figsize=(14, 7))
+    parallel_coordinates(results, 'mean_test_score', colormap='viridis', alpha = 0.25)
+    plt.legend().remove()
+    plt.savefig('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_parallel_coordinates.png')
+    plt.close()
+    # purple = best, yellow = worst
 
-    # # Best model, hyperparameters and predictions
-    # best_model, train_preds, test_preds, y_train, y_test = best_model_and_predictions(random_search, X_train, X_test, y_train, y_test, datetime_train, datetime_test,
-    #                             'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_model.pkl',
-    #                             'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_hyperparameters.json',
-    #                             'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_train_preds.csv',
-    #                             'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_test_preds.csv')
+    # Best model, hyperparameters and predictions
+    best_model, train_preds, test_preds, y_train, y_test = best_model_and_predictions(random_search, X_train, X_test, y_train, y_test, datetime_train, datetime_test,
+                                'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_model.pkl',
+                                'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_hyperparameters.json',
+                                'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_train_preds.csv',
+                                'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_test_preds.csv')
 
-    # # Regression metrics
-    # regression_metrics(y_test, test_preds, 'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_scores.json')
+    # Regression metrics
+    regression_metrics(y_test, test_preds, 'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_scores.json')
 
-    # # Create feature importance plot for top 15
-    # feature_importance = best_model.feature_importances_
-    # features = X_train.columns
-    # feature_importance_scores = dict(zip(features, feature_importance))
-    # feature_importance_df = pd.DataFrame(feature_importance_scores.items(), columns=['Feature', 'Importance'])
-    # feature_importance_df = feature_importance_df.sort_values(by='Importance', ascending=False)
-    # feature_importance_df.to_csv('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_feature_importance.csv', index=False)
+    # Create feature importance plot for top 15
+    feature_importance = best_model.feature_importances_
+    features = X_train.columns
+    feature_importance_scores = dict(zip(features, feature_importance))
+    feature_importance_df = pd.DataFrame(feature_importance_scores.items(), columns=['Feature', 'Importance'])
+    feature_importance_df = feature_importance_df.sort_values(by='Importance', ascending=False)
+    feature_importance_df.to_csv('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_feature_importance.csv', index=False)
 
-    # feature_importance_scores = dict(sorted(feature_importance_scores.items(), key=lambda x: x[1], reverse=True)[:15])
-    # plt.figure(figsize=(14, 7))
-    # plt.bar(feature_importance_scores.keys(), feature_importance_scores.values())
-    # plt.ylabel('Feature Importance')
-    # plt.xlabel('Feature')
-    # plt.xticks(rotation=90)
-    # plt.title('Feature Importance')
-    # plt.savefig('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_feature_importance.png')
-    # plt.close()
+    feature_importance_scores = dict(sorted(feature_importance_scores.items(), key=lambda x: x[1], reverse=True)[:15])
+    plt.figure(figsize=(14, 7))
+    plt.bar(feature_importance_scores.keys(), feature_importance_scores.values())
+    plt.ylabel('Feature Importance')
+    plt.xlabel('Feature')
+    plt.xticks(rotation=90)
+    plt.title('Feature Importance')
+    plt.savefig('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_feature_importance.png')
+    plt.close()
 
-    # # Plot predictions vs real values over time (only regression)
-    # test_preds_vs_real_over_time(test_preds, 'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_predictions.png')
-
-
+    # Plot predictions vs real values over time (only regression)
+    test_preds_vs_real_over_time(test_preds, 'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_predictions.png')
 
 
 
 
 
-    # # Stacking models (using XGBoost) - base models only without any ryanair data
-    # # Define the range of hyperparameters
-    # param_dist2 = {
-    #     'n_estimators': randint(400, 2000),
-    #     'learning_rate': uniform(0.25, 0.15),  
-    #     'max_depth': randint(4, 47),  
-    #     'num_leaves': randint(4, 200),  
-    #     'reg_lambda': uniform(0, 10.0),  
-    #     'min_child_weight': randint(4, 24),
-    #     'feature_fraction': uniform(0.9, 0.1),
-    #     'bagging_fraction': uniform(0.8, 0.2),
-    #     'bagging_freq': randint(0, 10)
-    # }
 
-    # # Hyperparameter tuning
-    # random_search2 = RandomizedSearchCV(estimator=lgb.LGBMRegressor(objective='regression', early_stopping_round=5, metric='l1'), 
-    #                             param_distributions=param_dist2, 
-    #                             n_iter=1000, 
-    #                             cv=10, 
-    #                             verbose=2, 
-    #                             scoring='neg_mean_absolute_error',
-    #                             random_state=42, 
-    #                             n_jobs=-1)
-    # random_search2.fit(X_train_stacking, y_train,
-    #                     eval_set=[(X_val_stacking, y_val)]
-    #                 )
 
-    # # Save results of RandomizedSearchCV
-    # results2 = pd.DataFrame(random_search2.cv_results_)
-    # interested_columns2 = ['param_' + param for param in param_dist2.keys()] + ['mean_test_score', 'std_test_score', 'rank_test_score']
-    # results2 = results2[interested_columns2]
-    # results2 = results2.sort_values(by='rank_test_score')
-    # results2['mean_test_score'] = results2['mean_test_score']
-    # results2.to_csv('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_cv_results.csv')
+    # Stacking models (using XGBoost) - base models only without any ryanair data
+    # Define the range of hyperparameters
+    param_dist2 = {
+        'n_estimators': randint(400, 2000),
+        'learning_rate': uniform(0.25, 0.15),  
+        'max_depth': randint(4, 47),  
+        'num_leaves': randint(4, 200),  
+        'reg_lambda': uniform(0, 10.0),  
+        'min_child_weight': randint(4, 24),
+        'feature_fraction': uniform(0.9, 0.1),
+        'bagging_fraction': uniform(0.8, 0.2),
+        'bagging_freq': randint(0, 10)
+    }
 
-    # # Parallel coordinate plot without max_features and bootstrap
-    # scaler = MinMaxScaler()
-    # results2 = results2.rename(columns={'param_n_estimators': 'n_estimators', 'param_learning_rate': 'learning_rate', 'param_max_depth': 'max_depth', 'param_num_leaves': 'num_leaves', 'param_reg_lambda': 'reg_lambda', 'param_min_child_weight': 'min_child_weight', 'param_feature_fraction': 'feature_fraction', 'param_bagging_fraction': 'bagging_fraction', 'param_bagging_freq': 'bagging_freq'})
-    # results2 = results2.dropna(subset=['mean_test_score'])
-    # for param in ['n_estimators', 'learning_rate', 'max_depth', 'num_leaves', 'reg_lambda', 'min_child_weight', 'feature_fraction', 'bagging_fraction', 'bagging_freq']:
-    #     results2[param] = scaler.fit_transform(results2[param].values.reshape(-1, 1))
-    # results2 = results2.drop(columns=['std_test_score', 'rank_test_score'])
-    # plt.figure(figsize=(14, 7))
-    # parallel_coordinates(results2, 'mean_test_score', colormap='viridis', alpha = 0.25)
-    # plt.legend().remove()
-    # plt.savefig('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_parallel_coordinates.png')
-    # plt.close()
-    # # purple = best, yellow = worst
+    # Hyperparameter tuning
+    random_search2 = RandomizedSearchCV(estimator=lgb.LGBMRegressor(objective='regression', early_stopping_round=5, metric='l1'), 
+                                param_distributions=param_dist2, 
+                                n_iter=1000, 
+                                cv=10, 
+                                verbose=2, 
+                                scoring='neg_mean_absolute_error',
+                                random_state=42, 
+                                n_jobs=-1)
+    random_search2.fit(X_train_stacking, y_train,
+                        eval_set=[(X_val_stacking, y_val)]
+                    )
 
-    # # Best model, hyperparameters and predictions
-    # best_model2, train_preds2, test_preds2, y_train2, y_test2 = best_model_and_predictions(random_search2, X_train_stacking, X_test_stacking, y_train, y_test, datetime_train, datetime_test,
-    #                             'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_model.pkl',
-    #                             'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_hyperparameters.json',
-    #                             'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_train_preds.csv',
-    #                             'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_test_preds.csv')
+    # Save results of RandomizedSearchCV
+    results2 = pd.DataFrame(random_search2.cv_results_)
+    interested_columns2 = ['param_' + param for param in param_dist2.keys()] + ['mean_test_score', 'std_test_score', 'rank_test_score']
+    results2 = results2[interested_columns2]
+    results2 = results2.sort_values(by='rank_test_score')
+    results2['mean_test_score'] = results2['mean_test_score']
+    results2.to_csv('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_cv_results.csv')
 
-    # # Regression metrics
-    # regression_metrics(y_test2, test_preds2, 'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_scores.json')
+    # Parallel coordinate plot without max_features and bootstrap
+    scaler = MinMaxScaler()
+    results2 = results2.rename(columns={'param_n_estimators': 'n_estimators', 'param_learning_rate': 'learning_rate', 'param_max_depth': 'max_depth', 'param_num_leaves': 'num_leaves', 'param_reg_lambda': 'reg_lambda', 'param_min_child_weight': 'min_child_weight', 'param_feature_fraction': 'feature_fraction', 'param_bagging_fraction': 'bagging_fraction', 'param_bagging_freq': 'bagging_freq'})
+    results2 = results2.dropna(subset=['mean_test_score'])
+    for param in ['n_estimators', 'learning_rate', 'max_depth', 'num_leaves', 'reg_lambda', 'min_child_weight', 'feature_fraction', 'bagging_fraction', 'bagging_freq']:
+        results2[param] = scaler.fit_transform(results2[param].values.reshape(-1, 1))
+    results2 = results2.drop(columns=['std_test_score', 'rank_test_score'])
+    plt.figure(figsize=(14, 7))
+    parallel_coordinates(results2, 'mean_test_score', colormap='viridis', alpha = 0.25)
+    plt.legend().remove()
+    plt.savefig('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_parallel_coordinates.png')
+    plt.close()
+    # purple = best, yellow = worst
 
-    # # Create feature importance plot for top 15
-    # feature_importance2 = best_model2.feature_importances_
-    # features2 = X_train_stacking.columns
-    # feature_importance_scores2 = dict(zip(features2, feature_importance2))
-    # feature_importance_df2 = pd.DataFrame(feature_importance_scores2.items(), columns=['Feature', 'Importance'])
-    # feature_importance_df2 = feature_importance_df2.sort_values(by='Importance', ascending=False)
-    # feature_importance_df2.to_csv('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_feature_importance.csv', index=False)
+    # Best model, hyperparameters and predictions
+    best_model2, train_preds2, test_preds2, y_train2, y_test2 = best_model_and_predictions(random_search2, X_train_stacking, X_test_stacking, y_train, y_test, datetime_train, datetime_test,
+                                'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_model.pkl',
+                                'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_hyperparameters.json',
+                                'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_train_preds.csv',
+                                'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_test_preds.csv')
 
-    # feature_importance_scores2 = dict(sorted(feature_importance_scores2.items(), key=lambda x: x[1], reverse=True)[:15])
-    # plt.figure(figsize=(14, 7))
-    # plt.bar(feature_importance_scores2.keys(), feature_importance_scores2.values())
-    # plt.ylabel('Feature Importance')
-    # plt.xlabel('Feature')
-    # plt.xticks(rotation=90)
-    # plt.title('Feature Importance')
-    # plt.savefig('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_feature_importance.png')
-    # plt.close()
+    # Regression metrics
+    regression_metrics(y_test2, test_preds2, 'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_scores.json')
 
-    # # Plot predictions vs real values over time (only regression)
-    # test_preds_vs_real_over_time(test_preds2, 'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_predictions.png')
+    # Create feature importance plot for top 15
+    feature_importance2 = best_model2.feature_importances_
+    features2 = X_train_stacking.columns
+    feature_importance_scores2 = dict(zip(features2, feature_importance2))
+    feature_importance_df2 = pd.DataFrame(feature_importance_scores2.items(), columns=['Feature', 'Importance'])
+    feature_importance_df2 = feature_importance_df2.sort_values(by='Importance', ascending=False)
+    feature_importance_df2.to_csv('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_feature_importance.csv', index=False)
+
+    feature_importance_scores2 = dict(sorted(feature_importance_scores2.items(), key=lambda x: x[1], reverse=True)[:15])
+    plt.figure(figsize=(14, 7))
+    plt.bar(feature_importance_scores2.keys(), feature_importance_scores2.values())
+    plt.ylabel('Feature Importance')
+    plt.xlabel('Feature')
+    plt.xticks(rotation=90)
+    plt.title('Feature Importance')
+    plt.savefig('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_feature_importance.png')
+    plt.close()
+
+    # Plot predictions vs real values over time (only regression)
+    test_preds_vs_real_over_time(test_preds2, 'outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_predictions.png')
 
 if __name__ == '__main__':
     main()
