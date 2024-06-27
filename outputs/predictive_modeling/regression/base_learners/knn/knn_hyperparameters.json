@@ -1,1 +1,1 @@
-{"algorithm": "brute", "leaf_size": 436, "metric": "manhattan", "n_neighbors": 12, "p": 96.07143064099162, "weights": "distance"}
+{"algorithm": "ball_tree", "leaf_size": 475, "metric": "manhattan", "n_neighbors": 12, "p": 62.18528947223795, "weights": "distance"}

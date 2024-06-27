@@ -37,6 +37,7 @@ def main():
 
     # Predictions
     y_pred_unweighted = ensemble_unweighted.predict(X_test) + 1
+    pd.DataFrame(y_pred_unweighted, columns=['Predicted Overall Rating']).to_csv('outputs/predictive_modeling/classification/ensemble/ensemble_unweighted_test_preds.csv', index=False)
 
     # Metrics
     accuracy_unweighted = accuracy_score(y_test + 1, y_pred_unweighted)
@@ -92,6 +93,7 @@ def main():
     ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb), ('mlp', mlp)], voting='soft', n_jobs=-1, weights=best_weights)
     ensemble_weighted.fit(X_train, y_train)
     y_pred_weighted = ensemble_weighted.predict(X_test) + 1
+    pd.DataFrame(y_pred_weighted, columns=['Predicted Overall Rating']).to_csv('outputs/predictive_modeling/classification/ensemble/ensemble_weighted_test_preds.csv', index=False)
 
     joblib.dump(ensemble_weighted, 'outputs/predictive_modeling/classification/ensemble/ensemble_weighted_model.pkl')
 

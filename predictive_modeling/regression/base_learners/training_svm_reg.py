@@ -18,7 +18,7 @@ def main():
 
     # Define the range of hyperparameters
     param_dist = {
-        'C': uniform(3.6, 0.2),
+        'C': uniform(4.9, 0.2),
         'kernel': ['rbf'],
         'gamma': ['auto'],
         'degree': randint(1, 30),
@@ -26,7 +26,7 @@ def main():
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(SVR(), 'outputs/predictive_modeling/regression/base_learners/svm/svm_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error')
+    random_search, results = hpo_and_cv_results(SVR(), 'outputs/predictive_modeling/regression/base_learners/svm/svm_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error', n_iter=500)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()

@@ -30,26 +30,28 @@ def main():
 
 
 
-    # # Create ensemble (unweighted)
-    # ensemble_unweighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge), ('mlp', mlp)], n_jobs=-1)
-    # ensemble_unweighted.fit(X_train, y_train)
-    # joblib.dump(ensemble_unweighted, 'outputs/predictive_modeling/regression/ensemble/ensemble_unweighted_model.pkl')
+    # Create ensemble (unweighted)
+    ensemble_unweighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge), ('mlp', mlp)], n_jobs=-1)
+    ensemble_unweighted.fit(X_train, y_train)
+    joblib.dump(ensemble_unweighted, 'outputs/predictive_modeling/regression/ensemble/ensemble_unweighted_model.pkl')
 
-    # # Predictions
-    # y_pred_unweighted = np.round(ensemble_unweighted.predict(X_test) + 1)
+    # Predictions
+    y_pred_unweighted = np.round(ensemble_unweighted.predict(X_test) + 1)
+    pd.DataFrame(y_pred_unweighted, columns=['Predicted Overall Rating']).to_csv('outputs/predictive_modeling/regression/ensemble/ensemble_unweighted_test_preds.csv', index=False)
 
-    # # Metrics
-    # mae_unweighted = mean_absolute_error(y_test, y_pred_unweighted)
-    # mse_unweighted = mean_squared_error(y_test, y_pred_unweighted)
-    # r2_unweighted = r2_score(y_test, y_pred_unweighted)
-    # metrics_unweighted = {
-    #     'mae': mae_unweighted,
-    #     'mse': mse_unweighted,
-    #     'r2': r2_unweighted
-    # }
-    # with open('outputs/predictive_modeling/regression/ensemble/ensemble_unweighted_metrics.json', 'w') as f:
-    #     json.dump(metrics_unweighted, f)
-    # print(metrics_unweighted)
+
+    # Metrics
+    mae_unweighted = mean_absolute_error(y_test, y_pred_unweighted)
+    mse_unweighted = mean_squared_error(y_test, y_pred_unweighted)
+    r2_unweighted = r2_score(y_test, y_pred_unweighted)
+    metrics_unweighted = {
+        'mae': mae_unweighted,
+        'mse': mse_unweighted,
+        'r2': r2_unweighted
+    }
+    with open('outputs/predictive_modeling/regression/ensemble/ensemble_unweighted_metrics.json', 'w') as f:
+        json.dump(metrics_unweighted, f)
+    print(metrics_unweighted)
 
 
 
@@ -90,6 +92,7 @@ def main():
     ensemble_weighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge), ('mlp', mlp)], n_jobs=-1, weights=best_weights)
     ensemble_weighted.fit(X_train, y_train)
     y_pred_weighted = np.round(ensemble_weighted.predict(X_test) + 1)
+    pd.DataFrame(y_pred_weighted, columns=['Predicted Overall Rating']).to_csv('outputs/predictive_modeling/regression/ensemble/ensemble_weighted_test_preds.csv', index=False)
 
     joblib.dump(ensemble_weighted, 'outputs/predictive_modeling/regression/ensemble/ensemble_weighted_model.pkl')
 
@@ -250,7 +253,7 @@ def main():
     # Hyperparameter tuning
     random_search2 = RandomizedSearchCV(estimator=lgb.LGBMRegressor(objective='regression', early_stopping_round=5, metric='l1'), 
                                 param_distributions=param_dist2, 
-                                n_iter=1000, 
+                                n_iter=500, 
                                 cv=10, 
                                 verbose=2, 
                                 scoring='neg_mean_absolute_error',

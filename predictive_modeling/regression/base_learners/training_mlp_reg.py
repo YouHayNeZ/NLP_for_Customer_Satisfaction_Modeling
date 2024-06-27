@@ -34,7 +34,7 @@ def main():
         'learning_rate': ['constant','adaptive', 'invscaling'],
         'max_iter': [7500],
         'early_stopping': [True],
-        'n_iter_no_change': randint(12, 15),
+        'n_iter_no_change': randint(10, 15),
         'tol': uniform(0.0001, 0.005)
     }
 
