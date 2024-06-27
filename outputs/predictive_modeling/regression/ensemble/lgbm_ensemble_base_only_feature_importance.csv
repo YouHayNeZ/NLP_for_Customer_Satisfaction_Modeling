@@ -1,6 +1,6 @@
 Feature,Importance
-knn,190
-bayesian_ridge,4
-svm,1
-mlp,1
-rf,0
+knn,463
+svm,50
+bayesian_ridge,33
+mlp,32
+rf,15

@@ -30,79 +30,81 @@ def main():
 
 
 
-    # Create ensemble (unweighted)
-    ensemble_unweighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge), ('mlp', mlp)], n_jobs=-1)
-    ensemble_unweighted.fit(X_train, y_train)
-    joblib.dump(ensemble_unweighted, 'outputs/predictive_modeling/regression/ensemble/ensemble_unweighted_model.pkl')
+    # # Create ensemble (unweighted)
+    # ensemble_unweighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge), ('mlp', mlp)], n_jobs=-1)
+    # ensemble_unweighted.fit(X_train, y_train)
+    # joblib.dump(ensemble_unweighted, 'outputs/predictive_modeling/regression/ensemble/ensemble_unweighted_model.pkl')
 
-    # Predictions
-    y_pred_unweighted = np.round(ensemble_unweighted.predict(X_test) + 1)
+    # # Predictions
+    # y_pred_unweighted = np.round(ensemble_unweighted.predict(X_test) + 1)
 
-    # Metrics
-    mae_unweighted = mean_absolute_error(y_test, y_pred_unweighted)
-    mse_unweighted = mean_squared_error(y_test, y_pred_unweighted)
-    r2_unweighted = r2_score(y_test, y_pred_unweighted)
-    metrics_unweighted = {
-        'mae': mae_unweighted,
-        'mse': mse_unweighted,
-        'r2': r2_unweighted
-    }
-    with open('outputs/predictive_modeling/regression/ensemble/ensemble_unweighted_metrics.json', 'w') as f:
-        json.dump(metrics_unweighted, f)
-    print(metrics_unweighted)
-
-
+    # # Metrics
+    # mae_unweighted = mean_absolute_error(y_test, y_pred_unweighted)
+    # mse_unweighted = mean_squared_error(y_test, y_pred_unweighted)
+    # r2_unweighted = r2_score(y_test, y_pred_unweighted)
+    # metrics_unweighted = {
+    #     'mae': mae_unweighted,
+    #     'mse': mse_unweighted,
+    #     'r2': r2_unweighted
+    # }
+    # with open('outputs/predictive_modeling/regression/ensemble/ensemble_unweighted_metrics.json', 'w') as f:
+    #     json.dump(metrics_unweighted, f)
+    # print(metrics_unweighted)
 
 
 
 
-    # Create ensemble (weighted)
-    mae_losses = []
 
-    while len(mae_losses) < 2000:
-        w_rf = random.uniform(0, 1)
-        w_knn = random.uniform(0, 1)
-        w_svm = random.uniform(0, 1)
-        w_bayesian_ridge = random.uniform(0, 1)
-        w_mlp = random.uniform(0, 1)
-        ensemble_weighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge), ('mlp', mlp)], n_jobs=-1, weights=[w_knn, w_rf, w_svm, w_bayesian_ridge, w_mlp])
-        ensemble_weighted.fit(X_train, y_train)
-        y_pred = np.round(ensemble_weighted.predict(X_val) + 1)
-        mae = mean_absolute_error(y_val, y_pred)
-        mae_losses.append([w_knn, w_rf, w_svm, w_bayesian_ridge, w_mlp, mae])
 
-    # Convert the list to a DataFrame
-    mae_losses_df = pd.DataFrame(mae_losses, columns=['w_knn', 'w_rf', 'w_svm', 'w_bayesian_ridge', 'w_mlp', 'mae'])
+    # # Create ensemble (weighted)
+    # mae_losses = []
 
-    # Use parallel coordinate plot for weights and mae scores
-    plt.figure(figsize=(14, 7))
-    parallel_coordinates(mae_losses_df, 'mae', colormap='viridis', alpha=0.25)
-    plt.legend().remove()
-    plt.savefig('outputs/predictive_modeling/regression/ensemble/ensemble_parallel_coordinates.png')
-    plt.close()
+    # while len(mae_losses) < 2000:
+    #     w_rf = random.uniform(0, 1)
+    #     w_knn = random.uniform(0, 1)
+    #     w_svm = random.uniform(0, 1)
+    #     w_bayesian_ridge = random.uniform(0, 1)
+    #     w_mlp = random.uniform(0, 1)
+    #     ensemble_weighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge), ('mlp', mlp)], n_jobs=-1, weights=[w_knn, w_rf, w_svm, w_bayesian_ridge, w_mlp])
+    #     ensemble_weighted.fit(X_train, y_train)
+    #     y_pred = np.round(ensemble_weighted.predict(X_val) + 1)
+    #     mae = mean_absolute_error(y_val, y_pred)
+    #     mae_losses.append([w_knn, w_rf, w_svm, w_bayesian_ridge, w_mlp, mae])
+    #     print("finished iteration ", len(mae_losses))
 
-    mae_scores = mae_losses_df.sort_values(by='mae', ascending=True)
-    mae_scores.to_csv('outputs/predictive_modeling/regression/ensemble/ensemble_weighted_mae_scores.csv')
-    best_weights = mae_scores.iloc[0, :-1].values
 
-    ensemble_weighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge), ('mlp', mlp)], n_jobs=-1, weights=best_weights)
-    ensemble_weighted.fit(X_train, y_train)
-    y_pred_weighted = np.round(ensemble_weighted.predict(X_test) + 1)
+    # # Convert the list to a DataFrame
+    # mae_losses_df = pd.DataFrame(mae_losses, columns=['w_knn', 'w_rf', 'w_svm', 'w_bayesian_ridge', 'w_mlp', 'mae'])
 
-    joblib.dump(ensemble_weighted, 'outputs/predictive_modeling/regression/ensemble/ensemble_weighted_model.pkl')
+    # # Use parallel coordinate plot for weights and mae scores
+    # plt.figure(figsize=(14, 7))
+    # parallel_coordinates(mae_losses_df, 'mae', colormap='viridis', alpha=0.25)
+    # plt.legend().remove()
+    # plt.savefig('outputs/predictive_modeling/regression/ensemble/ensemble_parallel_coordinates.png')
+    # plt.close()
 
-    # Metrics
-    mae_weighted = mean_absolute_error(y_test, y_pred_weighted)
-    mse_weighted = mean_squared_error(y_test, y_pred_weighted)
-    r2_weighted = r2_score(y_test, y_pred_weighted)
-    metrics_weighted = {
-        'mae': mae_weighted,
-        'mse': mse_weighted,
-        'r2': r2_weighted
-    }
-    with open('outputs/predictive_modeling/regression/ensemble/ensemble_weighted_metrics.json', 'w') as f:
-        json.dump(metrics_weighted, f)
-    print(metrics_weighted)
+    # mae_scores = mae_losses_df.sort_values(by='mae', ascending=True)
+    # mae_scores.to_csv('outputs/predictive_modeling/regression/ensemble/ensemble_weighted_mae_scores.csv')
+    # best_weights = mae_scores.iloc[0, :-1].values
+
+    # ensemble_weighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge), ('mlp', mlp)], n_jobs=-1, weights=best_weights)
+    # ensemble_weighted.fit(X_train, y_train)
+    # y_pred_weighted = np.round(ensemble_weighted.predict(X_test) + 1)
+
+    # joblib.dump(ensemble_weighted, 'outputs/predictive_modeling/regression/ensemble/ensemble_weighted_model.pkl')
+
+    # # Metrics
+    # mae_weighted = mean_absolute_error(y_test, y_pred_weighted)
+    # mse_weighted = mean_squared_error(y_test, y_pred_weighted)
+    # r2_weighted = r2_score(y_test, y_pred_weighted)
+    # metrics_weighted = {
+    #     'mae': mae_weighted,
+    #     'mse': mse_weighted,
+    #     'r2': r2_weighted
+    # }
+    # with open('outputs/predictive_modeling/regression/ensemble/ensemble_weighted_metrics.json', 'w') as f:
+    #     json.dump(metrics_weighted, f)
+    # print(metrics_weighted)
 
 
 
@@ -160,7 +162,7 @@ def main():
     # }
 
     # # Hyperparameter tuning
-    # random_search = RandomizedSearchCV(estimator=lgb.LGBMRegressor(objective='regression', early_stopping_rounds=5, eval_metric='mae'),
+    # random_search = RandomizedSearchCV(estimator=lgb.LGBMRegressor(objective='regression', early_stopping_round=5, metric='l1'),
     #                             param_distributions=param_dist, 
     #                             n_iter=500, 
     #                             cv=10, 
@@ -183,6 +185,7 @@ def main():
     # # Parallel coordinate plot without max_features and bootstrap
     # scaler = MinMaxScaler()
     # results = results.rename(columns={'param_n_estimators': 'n_estimators', 'param_learning_rate': 'learning_rate', 'param_max_depth': 'max_depth', 'param_num_leaves': 'num_leaves', 'param_reg_lambda': 'reg_lambda', 'param_min_child_weight': 'min_child_weight', 'param_feature_fraction': 'feature_fraction', 'param_bagging_fraction': 'bagging_fraction', 'param_bagging_freq': 'bagging_freq'})
+    # results = results.dropna(subset=['mean_test_score'])
     # for param in ['n_estimators', 'learning_rate', 'max_depth', 'num_leaves', 'reg_lambda', 'min_child_weight', 'feature_fraction', 'bagging_fraction', 'bagging_freq']:
     #     results[param] = scaler.fit_transform(results[param].values.reshape(-1, 1))
     # results = results.drop(columns=['std_test_score', 'rank_test_score'])
@@ -234,20 +237,20 @@ def main():
     # Define the range of hyperparameters
     param_dist2 = {
         'n_estimators': randint(100, 2000),
-        'learning_rate': uniform(0.0001, 0.1),  
+        'learning_rate': uniform(0.01, 0.1),  
         'max_depth': randint(2, 50),  
         'num_leaves': randint(4, 200),  
         'reg_lambda': uniform(0, 10.0),  
         'min_child_weight': randint(1, 40),
-        'feature_fraction': uniform(0.01, 0.99),
-        'bagging_fraction': uniform(0.01, 0.99),
+        'feature_fraction': uniform(0.8, 0.2),
+        'bagging_fraction': uniform(0.05, 0.99),
         'bagging_freq': [1]
     }
 
     # Hyperparameter tuning
-    random_search2 = RandomizedSearchCV(estimator=lgb.LGBMRegressor(objective='regression', early_stopping_rounds=5, eval_metric='mae'), 
+    random_search2 = RandomizedSearchCV(estimator=lgb.LGBMRegressor(objective='regression', early_stopping_round=5, metric='l1'), 
                                 param_distributions=param_dist2, 
-                                n_iter=500, 
+                                n_iter=10, 
                                 cv=10, 
                                 verbose=2, 
                                 scoring='neg_mean_absolute_error',
@@ -268,6 +271,7 @@ def main():
     # Parallel coordinate plot without max_features and bootstrap
     scaler = MinMaxScaler()
     results2 = results2.rename(columns={'param_n_estimators': 'n_estimators', 'param_learning_rate': 'learning_rate', 'param_max_depth': 'max_depth', 'param_num_leaves': 'num_leaves', 'param_reg_lambda': 'reg_lambda', 'param_min_child_weight': 'min_child_weight', 'param_feature_fraction': 'feature_fraction', 'param_bagging_fraction': 'bagging_fraction', 'param_bagging_freq': 'bagging_freq'})
+    results2 = results2.dropna(subset=['mean_test_score'])
     for param in ['n_estimators', 'learning_rate', 'max_depth', 'num_leaves', 'reg_lambda', 'min_child_weight', 'feature_fraction', 'bagging_fraction', 'bagging_freq']:
         results2[param] = scaler.fit_transform(results2[param].values.reshape(-1, 1))
     results2 = results2.drop(columns=['std_test_score', 'rank_test_score'])
