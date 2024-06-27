@@ -89,8 +89,8 @@ def main():
         feature_importance = pd.read_csv('outputs/predictive_modeling/regression/feature_selection/feature_importance_scores.csv')['importance']
         plt.figure(figsize=(14, 7))
         plt.bar(range(len(feature_importance)), feature_importance)
-        plt.axvline(x=100, color='r', linestyle='--')
-        plt.text(150, 0.05, 'Cutoff Threshold at 100 \n Parameters', verticalalignment='center', horizontalalignment='center', size=15, color='r')
+        plt.axvline(x=50, color='r', linestyle='--')
+        plt.text(100, 0.05, 'Cutoff Threshold at 50 \n Parameters', verticalalignment='center', horizontalalignment='center', size=15, color='r')
         plt.ylabel('Feature Importance')
         plt.xlabel('Feature')
         plt.title('Feature Importance (All Features)')

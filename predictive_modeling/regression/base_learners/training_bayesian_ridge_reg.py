@@ -21,7 +21,7 @@ def main():
         'alpha_1': uniform(1e-6, 20),
         'alpha_2': uniform(1e-6, 20),
         'lambda_1': uniform(1e-6, 40),
-        'lambda_2': uniform(1e-6, 0.999),
+        'lambda_2': uniform(1e-6, 10),
         'tol': uniform(0.00001, 0.0005)
     }
 
