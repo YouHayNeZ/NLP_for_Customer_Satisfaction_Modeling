@@ -90,7 +90,7 @@ def main():
         plt.figure(figsize=(14, 7))
         plt.bar(range(len(feature_importance)), feature_importance)
         plt.axvline(x=100, color='r', linestyle='--')
-        plt.text(150, 0.05, 'Cutoff Threshold at 100 \n Parameters (Top 50%)', verticalalignment='center', horizontalalignment='center', size=15, color='r')
+        plt.text(150, 0.05, 'Cutoff Threshold at 100 \n Parameters', verticalalignment='center', horizontalalignment='center', size=15, color='r')
         plt.ylabel('Feature Importance')
         plt.xlabel('Feature')
         plt.title('Feature Importance (All Features)')
