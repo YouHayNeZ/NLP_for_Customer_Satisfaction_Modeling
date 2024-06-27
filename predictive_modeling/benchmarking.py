@@ -30,7 +30,7 @@ def main():
     # Classication ensembles
     voting_uw = pd.read_csv('outputs/predictive_modeling/classification/ensemble/ensemble_unweighted_test_preds.csv') 
     voting_w = pd.read_csv('outputs/predictive_modeling/classification/ensemble/ensemble_weighted_test_preds.csv')
-    lgbm_preds_only = pd.read_csv('outputs/predictive_modeling/classification/ensemble/lgbm_ensemble_base_only_test_preds.csv')
+    lgbm_preds_only = pd.read_csv('outputs/predictive_modeling/classification/ensemble/lgbm_ensemble_only_base_test_preds.csv')
     lgbm_all = pd.read_csv('outputs/predictive_modeling/classification/ensemble/lgbm_ensemble_test_preds.csv')
 
     # Regression base learners
@@ -46,14 +46,24 @@ def main():
     lgbm_preds_only = pd.read_csv('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_test_preds.csv')
     lgbm_all = pd.read_csv('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_test_preds.csv')
 
+    # Add columns Overall Rating and Date Published to voting_uw, voting_w, avg_uw, avg_w
+    for model in [voting_uw, voting_w, avg_uw, avg_w]:
+        model['Date Published'] = datetime_test
+        model['Overall Rating'] = y_test
     
-
     # Calculate Accuracy, Recall, Precision, F1 Score, MAE, MSE, R2 for all test predictions and the real test values
-    # Classification base learners
-
-
-
-
+    results = pd.DataFrame(columns=['Model', 'Accuracy', 'Recall', 'Precision', 'F1 Score', 'MAE', 'MSE', 'R2'])
+    models = ['SVM', 'Random Forest', 'MLP', 'KNN', 'Naive Bayes', 'Voting (Unweighted)', 'Voting (Weighted)', 'LGBM (Only Predictions)', 'LGBM (All Features)', 'SVM', 'Random Forest', 'MLP', 'KNN', 'Naive Bayes', 'Average (Unweighted)', 'Average (Weighted)', 'LGBM (Only Predictions)', 'LGBM (All Features)']
+    for model in [svm_classif, rf_classif, mlp_classif, knn_classif, bayes_classif, voting_uw, voting_w, lgbm_preds_only, lgbm_all, svm_reg, rf_reg, mlp_reg, knn_reg, bayes_reg, avg_uw, avg_w, lgbm_preds_only, lgbm_all]:
+        results = results._append({'Model': models.pop(0),
+                                  'Accuracy': accuracy_score(y_test, model['Predicted Overall Rating']), 
+                                  'Recall': recall_score(y_test, model['Predicted Overall Rating'], average='weighted'), 
+                                  'Precision': precision_score(y_test, model['Predicted Overall Rating'], average='weighted'), 
+                                  'F1 Score': f1_score(y_test, model['Predicted Overall Rating'], average='weighted'), 
+                                  'MAE': mean_absolute_error(y_test, model['Predicted Overall Rating']), 
+                                  'MSE': mean_squared_error(y_test, model['Predicted Overall Rating']), 
+                                  'R2': r2_score(y_test, model['Predicted Overall Rating'])}, ignore_index=True)
+    results.to_csv('outputs/predictive_modeling/benchmarking_results.csv', index=False)
 
 if __name__ == '__main__':
     main()
