@@ -37,8 +37,7 @@ def main():
 
     # Predictions
     y_pred_unweighted = np.round(ensemble_unweighted.predict(X_test) + 1)
-    pd.DataFrame(y_pred_unweighted, columns=['Predicted Overall Rating']).to_csv('outputs/predictive_modeling/regression/ensemble/ensemble_unweighted_test_preds.csv', index=False)
-
+    pd.DataFrame({'Predicted Overall Rating': y_pred_unweighted, 'Real Overall Rating': y_test, 'Date Published': datetime_test['Date Published']}).set_index('Date Published').to_csv('outputs/predictive_modeling/regression/ensemble/ensemble_unweighted_test_preds.csv')
 
     # Metrics
     mae_unweighted = mean_absolute_error(y_test, y_pred_unweighted)
@@ -92,7 +91,7 @@ def main():
     ensemble_weighted = VotingRegressor(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('bayesian_ridge', bayesian_ridge), ('mlp', mlp)], n_jobs=-1, weights=best_weights)
     ensemble_weighted.fit(X_train, y_train)
     y_pred_weighted = np.round(ensemble_weighted.predict(X_test) + 1)
-    pd.DataFrame(y_pred_weighted, columns=['Predicted Overall Rating']).to_csv('outputs/predictive_modeling/regression/ensemble/ensemble_weighted_test_preds.csv', index=False)
+    pd.DataFrame({'Predicted Overall Rating': y_pred_weighted, 'Real Overall Rating': y_test, 'Date Published': datetime_test['Date Published']}).set_index('Date Published').to_csv('outputs/predictive_modeling/regression/ensemble/ensemble_weighted_test_preds.csv')
 
     joblib.dump(ensemble_weighted, 'outputs/predictive_modeling/regression/ensemble/ensemble_weighted_model.pkl')
 

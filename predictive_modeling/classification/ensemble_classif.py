@@ -37,7 +37,7 @@ def main():
 
     # Predictions
     y_pred_unweighted = ensemble_unweighted.predict(X_test) + 1
-    pd.DataFrame(y_pred_unweighted, columns=['Predicted Overall Rating']).to_csv('outputs/predictive_modeling/classification/ensemble/ensemble_unweighted_test_preds.csv', index=False)
+    pd.DataFrame({'Predicted Overall Rating': y_pred_unweighted, 'Real Overall Rating': y_test, 'Date Published': datetime_test['Date Published']}).set_index('Date Published').to_csv('outputs/predictive_modeling/classification/ensemble/ensemble_unweighted_test_preds.csv')
 
     # Metrics
     accuracy_unweighted = accuracy_score(y_test + 1, y_pred_unweighted)
@@ -64,7 +64,7 @@ def main():
     # Create ensemble: majority voting (weighted)
     log_loss_scores = []
 
-    while len(log_loss_scores) < 2000:
+    while len(log_loss_scores) < 1000:
         w_rf = random.uniform(0, 1)
         w_knn = random.uniform(0, 1)
         w_svm = random.uniform(0, 1)
@@ -93,7 +93,7 @@ def main():
     ensemble_weighted = VotingClassifier(estimators=[('knn', knn), ('rf', rf), ('svm', svm), ('nb', nb), ('mlp', mlp)], voting='soft', n_jobs=-1, weights=best_weights)
     ensemble_weighted.fit(X_train, y_train)
     y_pred_weighted = ensemble_weighted.predict(X_test) + 1
-    pd.DataFrame(y_pred_weighted, columns=['Predicted Overall Rating']).to_csv('outputs/predictive_modeling/classification/ensemble/ensemble_weighted_test_preds.csv', index=False)
+    pd.DataFrame({'Predicted Overall Rating': y_pred_weighted, 'Real Overall Rating': y_test, 'Date Published': datetime_test['Date Published']}).set_index('Date Published').to_csv('outputs/predictive_modeling/classification/ensemble/ensemble_weighted_test_preds.csv')
 
     joblib.dump(ensemble_weighted, 'outputs/predictive_modeling/classification/ensemble/ensemble_weighted_model.pkl')
 
@@ -164,7 +164,7 @@ def main():
         'min_child_weight': randint(4, 8),
         'feature_fraction': uniform(0.08, 0.72),
         'bagging_fraction': uniform(0.6, 0.4),
-        'bagging_freq': [1],  
+        'bagging_freq': uniform(1, 10) 
     }
 
     # Hyperparameter tuning
@@ -289,7 +289,7 @@ def main():
         'min_child_weight': randint(1, 6),
         'feature_fraction': uniform(0.01, 0.79),
         'bagging_fraction': uniform(0.7, 0.4),
-        'bagging_freq': [1],  
+        'bagging_freq': uniform(1, 10) 
     }
 
     # Hyperparameter tuning
