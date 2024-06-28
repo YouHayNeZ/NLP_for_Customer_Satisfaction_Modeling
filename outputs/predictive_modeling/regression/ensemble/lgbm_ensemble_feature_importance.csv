@@ -1,56 +1,56 @@
 Feature,Importance
-comment_length,62
-Sentiment_negative,45
-Day Published,38
-Value For Money_1.0,29
-Recommended_yes,28
+comment_length,66
+Day Published,47
+Sentiment_negative,44
+Value For Money_1.0,30
+Recommended_yes,29
 Sentiment_positive,28
-Year Published,26
-Ground Service_0,26
+Ground Service_0,27
+Seat Comfort_1.0,26
 Value For Money_5.0,25
-Seat Comfort_1.0,25
-Cabin Staff Service_5,25
-Value For Money_4.0,24
-Seat Comfort_5.0,23
-bayesian_ridge,21
-Aircraft_Missing,20
-Month Published,20
-Cabin Staff Service_1,20
-Cabin Staff Service_4,18
-Recommended_no,18
-knn,17
-svm,16
+Cabin Staff Service_5,24
+Cabin Staff Service_1,23
+Seat Comfort_5.0,22
+Year Published,21
+Value For Money_4.0,20
+Aircraft_Missing,19
+Month Published,19
+topic_comfort,18
+Trip_verified_Trip Verified,18
+Cabin Staff Service_4,17
+ryanair_review,17
+bayesian_ridge,17
+Recommended_no,17
+Value For Money_3.0,16
 Ground Service_4,16
-Trip_verified_Trip Verified,16
-topic_comfort,15
-topic_other_fees,15
-Value For Money_3.0,15
-mlp,15
-Cabin Staff Service_3,14
-ryanair_review,14
-Seat Comfort_4.0,12
-rf,12
-Seat Comfort_3.0,12
-topic_boarding,10
-Value For Money_2.0,10
-topic_punctual,8
+Cabin Staff Service_3,15
+Seat Comfort_3.0,15
+rf,15
+knn,15
+svm,14
+Seat Comfort_4.0,13
+mlp,13
+topic_other_fees,12
+topic_punctual,11
+topic_service,10
 Seat Comfort_2.0,7
-Year Flown_1,7
-topic_service,6
-Trip_verified_Missing,6
 Ground Service_2,6
+Year Flown_1,6
 Ground Service_1,6
+Value For Money_2.0,6
 Food & Beverages_3.0,5
-Inflight Entertainment_-1.0,5
-Sentiment_neutral,5
-Aircraft_Boeing 737-800,4
+Trip_verified_Missing,5
+Cabin Staff Service_2,4
 Food & Beverages_-1.0,4
+Food & Beverages_4.0,4
 Year Flown_5,4
 Passenger Country_United Kingdom,4
-Cabin Staff Service_2,4
-Food & Beverages_4.0,3
-Ground Service_3,1
+Inflight Entertainment_-1.0,3
+Aircraft_Boeing 737-800,3
+topic_boarding,3
+Sentiment_neutral,3
+Ground Service_3,3
 topic_luggage,1
 Inflight Entertainment_1.0,0
-Food & Beverages_1.0,0
 Wifi & Connectivity_1.0,0
+Food & Beverages_1.0,0
