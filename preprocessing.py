@@ -249,12 +249,13 @@ def splitting_data(data):
     return X_train, X_val, X_test, y_train, y_val, y_test
 
 # Scale of continuous variables
-def scale_continuous(X_train, X_val, X_test):
-    scaler = MinMaxScaler()
-    continuous_vars = ['exclamation_marks', 'question_marks', 'comment_length']
-    X_train[continuous_vars] = scaler.fit_transform(X_train[continuous_vars])
-    X_val[continuous_vars] = scaler.transform(X_val[continuous_vars])
-    X_test[continuous_vars] = scaler.transform(X_test[continuous_vars])
+def scale_continuous(X_train, X_val, X_test, original_data=False):
+    if original_data==False:
+        scaler = MinMaxScaler()
+        continuous_vars = ['exclamation_marks', 'question_marks', 'comment_length']
+        X_train[continuous_vars] = scaler.fit_transform(X_train[continuous_vars])
+        X_val[continuous_vars] = scaler.transform(X_val[continuous_vars])
+        X_test[continuous_vars] = scaler.transform(X_test[continuous_vars])
     return X_train, X_val, X_test
 
 # Impute missing values
@@ -280,7 +281,7 @@ def impute_often_missing_values(X_train, X_val, X_test):
     return X_train_imputed, X_val_imputed, X_test_imputed
 
 # Impute missing values
-def impute_missing_values_with_knn(X_train, X_val, X_test):
+def impute_missing_values_with_knn(X_train, X_val, X_test, original_data=False):
     
     # Dataframes to store imputed values
     X_train_imputed = X_train.copy()
@@ -318,9 +319,13 @@ def impute_missing_values_with_knn(X_train, X_val, X_test):
         X_train_rest = X_train.copy().drop(columns=[col])
         X_val_rest = X_val.copy().drop(columns=[col])
         X_test_rest = X_test.copy().drop(columns=[col])
+        
 
         # Save non-categorical columns
-        non_categorical_columns = ['exclamation_marks', 'question_marks', 'comment_length']
+        if original_data==False:
+            non_categorical_columns = ['exclamation_marks', 'question_marks', 'comment_length']
+        else:
+            non_categorical_columns = []
         X_train_non_categorical = X_train_rest[non_categorical_columns]
         X_val_non_categorical = X_val_rest[non_categorical_columns]
         X_test_non_categorical = X_test_rest[non_categorical_columns]
@@ -464,7 +469,7 @@ def one_hot_encode(X_train, X_val, X_test):
     return X_train_encoded, X_val_encoded, X_test_encoded
 
 # Create pipeline
-def create_pipeline(file_path, feature_selection=True, classification=True):
+def create_pipeline(file_path, feature_selection=True, classification=True, original_data=False):
     data = import_data(file_path)
     data = clean_data(data)
     data = create_datetime(data)
@@ -478,12 +483,13 @@ def create_pipeline(file_path, feature_selection=True, classification=True):
     X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.33, stratify=y, random_state=42)
     X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, stratify=y_temp, random_state=42)
 
-    # Normalize continuous variables
-    X_train, X_val, X_test = scale_continuous(X_train, X_val, X_test)
+    if original_data:
+        # Normalize continuous variables
+        X_train, X_val, X_test = scale_continuous(X_train, X_val, X_test, original_data=original_data)
 
     # Impute missing values
     X_train, X_val, X_test = impute_often_missing_values(X_train, X_val, X_test)
-    X_train, X_val, X_test = impute_missing_values_with_knn(X_train, X_val, X_test)
+    X_train, X_val, X_test = impute_missing_values_with_knn(X_train, X_val, X_test, original_data=original_data)
     X_train, X_val, X_test = impute_low_missing_values(X_train, X_val, X_test)
 
     # Prepare data for one-hot-encoding
