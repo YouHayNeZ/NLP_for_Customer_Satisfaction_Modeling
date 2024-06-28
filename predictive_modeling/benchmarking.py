@@ -27,8 +27,8 @@ def main():
     # Classication ensembles
     voting_uw = pd.read_csv('outputs/predictive_modeling/classification/ensemble/ensemble_unweighted_test_preds.csv') 
     voting_w = pd.read_csv('outputs/predictive_modeling/classification/ensemble/ensemble_weighted_test_preds.csv')
-    lgbm_preds_only = pd.read_csv('outputs/predictive_modeling/classification/ensemble/lgbm_ensemble_only_base_test_preds.csv')
-    lgbm_all = pd.read_csv('outputs/predictive_modeling/classification/ensemble/lgbm_ensemble_test_preds.csv')
+    lgbm_preds_only_classif = pd.read_csv('outputs/predictive_modeling/classification/ensemble/lgbm_ensemble_only_base_test_preds.csv')
+    lgbm_all_classif = pd.read_csv('outputs/predictive_modeling/classification/ensemble/lgbm_ensemble_test_preds.csv')
 
     # Regression base learners
     svm_reg = pd.read_csv('outputs/predictive_modeling/regression/base_learners/svm/svm_test_preds.csv')
@@ -40,13 +40,13 @@ def main():
     # Regression ensembles
     avg_uw = pd.read_csv('outputs/predictive_modeling/regression/ensemble/ensemble_unweighted_test_preds.csv')
     avg_w = pd.read_csv('outputs/predictive_modeling/regression/ensemble/ensemble_weighted_test_preds.csv')
-    lgbm_preds_only = pd.read_csv('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_test_preds.csv')
-    lgbm_all = pd.read_csv('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_test_preds.csv')
+    lgbm_preds_only_reg = pd.read_csv('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_base_only_test_preds.csv')
+    lgbm_all_reg = pd.read_csv('outputs/predictive_modeling/regression/ensemble/lgbm_ensemble_test_preds.csv')
     
     # Calculate Accuracy, Recall, Precision, F1 Score, MAE, MSE, R2 for all test predictions and the real test values
     results = pd.DataFrame(columns=['Model', 'Accuracy', 'F1 Score', 'Precision', 'Recall', 'MSE', 'R2', 'MAE'])
-    models = ['SVM', 'Random Forest', 'MLP', 'KNN', 'Naive Bayes', 'Voting (Unweighted)', 'Voting (Weighted)', 'LGBM (Only Predictions)', 'LGBM (All Features)', 'SVM', 'Random Forest', 'MLP', 'KNN', 'Naive Bayes', 'Average (Unweighted)', 'Average (Weighted)', 'LGBM (Only Predictions)', 'LGBM (All Features)']
-    for model in [svm_classif, rf_classif, mlp_classif, knn_classif, bayes_classif, voting_uw, voting_w, lgbm_preds_only, lgbm_all, svm_reg, rf_reg, mlp_reg, knn_reg, bayes_reg, avg_uw, avg_w, lgbm_preds_only, lgbm_all]:
+    models = ['SVM', 'Random Forest', 'MLP', 'KNN', 'Naive Bayes', 'Voting (Unweighted)', 'Voting (Weighted)', 'LGBM (Only Predictions)', 'LGBM (All Features)', 'SVM', 'Random Forest', 'MLP', 'KNN', 'Naive Bayesian Ridge', 'Average (Unweighted)', 'Average (Weighted)', 'LGBM (Only Predictions)', 'LGBM (All Features)']
+    for model in [svm_classif, rf_classif, mlp_classif, knn_classif, bayes_classif, voting_uw, voting_w, lgbm_preds_only_classif, lgbm_all_classif, svm_reg, rf_reg, mlp_reg, knn_reg, bayes_reg, avg_uw, avg_w, lgbm_preds_only_reg, lgbm_all_reg]:
         results = results._append({'Model': models.pop(0),
                                   'Accuracy': accuracy_score(model['Real Overall Rating'], model['Predicted Overall Rating']), 
                                   'F1 Score': f1_score(model['Real Overall Rating'], model['Predicted Overall Rating'], average='weighted'),

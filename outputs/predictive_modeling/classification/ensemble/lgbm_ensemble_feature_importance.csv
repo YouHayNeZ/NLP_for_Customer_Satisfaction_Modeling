@@ -1,106 +1,106 @@
 Feature,Importance
-comment_length,684
-Day Published,470
-Sentiment_negative,465
-Recommended_no,399
-Year Published,339
-Month Published,338
-Recommended_yes,312
-Sentiment_positive,263
-svm,260
-knn,252
-Value For Money_1.0,226
-nb,222
-Value For Money_3.0,197
-Ground Service_0,191
-rf,175
-topic_punctual,174
-Cabin Staff Service_5,171
-topic_comfort,166
-Value For Money_5.0,152
-again,146
-topic_other_fees,141
-Passenger Country_United Kingdom,140
-Cabin Staff Service_3,139
-Cabin Staff Service_1,133
-Sentiment_neutral,131
-Cabin Staff Service_4,130
-Seat Comfort_1.0,130
-Seat Comfort_4.0,122
-Seat Comfort_3.0,122
-Value For Money_4.0,120
-Aircraft_Missing,119
-topic_service,105
-Ground Service_4,103
-Type Of Traveller_3,102
-exclamation_marks,97
-Food & Beverages_-1.0,95
-mlp,94
-ryanair_review,86
-topic_delay,85
-Seat Comfort_2.0,84
-topic_boarding,82
-Food & Beverages_3.0,81
-Ground Service_2,79
-Value For Money_2.0,76
-Seat Comfort_5.0,75
-Type Of Traveller_1,74
-Aircraft_Boeing 737-800,72
-Trip_verified_Trip Verified,70
-Ground Service_3,67
-Trip_verified_Missing,57
-topic_luggage,54
-Origin_36,52
-Month Flown_8,50
-Year Flown_1,46
-Cabin Staff Service_2,46
-Type Of Traveller_2,45
-cheap,41
-Month Flown_9,38
-Food & Beverages_1.0,38
-Destination_39,37
-Month Flown_6,35
-topic_clean,35
-never,35
-Trip_verified_Not Verified,32
-delayed,32
-Month Flown_5,29
-online,27
-Passenger Country_Ireland,26
-Food & Beverages_4.0,25
-Ground Service_1,22
-Destination_51,22
-question_marks,21
-Food & Beverages_2.0,21
-Food & Beverages_0.0,21
-Year Flown_5,19
-Month Flown_10,19
-Food & Beverages_5.0,17
-Origin_44,16
-Passenger Country_United States,16
-Year Flown_4,15
-Year Flown_2,14
-Trip_verified_Verified Review,14
-Inflight Entertainment_-1.0,12
-Aircraft_Boeing 737,11
-Year Flown_3,8
-Month Flown_7,8
-Inflight Entertainment_1.0,7
-Wifi & Connectivity_1.0,6
-Wifi & Connectivity_-1.0,4
-Month Flown_0,4
-Destination_20,4
-legroom,4
-Month Flown_2,3
-Year Flown_9,2
-Month Flown_4,2
-Month Flown_1,1
-Origin_20,1
-Month Flown_11,1
-Type Of Traveller_0,1
-Month Flown_3,1
+comment_length,229
+Sentiment_negative,204
+Recommended_no,191
+Day Published,168
+Recommended_yes,164
+Sentiment_positive,135
+Month Published,122
+Value For Money_1.0,116
+Year Published,110
+Value For Money_3.0,101
+svm,98
+Ground Service_0,92
+topic_punctual,90
+knn,85
+nb,77
+Cabin Staff Service_5,74
+topic_other_fees,70
+again,70
+Value For Money_5.0,68
+Seat Comfort_1.0,68
+Cabin Staff Service_3,62
+Sentiment_neutral,62
+rf,62
+topic_comfort,62
+Value For Money_4.0,57
+Cabin Staff Service_1,53
+Passenger Country_United Kingdom,51
+Ground Service_4,50
+Seat Comfort_4.0,48
+Cabin Staff Service_4,47
+ryanair_review,42
+exclamation_marks,39
+Seat Comfort_3.0,38
+Food & Beverages_-1.0,38
+Seat Comfort_5.0,37
+Aircraft_Missing,36
+mlp,35
+topic_delay,34
+Seat Comfort_2.0,34
+Food & Beverages_3.0,32
+Value For Money_2.0,32
+Ground Service_3,32
+topic_service,30
+Type Of Traveller_3,30
+topic_boarding,30
+Ground Service_2,29
+Trip_verified_Missing,25
+Type Of Traveller_2,25
+Aircraft_Boeing 737-800,25
+Type Of Traveller_1,24
+Trip_verified_Trip Verified,23
+Month Flown_8,23
+topic_luggage,19
+Food & Beverages_1.0,18
+topic_clean,17
+Trip_verified_Not Verified,15
+Month Flown_6,14
+Cabin Staff Service_2,14
+Year Flown_1,14
+never,12
+Passenger Country_Ireland,12
+Month Flown_5,11
+Origin_36,11
+cheap,11
+Food & Beverages_0.0,10
+Ground Service_1,10
+Food & Beverages_4.0,9
+delayed,9
+Month Flown_10,7
+online,7
+Inflight Entertainment_-1.0,6
+question_marks,6
+Year Flown_5,6
+Month Flown_9,6
+Passenger Country_United States,6
+Destination_39,5
+Trip_verified_Verified Review,5
+Year Flown_2,5
+Year Flown_3,4
+Food & Beverages_2.0,4
+Year Flown_4,4
+Food & Beverages_5.0,4
+Destination_51,4
+Month Flown_7,2
+legroom,2
+Month Flown_2,1
+Inflight Entertainment_1.0,1
+Aircraft_Boeing 737,1
+Origin_44,1
+Destination_20,1
 Passenger Country_Other,0
-Passenger Country_Spain,0
-Origin_39,0
-Destination_41,0
+Wifi & Connectivity_-1.0,0
 Origin_22,0
+Month Flown_3,0
+Wifi & Connectivity_1.0,0
+Year Flown_9,0
+Passenger Country_Spain,0
+Month Flown_0,0
+Month Flown_1,0
+Origin_39,0
+Month Flown_4,0
+Origin_20,0
+Destination_41,0
+Month Flown_11,0
+Type Of Traveller_0,0

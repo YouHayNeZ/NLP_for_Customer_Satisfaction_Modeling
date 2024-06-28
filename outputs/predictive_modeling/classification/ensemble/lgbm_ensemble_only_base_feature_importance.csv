@@ -1,6 +1,6 @@
 Feature,Importance
-knn,42
-svm,34
-rf,16
-nb,14
-mlp,4
+nb,143
+rf,129
+svm,79
+knn,35
+mlp,35
