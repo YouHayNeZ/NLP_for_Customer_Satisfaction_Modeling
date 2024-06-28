@@ -1,5 +1,5 @@
 Feature,Importance
-knn,813
+knn,740
 rf,0
 svm,0
 bayesian_ridge,0

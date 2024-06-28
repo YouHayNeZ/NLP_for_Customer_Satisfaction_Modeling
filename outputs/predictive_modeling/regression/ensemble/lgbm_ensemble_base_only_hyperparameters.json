@@ -1,1 +1,1 @@
-{"bagging_fraction": 0.8749080237694725, "bagging_freq": 7, "feature_fraction": 0.9598658484197037, "learning_rate": 0.27340279606636547, "max_depth": 22, "min_child_weight": 14, "n_estimators": 1882, "num_leaves": 91, "reg_lambda": 3.337086111390218}
+{"bagging_fraction": 0.9097717330154712, "bagging_freq": 4, "feature_fraction": 0.9306776599522142, "learning_rate": 0.3029437755178535, "max_depth": 20, "min_child_weight": 9, "n_estimators": 1520, "num_leaves": 8, "reg_lambda": 7.326990505902804}
