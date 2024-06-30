@@ -1,9 +1,8 @@
-import dash
-from dash import dcc, html
-from dash.dependencies import Input, Output
-import plotly.express as px
 import pandas as pd
-from jupyter_dash import JupyterDash
+import plotly.express as px
+from dash import dcc, html
+from dash._jupyter import JupyterDash
+from dash.dependencies import Input, Output
 
 
 def create_treemap_visualizations(comment_counts, topic_colors, sentiment_colors, note):
@@ -110,6 +109,7 @@ def create_dash_app_sentiments_over_time(df, topics, sentiment_colors, note, cat
 
     app = JupyterDash('Sentiment Distribution Per Topic Over Time')
 
+    # Layout
     app.layout = html.Div([
         html.H1("Sentiment Trends Over Time", style={'textAlign': 'center'}),
         html.Div([
@@ -127,12 +127,12 @@ def create_dash_app_sentiments_over_time(df, topics, sentiment_colors, note, cat
         Output('sentiment-trends', 'figure'),
         [Input('topic-dropdown', 'value')]
     )
-    def update_graph(selected_topics):
+    def update_graph(topic_filter_values):
         filtered_df = df.copy()
 
         # Filter by selected topics
-        if selected_topics:
-            for topic in selected_topics:
+        if topic_filter_values:
+            for topic in topic_filter_values:
                 filtered_df = filtered_df[filtered_df[topic] == True]
 
         filtered_df['Year'] = filtered_df['Date Published Formatted'].dt.year
@@ -150,7 +150,7 @@ def create_dash_app_sentiments_over_time(df, topics, sentiment_colors, note, cat
 
         fig.update_layout(
             xaxis_title='Year',
-            yaxis_title='Percentage of Comments',
+            yaxis_title='Percentage of Comments (%)',
             legend_title='Sentiment',
             hovermode='x unified',
             annotations=[{
@@ -164,6 +164,7 @@ def create_dash_app_sentiments_over_time(df, topics, sentiment_colors, note, cat
         return fig
 
     return app
+
 
 def create_dash_app_topics_over_time(df, topics, note):
     """
