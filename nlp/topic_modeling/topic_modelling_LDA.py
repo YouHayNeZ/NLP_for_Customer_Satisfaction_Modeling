@@ -37,12 +37,6 @@ def topic_modeling():
 
     id2word = corpora.Dictionary(data_bigrams_trigrams)
 
-    # Check the most frequent words to see if there is something to remove
-    # word_frequencies = Counter({id2word[id]: freq for id, freq in id2word.dfs.items()})
-    # most_common_words = word_frequencies.most_common(20)
-    # for word, freq in most_common_words:
-    #     print(f"{word}: {freq}")
-
     texts = data_bigrams_trigrams
 
     corpus = [id2word.doc2bow(text) for text in texts]
@@ -69,6 +63,7 @@ def topic_modeling():
     """
     Do hyperparameter optimization with a random search implementation.
     Since RandomizedSearchCV is optimized for the scikit library and gensim is used in this implementation a random search is perform with the following functionality.
+    Uncomment the following line to perform random search.
     """
     # perform_random_search()
     run_lda_model(comments_df, corpus, id2word, data_bigrams_trigrams)
