@@ -1,1 +1,1 @@
-{"C": 4.959424343124636, "degree": 3, "epsilon": 0.004747533985288829, "gamma": "auto", "kernel": "rbf"}
+{"kernel": "rbf", "gamma": "auto", "epsilon": 0.004747533985288829, "degree": 3, "C": 4.959424343124636}

@@ -19,17 +19,26 @@ def main():
     X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv', feature_selection=feature_selection, classification=False)
 
     # Define the range of hyperparameters
+    # param_dist = {
+    #     'n_estimators': randint(200, 2000),
+    #     'max_features': ["sqrt"],
+    #     'max_depth': randint(20, 200),
+    #     'min_samples_split': randint(2, 25),
+    #     'min_samples_leaf': randint(5, 8),
+    #     'bootstrap': [False]
+    # }
+
     param_dist = {
-        'n_estimators': randint(200, 2000),
-        'max_features': ["sqrt"],
-        'max_depth': randint(20, 200),
-        'min_samples_split': randint(2, 25),
-        'min_samples_leaf': randint(5, 8),
+        'n_estimators': [1031],
+        'max_features': ['sqrt'],
+        'max_depth': [70],
+        'min_samples_split': [21],
+        'min_samples_leaf': [7],
         'bootstrap': [False]
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(RandomForestRegressor(criterion='absolute_error'), 'outputs/predictive_modeling/regression/base_learners/rf/rf_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error', n_iter=100, cv=10)
+    random_search, results = hpo_and_cv_results(RandomForestRegressor(criterion='absolute_error'), 'outputs/predictive_modeling/regression/base_learners/rf/rf_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error', n_iter=1, cv=10)
 
     # Parallel coordinate plot without max_features and bootstrap
     scaler = MinMaxScaler()
@@ -91,9 +100,8 @@ def main():
         plt.bar(range(len(feature_importance)), feature_importance)
         plt.axvline(x=50, color='r', linestyle='--')
         plt.text(100, 0.05, 'Cutoff Threshold at 50 \n Parameters', verticalalignment='center', horizontalalignment='center', size=15, color='r')
-        plt.ylabel('Feature Importance')
-        plt.xlabel('Feature')
-        plt.title('Feature Importance (All Features)')
+        plt.ylabel('Feature Importance', fontsize=16)
+        plt.xlabel('Feature', fontsize=16)
         plt.savefig('outputs/predictive_modeling/regression/feature_selection/feature_importance_image.png')
         plt.close()
 

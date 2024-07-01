@@ -18,21 +18,30 @@ def main():
     X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv')
 
     # Define a custom distribution for n_neighbors
-    n_neighbors_choices = [randint(5, 21), randint(90, 111), randint(140, 181)]
+    #n_neighbors_choices = [randint(5, 21), randint(90, 111), randint(140, 181)]
 
     # Define the range of hyperparameters
+    # param_dist = {
+    #     #'n_neighbors': np.random.choice(n_neighbors_choices),
+    #     'n_neighbors': [98],
+    #     'weights': ['distance'],
+    #     'algorithm': ['kd_tree'],
+    #     'leaf_size': randint(360, 600),
+    #     'p': uniform(1, 400),
+    #     'metric': ['manhattan']
+    # }
+
     param_dist = {
-        #'n_neighbors': np.random.choice(n_neighbors_choices),
         'n_neighbors': [98],
         'weights': ['distance'],
         'algorithm': ['kd_tree'],
-        'leaf_size': randint(360, 600),
-        'p': uniform(1, 400),
+        'leaf_size': [462],
+        'p': [319.6171947440931],
         'metric': ['manhattan']
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(KNeighborsClassifier(), 'outputs/predictive_modeling/classification/base_learners/knn/knn_cv_results.csv', param_dist, X_train, y_train, n_iter=1500)
+    random_search, results = hpo_and_cv_results(KNeighborsClassifier(), 'outputs/predictive_modeling/classification/base_learners/knn/knn_cv_results.csv', param_dist, X_train, y_train, n_iter=1, cv=10)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()
@@ -76,10 +85,9 @@ def main():
         plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
         plt.xlim([0.0, 1.0])
         plt.ylim([0.0, 1.05])
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title('ROC Curve (Class {})'.format(cls))
-        plt.legend(loc="lower right")
+        plt.xlabel('False Positive Rate', fontsize=16)
+        plt.ylabel('True Positive Rate', fontsize=16)
+        plt.legend(loc="lower right", fontsize=14)
         plt.savefig('outputs/predictive_modeling/classification/base_learners/knn/roc_curve_class_{}.png'.format(cls))
         plt.close()
 
@@ -89,15 +97,12 @@ def main():
         plt.figure()
         plt.step(recall, precision, color='b', alpha=0.2, where='post')
         plt.fill_between(recall, precision, step='post', alpha=0.2, color='b')
-        plt.xlabel('Recall')
-        plt.ylabel('Precision')
+        plt.xlabel('Recall', fontsize = 16)
+        plt.ylabel('Precision', fontsize = 16)
         plt.ylim([0.0, 1.05])
         plt.xlim([0.0, 1.0])
-        plt.title('Precision-Recall Curve (Class {})'.format(cls))
         plt.savefig('outputs/predictive_modeling/classification/base_learners/knn/precision_recall_curve_class_{}.png'.format(cls))
         plt.close()
-
-    # No feature importance for KNN (maybe add later something similar)
 
 if __name__ == '__main__':
     main()

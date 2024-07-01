@@ -1,1 +1,1 @@
-{"activation": "tanh", "alpha": 0.043203108791366567, "early_stopping": true, "hidden_layer_sizes": [200, 150, 275], "learning_rate": "adaptive", "max_iter": 5000, "n_iter_no_change": 10, "solver": "adam", "tol": 0.001}
+{"tol": 0.001, "solver": "adam", "n_iter_no_change": 10, "max_iter": 5000, "learning_rate": "adaptive", "hidden_layer_sizes": [200, 150, 275], "early_stopping": true, "alpha": 0.043203108791366567, "activation": "tanh"}

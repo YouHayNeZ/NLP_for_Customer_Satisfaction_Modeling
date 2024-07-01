@@ -99,7 +99,6 @@ def confusion_matrix_and_metrics(X_test, y_test, test_preds, model, cm_path, sco
     plt.colorbar()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
-    plt.title('Confusion Matrix')
     for i in range(cm.shape[0]):
         for j in range(cm.shape[1]):
             plt.text(j, i, cm[i, j], ha='center', va='center', color='white')
@@ -128,7 +127,10 @@ def test_preds_vs_real_over_time(test_preds, path):
     plt.figure(figsize=(14, 7))
     plt.plot(test_predictions.index, test_predictions['Predicted Overall Rating'], label='Predicted Overall Rating (Test)')
     plt.plot(test_predictions.index, test_predictions['Real Overall Rating'], label='Real Overall Rating (Test)')
-    plt.legend()
-    plt.title('Predicted vs Real Overall Rating over Time')
+    plt.legend(loc='upper right', fontsize=14)
+    plt.xlabel('Time', fontsize=16)
+    plt.ylabel('Average Overall Rating', fontsize=16)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
     plt.savefig(path)
     plt.close()
