@@ -4,6 +4,11 @@ from dash import dcc, html
 from jupyter_dash import JupyterDash
 from dash.dependencies import Input, Output
 
+"""
+This file stores the functions for the jupyter notebook: dashboard.ipynb
+Please only invoke the functions from the jupyter notebook.
+"""
+
 
 def create_treemap_visualizations(comment_counts, topic_colors, sentiment_colors, note):
     """
@@ -30,12 +35,13 @@ def create_treemap_visualizations(comment_counts, topic_colors, sentiment_colors
     # Treemap by Topic and Sentiment
     fig_topic = px.treemap(comment_counts, path=['Topic', 'Sentiment'], values='Number of Comments',
                            color='color_key', color_discrete_map=combined_colors,
-                           title='Treemap of Comments by Topic and Sentiment',
+                           title='Treemap of Number of Comments* by Topic and Sentiment',
                            custom_data=['Number of Comments'])
 
     fig_topic.update_traces(
         hovertemplate='<b>%{label}</b><br>Number of Comments: %{customdata[0]}<extra></extra>',
-        texttemplate='%{label}<br>%{customdata[0]}'
+        texttemplate='%{label}<br>%{customdata[0]}',
+        textfont=dict(size=12)
     )
 
     fig_topic.add_annotation(
@@ -50,12 +56,13 @@ def create_treemap_visualizations(comment_counts, topic_colors, sentiment_colors
     # Treemap by Sentiment and Topic
     fig_sen = px.treemap(comment_counts, path=['Sentiment', 'Topic'], values='Number of Comments',
                          color='Sentiment', color_discrete_map=sentiment_colors,
-                         title='Treemap of Comments by Sentiment and Topic',
+                         title='Treemap of Number of Comments* by Sentiment and Topic',
                          custom_data=['Number of Comments'])
 
     fig_sen.update_traces(
         hovertemplate='<b>%{label}</b><br>Number of Comments: %{customdata[0]}<extra></extra>',
-        texttemplate='%{label}<br>%{customdata[0]}'
+        texttemplate='%{label}<br>%{customdata[0]}',
+        textfont=dict(size=12)
     )
 
     fig_sen.add_annotation(
@@ -69,59 +76,7 @@ def create_treemap_visualizations(comment_counts, topic_colors, sentiment_colors
 
     return fig_topic, fig_sen
 
-"""
-def create_treemap_visualizations(comment_counts, topic_colors, sentiment_colors, note):
-    \"""
-    Create treemap visualizations for comments by topic and sentiment.
 
-    Parameters:
-    - comment_counts (pd.DataFrame): DataFrame containing comment counts with 'Topic', 'Sentiment', and 'Number of Comments' columns.
-    - topic_colors (dict): Dictionary mapping topics to their respective colors.
-    - sentiment_colors (dict): Dictionary mapping sentiments to their respective colors.
-    - note (str): Annotation note to be added to the plots.
-
-    Returns:
-    - fig_topic (plotly.graph_objs._figure.Figure): Treemap figure with Topics, Sentiments.
-    - fig_sen (plotly.graph_objs._figure.Figure): Treemap figure with Sentiments, Topics.
-    \"""
-
-    # Combine the two color mappings into one
-    combined_colors = {**sentiment_colors, **topic_colors}
-
-    # Create a combined key for color mapping
-    comment_counts['color_key'] = comment_counts.apply(
-        lambda row: row['Sentiment'] if row['Topic'] == '' else row['Topic'], axis=1)
-
-    # Treemap by Topic and Sentiment
-    fig_topic = px.treemap(comment_counts, path=['Topic', 'Sentiment'], values='Number of Comments',
-                           color='color_key', color_discrete_map=combined_colors,
-                           title='Treemap of Comments by Topic and Sentiment')
-
-    fig_topic.add_annotation(
-        text=note,
-        xref='paper', yref='paper',
-        x=0.5, y=-0.1,
-        showarrow=False,
-        font=dict(size=12),
-        align='center'
-    )
-
-    # Treemap by Sentiment and Topic
-    fig_sen = px.treemap(comment_counts, path=['Sentiment', 'Topic'], values='Number of Comments',
-                         color='Sentiment', color_discrete_map=sentiment_colors,
-                         title='Treemap of Comments by Sentiment and Topic')
-
-    fig_sen.add_annotation(
-        text=note,
-        xref='paper', yref='paper',
-        x=0.5, y=-0.1,
-        showarrow=False,
-        font=dict(size=12),
-        align='center'
-    )
-    return fig_topic, fig_sen
-
-"""
 def create_heatmap_visualization(long_df, note):
     """
     Create a heatmap visualization for comments by sentiment and topic.
@@ -139,7 +94,7 @@ def create_heatmap_visualization(long_df, note):
 
     # Create the heatmap plot
     fig = px.density_heatmap(heatmap_data, x='Sentiment', y='Topic', z='count',
-                             title='Heatmap of Sentiment by Topic',
+                             title='Heatmap of Number of Comments* Sentiment by Topic',
                              labels={'count': 'Number of Comments'},
                              color_continuous_scale='Blues')
     fig.update_layout(
@@ -208,7 +163,7 @@ def create_dash_app_sentiments_over_time(df, topics, sentiment_colors, note, cat
         yearly_data['percentage'] = yearly_data['count'] / yearly_data['total'] * 100
 
         fig = px.line(yearly_data, x='Year', y='percentage', color='Sentiment',
-                      title='Sentiment Trends Over Time',
+                      title='Sentiment Trends Over Time*',
                       color_discrete_map=sentiment_colors,
                       labels={'percentage': 'Percentage of Comments', 'Year': 'Year'},
                       category_orders=category_orders)
@@ -286,7 +241,7 @@ def create_dash_app_topics_over_time(df, topics, note):
 
         # Create the line plot
         fig = px.line(yearly_data, x='Year', y='count', color='Topic',
-                      title='Total Number of Comments per Topic Over Time',
+                      title='Total Number of Comments* per Topic Over Time',
                       labels={'count': 'Number of Comments', 'Year': 'Year'})
 
         # Update layout for better readability
@@ -395,7 +350,7 @@ def create_sunburst_plot(long_df, note):
     sunburst_data = long_df.groupby(['Topic', 'Sentiment']).size().reset_index(name='count')
 
     fig = px.sunburst(sunburst_data, path=['Topic', 'Sentiment'], values='count',
-                      title='Sentiment Breakdown by Topic')
+                      title='Sentiment Breakdown by Topic*')
 
     fig.add_annotation(
         text=note,
