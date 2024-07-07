@@ -21,3 +21,5 @@ dash~=2.17.1
 pyLDAvis~=3.4.1
 tenacity~=8.3.0
 joblib~=1.4.2
+jupyter_dash==0.4.2
+plotly==5.22.0
