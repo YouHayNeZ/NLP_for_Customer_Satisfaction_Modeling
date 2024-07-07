@@ -18,13 +18,18 @@ def main():
     X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv')
     
     # Define the range of hyperparameters (Naive Bayes doesn't have many hyperparameters to tune)
-    param_dist = { 
-        'alpha': uniform(2.395, 0.001),
+    # param_dist = { 
+    #     'alpha': uniform(2.395, 0.001),
+    #     'fit_prior': [True]
+    # }
+
+    param_dist = {
+        'alpha': [2.3953972872905602],
         'fit_prior': [True]
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(MultinomialNB(), 'outputs/predictive_modeling/classification/base_learners/nb/nb_cv_results.csv', param_dist, X_train, y_train, n_iter=1500)
+    random_search, results = hpo_and_cv_results(MultinomialNB(), 'outputs/predictive_modeling/classification/base_learners/nb/nb_cv_results.csv', param_dist, X_train, y_train, n_iter=1, cv=10)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()
@@ -68,10 +73,9 @@ def main():
         plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
         plt.xlim([0.0, 1.0])
         plt.ylim([0.0, 1.05])
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title('ROC Curve (Class {})'.format(cls))
-        plt.legend(loc="lower right")
+        plt.xlabel('False Positive Rate', fontsize = 16)
+        plt.ylabel('True Positive Rate', fontsize = 16)
+        plt.legend(loc="lower right", fontsize = 14)
         plt.savefig('outputs/predictive_modeling/classification/base_learners/nb/roc_curve_class_{}.png'.format(cls))
         plt.close()
 
@@ -81,11 +85,10 @@ def main():
         plt.figure()
         plt.step(recall, precision, color='b', alpha=0.2, where='post')
         plt.fill_between(recall, precision, step='post', alpha=0.2, color='b')
-        plt.xlabel('Recall')
-        plt.ylabel('Precision')
+        plt.xlabel('Recall', fontsize = 16)
+        plt.ylabel('Precision', fontsize = 16)
         plt.ylim([0.0, 1.05])
         plt.xlim([0.0, 1.0])
-        plt.title('Precision-Recall Curve (Class {})'.format(cls))
         plt.savefig('outputs/predictive_modeling/classification/base_learners/nb/precision_recall_curve_class_{}.png'.format(cls))
         plt.close()
 

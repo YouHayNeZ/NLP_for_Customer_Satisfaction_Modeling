@@ -17,17 +17,26 @@ def main():
     X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv', classification=False)
 
     # Define the range of hyperparameters
+    # param_dist = {
+    #     'n_neighbors': [12],
+    #     'weights': ['distance'],
+    #     'algorithm': ['ball_tree', 'kd_tree', 'brute'],
+    #     'leaf_size': randint(1, 500),
+    #     'p': uniform(1, 100),
+    #     'metric': ['manhattan']
+    # }
+
     param_dist = {
         'n_neighbors': [12],
         'weights': ['distance'],
-        'algorithm': ['ball_tree', 'kd_tree', 'brute'],
-        'leaf_size': randint(1, 500),
-        'p': uniform(1, 100),
+        'algorithm': ['ball_tree'],
+        'leaf_size': [475],
+        'p': [62.18528947223795],
         'metric': ['manhattan']
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(KNeighborsRegressor(), 'outputs/predictive_modeling/regression/base_learners/knn/knn_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error', n_iter=500)
+    random_search, results = hpo_and_cv_results(KNeighborsRegressor(), 'outputs/predictive_modeling/regression/base_learners/knn/knn_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error', n_iter=1, cv=10)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()

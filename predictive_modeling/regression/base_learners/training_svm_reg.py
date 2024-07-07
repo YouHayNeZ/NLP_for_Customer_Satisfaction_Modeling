@@ -17,16 +17,24 @@ def main():
     X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv', classification=False)
 
     # Define the range of hyperparameters
+    # param_dist = {
+    #     'C': uniform(4.9, 0.2),
+    #     'kernel': ['rbf'],
+    #     'gamma': ['auto'],
+    #     'degree': randint(1, 30),
+    #     'epsilon': uniform(0.000001, 0.005),
+    # }
+
     param_dist = {
-        'C': uniform(4.9, 0.2),
+        'C': [4.959424343124636],
         'kernel': ['rbf'],
         'gamma': ['auto'],
-        'degree': randint(1, 30),
-        'epsilon': uniform(0.000001, 0.005),
+        'degree': [3],
+        'epsilon': [0.004747533985288829],
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(SVR(), 'outputs/predictive_modeling/regression/base_learners/svm/svm_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error', n_iter=500)
+    random_search, results = hpo_and_cv_results(SVR(), 'outputs/predictive_modeling/regression/base_learners/svm/svm_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error', n_iter=1, cv=10)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()

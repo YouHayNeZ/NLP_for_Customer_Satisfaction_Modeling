@@ -1,1 +1,1 @@
-{"activation": "relu", "alpha": 0.28103450968738075, "early_stopping": true, "hidden_layer_sizes": [450, 425, 350, 400], "learning_rate": "constant", "max_iter": 7500, "n_iter_no_change": 14, "solver": "adam", "tol": 0.00017818203370596967}
+{"tol": 0.00017818203370596967, "solver": "adam", "n_iter_no_change": 14, "max_iter": 7500, "learning_rate": "constant", "hidden_layer_sizes": [450, 425, 350, 400], "early_stopping": true, "alpha": 0.28103450968738075, "activation": "relu"}

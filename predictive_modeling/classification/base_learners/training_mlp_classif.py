@@ -27,12 +27,24 @@ def main():
         return tuple(random.choice(layer_sizes) for _ in range(num_layers))
 
     # Define the range of hyperparameters
+    # param_dist = {
+    #     'hidden_layer_sizes': [random_hidden_layers() for _ in range(100)],
+    #     'activation': ['tanh'],
+    #     'solver': ['adam'],
+    #     'alpha': uniform(0.01, 1.0),
+    #     'learning_rate': ['constant','adaptive', 'invscaling'],
+    #     'max_iter': [5000],
+    #     'early_stopping': [True],
+    #     'n_iter_no_change': [10],
+    #     'tol': [0.001]
+    # }
+
     param_dist = {
-        'hidden_layer_sizes': [random_hidden_layers() for _ in range(100)],
+        'hidden_layer_sizes': [(200, 150, 275)],
         'activation': ['tanh'],
         'solver': ['adam'],
-        'alpha': uniform(0.01, 1.0),
-        'learning_rate': ['constant','adaptive', 'invscaling'],
+        'alpha': [0.043203108791366567],
+        'learning_rate': ['adaptive'],
         'max_iter': [5000],
         'early_stopping': [True],
         'n_iter_no_change': [10],
@@ -40,7 +52,7 @@ def main():
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(MLPClassifier(), 'outputs/predictive_modeling/classification/base_learners/mlp/mlp_cv_results.csv', param_dist, X_train, y_train, n_iter=750, cv=10)
+    random_search, results = hpo_and_cv_results(MLPClassifier(), 'outputs/predictive_modeling/classification/base_learners/mlp/mlp_cv_results.csv', param_dist, X_train, y_train, n_iter=1, cv=10)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()
@@ -86,10 +98,9 @@ def main():
         plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
         plt.xlim([0.0, 1.0])
         plt.ylim([0.0, 1.05])
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title('ROC Curve (Class {})'.format(cls))
-        plt.legend(loc="lower right")
+        plt.xlabel('False Positive Rate', fontsize = 16)
+        plt.ylabel('True Positive Rate', fontsize = 16)
+        plt.legend(loc="lower right", fontsize = 14)
         plt.savefig('outputs/predictive_modeling/classification/base_learners/mlp/roc_curve_class_{}.png'.format(cls))
         plt.close()
 
@@ -99,11 +110,10 @@ def main():
         plt.figure()
         plt.step(recall, precision, color='b', alpha=0.2, where='post')
         plt.fill_between(recall, precision, step='post', alpha=0.2, color='b')
-        plt.xlabel('Recall')
-        plt.ylabel('Precision')
+        plt.xlabel('Recall', fontsize = 16)
+        plt.ylabel('Precision', fontsize = 16)
         plt.ylim([0.0, 1.05])
         plt.xlim([0.0, 1.0])
-        plt.title('Precision-Recall Curve (Class {})'.format(cls))
         plt.savefig('outputs/predictive_modeling/classification/base_learners/mlp/precision_recall_curve_class_{}.png'.format(cls))
         plt.close()
     

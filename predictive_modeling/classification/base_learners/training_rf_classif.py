@@ -19,17 +19,26 @@ def main():
     X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv', feature_selection=feature_selection)
 
     # Define the range of hyperparameters
+    # param_dist = {
+    #     'n_estimators': randint(500, 1900),
+    #     'max_features': ["sqrt"],
+    #     'max_depth': randint(50, 500),
+    #     'min_samples_split': randint(20, 35),
+    #     'min_samples_leaf': randint(1, 5),
+    #     'bootstrap': [False]
+    # }
+
     param_dist = {
-        'n_estimators': randint(500, 1900),
+        'n_estimators': [813],
         'max_features': ["sqrt"],
-        'max_depth': randint(50, 500),
-        'min_samples_split': randint(20, 35),
-        'min_samples_leaf': randint(1, 5),
+        'max_depth': [239],
+        'min_samples_split': [25],
+        'min_samples_leaf': [1],
         'bootstrap': [False]
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(RandomForestClassifier(criterion='log_loss'), 'outputs/predictive_modeling/classification/base_learners/rf/rf_cv_results.csv', param_dist, X_train, y_train, n_iter=500)
+    random_search, results = hpo_and_cv_results(RandomForestClassifier(criterion='log_loss'), 'outputs/predictive_modeling/classification/base_learners/rf/rf_cv_results.csv', param_dist, X_train, y_train, n_iter=1, cv=10)
 
     # Parallel coordinate plot without max_features and bootstrap
     scaler = MinMaxScaler()
@@ -73,10 +82,9 @@ def main():
         plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
         plt.xlim([0.0, 1.0])
         plt.ylim([0.0, 1.05])
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title('ROC Curve (Class {})'.format(cls))
-        plt.legend(loc="lower right")
+        plt.xlabel('False Positive Rate', fontsize = 16)
+        plt.ylabel('True Positive Rate', fontsize = 16)
+        plt.legend(loc="lower right", fontsize = 14)
         plt.savefig('outputs/predictive_modeling/classification/base_learners/rf/roc_curve_class_{}.png'.format(cls))
         plt.close()
 
@@ -86,11 +94,10 @@ def main():
         plt.figure()
         plt.step(recall, precision, color='b', alpha=0.2, where='post')
         plt.fill_between(recall, precision, step='post', alpha=0.2, color='b')
-        plt.xlabel('Recall')
-        plt.ylabel('Precision')
+        plt.xlabel('Recall', fontsize = 16)
+        plt.ylabel('Precision', fontsize = 16)
         plt.ylim([0.0, 1.05])
         plt.xlim([0.0, 1.0])
-        plt.title('Precision-Recall Curve (Class {})'.format(cls))
         plt.savefig('outputs/predictive_modeling/classification/base_learners/rf/precision_recall_curve_class_{}.png'.format(cls))
         plt.close()
 
@@ -125,9 +132,8 @@ def main():
         plt.bar(range(len(feature_importance)), feature_importance)
         plt.axvline(x=100, color='r', linestyle='--')
         plt.text(150, 0.05, 'Cutoff Threshold at 100 \n Parameters', verticalalignment='center', horizontalalignment='center', size=15, color='r')
-        plt.ylabel('Feature Importance')
-        plt.xlabel('Feature')
-        plt.title('Feature Importance (All Features)')
+        plt.ylabel('Feature Importance', fontsize = 16)
+        plt.xlabel('Feature', fontsize = 16)
         plt.savefig('outputs/predictive_modeling/classification/feature_selection/feature_importance_image.png')
         plt.close()
 

@@ -17,16 +17,24 @@ def main():
     X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv', classification=False)
 
     # Define the range of hyperparameters
+    # param_dist = {
+    #     'alpha_1': uniform(1e-6, 20),
+    #     'alpha_2': uniform(1e-6, 20),
+    #     'lambda_1': uniform(1e-6, 40),
+    #     'lambda_2': uniform(1e-6, 10),
+    #     'tol': uniform(0.00001, 0.0005)
+    # }
+
     param_dist = {
-        'alpha_1': uniform(1e-6, 20),
-        'alpha_2': uniform(1e-6, 20),
-        'lambda_1': uniform(1e-6, 40),
-        'lambda_2': uniform(1e-6, 10),
-        'tol': uniform(0.00001, 0.0005)
+        'alpha_1': [3.5790098059435467],
+        'alpha_2': [13.144264993369342],
+        'lambda_1': [39.777208168010816],
+        'lambda_2': [6.521084405159366],
+        'tol': [0.00031334077309564567]
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(BayesianRidge(), 'outputs/predictive_modeling/regression/base_learners/bayesian_ridge/bayesian_ridge_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error', n_iter=5000)
+    random_search, results = hpo_and_cv_results(BayesianRidge(), 'outputs/predictive_modeling/regression/base_learners/bayesian_ridge/bayesian_ridge_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error', n_iter=1, cv=10)
 
     # Parallel coordinate plot without max_features and bootstrap
     scaler = MinMaxScaler()

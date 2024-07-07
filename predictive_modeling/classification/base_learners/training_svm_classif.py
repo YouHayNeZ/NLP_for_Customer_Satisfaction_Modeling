@@ -18,19 +18,30 @@ def main():
     X_train, X_val, X_test, y_train, y_val, y_test, datetime_train, datetime_val, datetime_test, data = create_pipeline('data/ryanair_reviews_with_extra_features.csv')
 
     # Define the range of hyperparameters
+    # param_dist = {
+    #     'C': uniform(2.5, 1),
+    #     'kernel': ['rbf'],
+    #     'gamma': ['auto'],
+    #     'degree': randint(1, 15),
+    #     'class_weight': ['balanced'],
+    #     'probability': [True],
+    #     'shrinking': [True, False],
+    #     'tol': uniform(0.001, 0.2),
+    # }
+
     param_dist = {
-        'C': uniform(2.5, 1),
+        'C': [3.2689177413153976],
         'kernel': ['rbf'],
         'gamma': ['auto'],
-        'degree': randint(1, 15),
+        'degree': [4],
         'class_weight': ['balanced'],
         'probability': [True],
-        'shrinking': [True, False],
-        'tol': uniform(0.001, 0.2),
+        'shrinking': [False],
+        'tol': [0.01017225328092659]
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(SVC(), 'outputs/predictive_modeling/classification/base_learners/svm/svm_cv_results.csv', param_dist, X_train, y_train, n_iter=250)
+    random_search, results = hpo_and_cv_results(SVC(), 'outputs/predictive_modeling/classification/base_learners/svm/svm_cv_results.csv', param_dist, X_train, y_train, n_iter=1, cv=10)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()
@@ -74,10 +85,9 @@ def main():
         plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
         plt.xlim([0.0, 1.0])
         plt.ylim([0.0, 1.05])
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title('ROC Curve (Class {})'.format(class_num))
-        plt.legend(loc="lower right")
+        plt.xlabel('False Positive Rate', fontsize = 16)
+        plt.ylabel('True Positive Rate', fontsize = 16)
+        plt.legend(loc="lower right", fontsize = 14)
         plt.savefig('outputs/predictive_modeling/classification/base_learners/svm/roc_curve_class_{}.png'.format(class_num))
         plt.close()
 
@@ -87,11 +97,10 @@ def main():
         plt.figure()
         plt.step(recall, precision, color='b', alpha=0.2, where='post')
         plt.fill_between(recall, precision, step='post', alpha=0.2, color='b')
-        plt.xlabel('Recall')
-        plt.ylabel('Precision')
+        plt.xlabel('Recall', fontsize = 16)
+        plt.ylabel('Precision', fontsize = 16)
         plt.ylim([0.0, 1.05])
         plt.xlim([0.0, 1.0])
-        plt.title('Precision-Recall Curve (Class {})'.format(class_num))
         plt.savefig('outputs/predictive_modeling/classification/base_learners/svm/precision_recall_curve_class_{}.png'.format(class_num))
         plt.close()
 

@@ -26,20 +26,32 @@ def main():
         return tuple(random.choice(layer_sizes) for _ in range(num_layers))
 
     # Define the range of hyperparameters
+    # param_dist = {
+    #     'hidden_layer_sizes': [random_hidden_layers() for _ in range(100)],
+    #     'activation': ['relu'],
+    #     'solver': ['adam', 'sgd'],
+    #     'alpha': uniform(0.0001, 1.0),
+    #     'learning_rate': ['constant','adaptive', 'invscaling'],
+    #     'max_iter': [7500],
+    #     'early_stopping': [True],
+    #     'n_iter_no_change': randint(10, 15),
+    #     'tol': uniform(0.0001, 0.005)
+    # }
+
     param_dist = {
-        'hidden_layer_sizes': [random_hidden_layers() for _ in range(100)],
+        'hidden_layer_sizes': [(450, 425, 350, 400)],
         'activation': ['relu'],
-        'solver': ['adam', 'sgd'],
-        'alpha': uniform(0.0001, 1.0),
-        'learning_rate': ['constant','adaptive', 'invscaling'],
+        'solver': ['adam'],
+        'alpha': [0.28103450968738075],
+        'learning_rate': ['constant'],
         'max_iter': [7500],
         'early_stopping': [True],
-        'n_iter_no_change': randint(10, 15),
-        'tol': uniform(0.0001, 0.005)
+        'n_iter_no_change': [14],
+        'tol': [0.00017818203370596967]
     }
 
     # Hyperparameter tuning & CV results
-    random_search, results = hpo_and_cv_results(MLPRegressor(), 'outputs/predictive_modeling/regression/base_learners/mlp/mlp_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error', n_iter=250, cv=10)
+    random_search, results = hpo_and_cv_results(MLPRegressor(), 'outputs/predictive_modeling/regression/base_learners/mlp/mlp_cv_results.csv', param_dist, X_train, y_train, scoring='neg_mean_absolute_error', n_iter=1, cv=10)
 
     # Parallel coordinate plot
     scaler = MinMaxScaler()
