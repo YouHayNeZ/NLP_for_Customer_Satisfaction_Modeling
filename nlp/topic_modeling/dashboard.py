@@ -139,24 +139,23 @@ def create_heatmap_visualization(long_df, note):
 
 def create_dash_app_sentiments_over_time(df, topics, sentiment_colors, category_orders):
     """
-    Create a Dash app_sentiment_plot for visualizing sentiment trends over time.
+    Create a Dash app for visualizing sentiment trends over time.
 
     Parameters:
     - df (pd.DataFrame): DataFrame containing the data.
     - topics (dict): Dictionary mapping topics to their respective columns.
     - sentiment_colors (dict): Dictionary mapping sentiments to their respective colors.
-    - note (str): Annotation note to be added to the plots.
     - category_orders (dict): Dictionary defining the order of categories.
 
     Returns:
-    - app_sentiment_plot (JupyterDash): The Dash app_sentiment_plot object.
+    - app (JupyterDash): The Dash app object.
     """
 
     app_name = "Sentiment Distribution Over Time with Topic Filter"
 
-    app_sentiment_plot = JupyterDash(app_name)
+    app = JupyterDash(app_name)
 
-    app_sentiment_plot.layout = html.Div([
+    app.layout = html.Div([
         html.H1(app_name, style={'textAlign': 'center'}),
         html.Div([
             html.Label('Topic:'),
@@ -169,7 +168,7 @@ def create_dash_app_sentiments_over_time(df, topics, sentiment_colors, category_
         ], style={'width': '100%', 'margin': '0 auto'})
     ])
 
-    @app_sentiment_plot.callback(
+    @app.callback(
         Output('sentiment-trends', 'figure'),
         [Input('topic-dropdown', 'value')]
     )
@@ -202,27 +201,26 @@ def create_dash_app_sentiments_over_time(df, topics, sentiment_colors, category_
 
         return fig
 
-    return app_sentiment_plot
+    return app
 
 
-def create_dash_app_topics_over_time(df, topics, category_orders):
+def create_dash_app_topics_over_time(df, topics):
     """
-    Create a Dash app_topic_plot for visualizing the total number of comments per topic over time.
+    Create a Dash app for visualizing the total number of comments per topic over time.
 
     Parameters:
     - df (pd.DataFrame): DataFrame containing the data.
     - topics (dict): Dictionary mapping topics to their respective columns.
-    - note (str): Annotation note to be added to the plots.
 
     Returns:
-    - app_topic_plot (JupyterDash): The Dash app_topic_plot object.
+    - app (JupyterDash): The Dash app object.
     """
 
-    app_name="Topic Distribution over Time with Topic and Sentiment Filters"
+    app_name = "Topic Distribution over Time with Topic and Sentiment Filters"
 
-    app_topic_plot = JupyterDash(app_name)
+    app = JupyterDash(app_name)
 
-    app_topic_plot.layout = html.Div([
+    app.layout = html.Div([
         html.H1(app_name, style={'textAlign': 'center'}),
         html.Div([
             html.Label('Topic:'),
@@ -241,7 +239,7 @@ def create_dash_app_topics_over_time(df, topics, category_orders):
         ], style={'width': '100%', 'margin': '0 auto'})
     ])
 
-    @app_topic_plot.callback(
+    @app.callback(
         Output('topic-trends', 'figure'),
         [Input('topic-dropdown', 'value'),
          Input('sentiment-dropdown', 'value')]
@@ -278,12 +276,12 @@ def create_dash_app_topics_over_time(df, topics, category_orders):
 
         return fig
 
-    return app_topic_plot
+    return app
 
 
 def create_sentiment_distribution_app(df, categories, topics, sentiment_colors):
     """
-    Create a Dash app_sentiment_pie for visualizing the distribution of comments per sentiment.
+    Create a Dash app for visualizing the distribution of comments per sentiment.
 
     Parameters:
     - df (pd.DataFrame): DataFrame containing the data.
@@ -292,19 +290,19 @@ def create_sentiment_distribution_app(df, categories, topics, sentiment_colors):
     - sentiment_colors (dict): Dictionary mapping sentiments to their respective colors.
 
     Returns:
-    - app_sentiment_pie (JupyterDash): The Dash app_sentiment_pie object.
+    - app (JupyterDash): The Dash app object.
     """
 
-    app_name =  "Distribution of Number Comments Per Sentiment with Filters"
+    app_name = "Distribution of Number Comments Per Sentiment with Filters"
 
-    app_sentiment_pie = JupyterDash(app_name)
+    app = JupyterDash(app_name)
 
     if 'Date Flown' in categories:
         df['Date Flown Parsed'] = pd.to_datetime(df['Date Flown'], format='%B %Y', errors='coerce')
         sorted_dates = df.dropna(subset=['Date Flown Parsed']).sort_values('Date Flown Parsed')['Date Flown'].unique()
         df.drop(columns=['Date Flown Parsed'], inplace=True)
 
-    app_sentiment_pie.layout = html.Div([
+    app.layout = html.Div([
         html.H1(app_name, style={'textAlign': 'center'}),
         html.Div([
             html.Div([
@@ -330,7 +328,7 @@ def create_sentiment_distribution_app(df, categories, topics, sentiment_colors):
         ], style={'display': 'flex'})
     ])
 
-    @app_sentiment_pie.callback(
+    @app.callback(
         Output('sentiment-distribution', 'figure'),
         [Input(f'{category}-dropdown', 'value') for category in categories] +
         [Input('topic-dropdown', 'value')]
@@ -355,4 +353,4 @@ def create_sentiment_distribution_app(df, categories, topics, sentiment_colors):
 
         return fig
 
-    return app_sentiment_pie
+    return app
