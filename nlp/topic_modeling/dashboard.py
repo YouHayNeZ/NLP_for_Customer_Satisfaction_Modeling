@@ -25,17 +25,15 @@ def create_treemap_visualizations(comment_counts, topic_colors, sentiment_colors
     - fig_sen (plotly.graph_objs._figure.Figure): Treemap figure with Sentiments, Topics.
     """
 
-    # Combine the two color mappings into one
     combined_colors = {**sentiment_colors, **topic_colors}
 
-    # Create a combined key for color mapping
     comment_counts['color_key'] = comment_counts.apply(
         lambda row: row['Sentiment'] if row['Topic'] == '' else row['Topic'], axis=1)
 
     # Treemap by Topic and Sentiment
     fig_topic = px.treemap(comment_counts, path=['Topic', 'Sentiment'], values='Number of Comments',
                            color='color_key', color_discrete_map=combined_colors,
-                           title='Treemap of Number of Comments* by Topic and Sentiment',
+                           title='Number of Comments* Breakdown by Topic and Sentiment',
                            custom_data=['Number of Comments'])
 
     fig_topic.update_traces(
@@ -56,7 +54,7 @@ def create_treemap_visualizations(comment_counts, topic_colors, sentiment_colors
     # Treemap by Sentiment and Topic
     fig_sen = px.treemap(comment_counts, path=['Sentiment', 'Topic'], values='Number of Comments',
                          color='Sentiment', color_discrete_map=sentiment_colors,
-                         title='Treemap of Number of Comments* by Sentiment and Topic',
+                         title='Number of Comments* Breakdown by Sentiment and Topic',
                          custom_data=['Number of Comments'])
 
     fig_sen.update_traces(
@@ -77,6 +75,35 @@ def create_treemap_visualizations(comment_counts, topic_colors, sentiment_colors
     return fig_topic, fig_sen
 
 
+def create_sunburst_plot(long_df, note):
+    """
+    Create a Sunburst plot for sentiment breakdown by topic.
+
+    Parameters:
+    - long_df (pd.DataFrame): DataFrame containing long-form data with 'Topic', 'Sentiment', and 'count' columns.
+    - note (str): Annotation note to be added to the plot.
+
+    Returns:
+    - fig (plotly.graph_objs._figure.Figure): Sunburst plot figure.
+    """
+
+    sunburst_data = long_df.groupby(['Topic', 'Sentiment']).size().reset_index(name='count')
+
+    fig = px.sunburst(sunburst_data, path=['Topic', 'Sentiment'], values='count',
+                      title='Number of Comments* Breakdown by Topic and Sentiment')
+
+    fig.add_annotation(
+        text=note,
+        xref='paper', yref='paper',
+        x=0.5, y=-0.1,
+        showarrow=False,
+        font=dict(size=12),
+        align='center'
+    )
+
+    return fig
+
+
 def create_heatmap_visualization(long_df, note):
     """
     Create a heatmap visualization for comments by sentiment and topic.
@@ -89,12 +116,10 @@ def create_heatmap_visualization(long_df, note):
     - fig (plotly.graph_objs._figure.Figure): Heatmap figure.
     """
 
-    # Aggregate the data to get the count of comments per combination
     heatmap_data = long_df.groupby(['Topic', 'Sentiment']).size().reset_index(name='count')
 
-    # Create the heatmap plot
     fig = px.density_heatmap(heatmap_data, x='Sentiment', y='Topic', z='count',
-                             title='Heatmap of Number of Comments* Sentiment by Topic',
+                             title='Number of Comments* Breakdown by Topic and Sentiment',
                              labels={'count': 'Number of Comments'},
                              color_continuous_scale='Blues')
     fig.update_layout(
@@ -112,9 +137,9 @@ def create_heatmap_visualization(long_df, note):
     return fig
 
 
-def create_dash_app_sentiments_over_time(df, topics, sentiment_colors, note, category_orders):
+def create_dash_app_sentiments_over_time(df, topics, sentiment_colors, category_orders):
     """
-    Create a Dash app for visualizing sentiment trends over time.
+    Create a Dash app_sentiment_plot for visualizing sentiment trends over time.
 
     Parameters:
     - df (pd.DataFrame): DataFrame containing the data.
@@ -124,14 +149,15 @@ def create_dash_app_sentiments_over_time(df, topics, sentiment_colors, note, cat
     - category_orders (dict): Dictionary defining the order of categories.
 
     Returns:
-    - app (JupyterDash): The Dash app object.
+    - app_sentiment_plot (JupyterDash): The Dash app_sentiment_plot object.
     """
 
-    app = JupyterDash('Sentiment Distribution Per Topic Over Time')
+    app_name = "Sentiment Distribution Over Time with Topic Filter"
 
-    # Layout
-    app.layout = html.Div([
-        html.H1("Sentiment Trends Over Time", style={'textAlign': 'center'}),
+    app_sentiment_plot = JupyterDash(app_name)
+
+    app_sentiment_plot.layout = html.Div([
+        html.H1(app_name, style={'textAlign': 'center'}),
         html.Div([
             html.Label('Topic:'),
             dcc.Dropdown(
@@ -143,14 +169,13 @@ def create_dash_app_sentiments_over_time(df, topics, sentiment_colors, note, cat
         ], style={'width': '100%', 'margin': '0 auto'})
     ])
 
-    @app.callback(
+    @app_sentiment_plot.callback(
         Output('sentiment-trends', 'figure'),
         [Input('topic-dropdown', 'value')]
     )
     def update_graph(topic_filter_values):
         filtered_df = df.copy()
 
-        # Filter by selected topics
         if topic_filter_values:
             for topic in topic_filter_values:
                 filtered_df = filtered_df[filtered_df[topic] == True]
@@ -163,7 +188,7 @@ def create_dash_app_sentiments_over_time(df, topics, sentiment_colors, note, cat
         yearly_data['percentage'] = yearly_data['count'] / yearly_data['total'] * 100
 
         fig = px.line(yearly_data, x='Year', y='percentage', color='Sentiment',
-                      title='Sentiment Trends Over Time*',
+                      title='Sentiment Distribution Over Time',
                       color_discrete_map=sentiment_colors,
                       labels={'percentage': 'Percentage of Comments', 'Year': 'Year'},
                       category_orders=category_orders)
@@ -172,23 +197,17 @@ def create_dash_app_sentiments_over_time(df, topics, sentiment_colors, note, cat
             xaxis_title='Year',
             yaxis_title='Percentage of Comments (%)',
             legend_title='Sentiment',
-            hovermode='x unified',
-            annotations=[{
-                'x': 0.5, 'y': -0.3, 'xref': 'paper', 'yref': 'paper',
-                'text': note,
-                'showarrow': False,
-                'font': {'size': 12}
-            }]
+            hovermode='x unified'
         )
 
         return fig
 
-    return app
+    return app_sentiment_plot
 
 
-def create_dash_app_topics_over_time(df, topics, note):
+def create_dash_app_topics_over_time(df, topics, category_orders):
     """
-    Create a Dash app for visualizing the total number of comments per topic over time.
+    Create a Dash app_topic_plot for visualizing the total number of comments per topic over time.
 
     Parameters:
     - df (pd.DataFrame): DataFrame containing the data.
@@ -196,13 +215,15 @@ def create_dash_app_topics_over_time(df, topics, note):
     - note (str): Annotation note to be added to the plots.
 
     Returns:
-    - app (JupyterDash): The Dash app object.
+    - app_topic_plot (JupyterDash): The Dash app_topic_plot object.
     """
 
-    app = JupyterDash("Total Number of Comments per Topic Over Time")
+    app_name="Topic Distribution over Time with Topic and Sentiment Filters"
 
-    app.layout = html.Div([
-        html.H1("Total Number of Comments per Topic Over Time", style={'textAlign': 'center'}),
+    app_topic_plot = JupyterDash(app_name)
+
+    app_topic_plot.layout = html.Div([
+        html.H1(app_name, style={'textAlign': 'center'}),
         html.Div([
             html.Label('Topic:'),
             dcc.Dropdown(
@@ -210,62 +231,59 @@ def create_dash_app_topics_over_time(df, topics, note):
                 options=[{'label': label, 'value': value} for label, value in topics.items()],
                 multi=True
             ),
+            html.Label('Sentiment:'),
+            dcc.Dropdown(
+                id='sentiment-dropdown',
+                options=[{'label': sentiment, 'value': sentiment} for sentiment in df['Sentiment'].unique()],
+                multi=True
+            ),
             dcc.Graph(id='topic-trends')
         ], style={'width': '100%', 'margin': '0 auto'})
     ])
 
-    @app.callback(
+    @app_topic_plot.callback(
         Output('topic-trends', 'figure'),
-        [Input('topic-dropdown', 'value')]
+        [Input('topic-dropdown', 'value'),
+         Input('sentiment-dropdown', 'value')]
     )
-    def update_graph(selected_topics):
+    def update_graph(selected_topics, selected_sentiments):
         filtered_df = df.copy()
-
-        # Filter by selected topics
         if selected_topics:
             for topic in selected_topics:
                 filtered_df = filtered_df[filtered_df[topic] == True]
+        if selected_sentiments:
+            for sentiment in selected_sentiments:
+                filtered_df = filtered_df[filtered_df['Sentiment'] == sentiment]
 
-        # Convert date to year
         filtered_df['Year'] = filtered_df['Date Published Formatted'].dt.year
 
-        # Initialize an empty DataFrame for yearly data
         yearly_data = pd.DataFrame()
 
-        # Aggregate data for each topic
         for topic_name, topic_col in topics.items():
             topic_df = filtered_df[filtered_df[topic_col] == True]
             topic_yearly = topic_df.groupby(['Year']).size().reset_index(name='count')
             topic_yearly['Topic'] = topic_name
             yearly_data = pd.concat([yearly_data, topic_yearly])
 
-        # Create the line plot
         fig = px.line(yearly_data, x='Year', y='count', color='Topic',
-                      title='Total Number of Comments* per Topic Over Time',
+                      title='Topic Distribution over Time',
                       labels={'count': 'Number of Comments', 'Year': 'Year'})
 
-        # Update layout for better readability
         fig.update_layout(
             xaxis_title='Year',
             yaxis_title='Number of Comments',
             legend_title='Topic',
             hovermode='x unified',
-            annotations=[{
-                'x': 0.5, 'y': -0.3, 'xref': 'paper', 'yref': 'paper',
-                'text': note,
-                'showarrow': False,
-                'font': {'size': 12}
-            }]
         )
 
         return fig
 
-    return app
+    return app_topic_plot
 
 
 def create_sentiment_distribution_app(df, categories, topics, sentiment_colors):
     """
-    Create a Dash app for visualizing the distribution of comments per sentiment.
+    Create a Dash app_sentiment_pie for visualizing the distribution of comments per sentiment.
 
     Parameters:
     - df (pd.DataFrame): DataFrame containing the data.
@@ -274,21 +292,28 @@ def create_sentiment_distribution_app(df, categories, topics, sentiment_colors):
     - sentiment_colors (dict): Dictionary mapping sentiments to their respective colors.
 
     Returns:
-    - app (JupyterDash): The Dash app object.
+    - app_sentiment_pie (JupyterDash): The Dash app_sentiment_pie object.
     """
 
-    app = JupyterDash("Distribution of Number Comments Per Sentiment")
+    app_name =  "Distribution of Number Comments Per Sentiment with Filters"
 
-    # Layout
-    app.layout = html.Div([
-        html.H1("Distribution of Comment Per Sentiment", style={'textAlign': 'center'}),
+    app_sentiment_pie = JupyterDash(app_name)
+
+    if 'Date Flown' in categories:
+        df['Date Flown Parsed'] = pd.to_datetime(df['Date Flown'], format='%B %Y', errors='coerce')
+        sorted_dates = df.dropna(subset=['Date Flown Parsed']).sort_values('Date Flown Parsed')['Date Flown'].unique()
+        df.drop(columns=['Date Flown Parsed'], inplace=True)
+
+    app_sentiment_pie.layout = html.Div([
+        html.H1(app_name, style={'textAlign': 'center'}),
         html.Div([
             html.Div([
                 html.Div([
                     html.Label(f'{category}:'),
                     dcc.Dropdown(
                         id=f'{category}-dropdown',
-                        options=[{'label': value, 'value': value} for value in df[category].dropna().unique()],
+                        options=[{'label': value, 'value': value} for value in (
+                            sorted_dates if category == 'Date Flown' else sorted(df[category].dropna().unique()))],
                         multi=True
                     )
                 ]) for category in categories
@@ -305,7 +330,7 @@ def create_sentiment_distribution_app(df, categories, topics, sentiment_colors):
         ], style={'display': 'flex'})
     ])
 
-    @app.callback(
+    @app_sentiment_pie.callback(
         Output('sentiment-distribution', 'figure'),
         [Input(f'{category}-dropdown', 'value') for category in categories] +
         [Input('topic-dropdown', 'value')]
@@ -315,12 +340,10 @@ def create_sentiment_distribution_app(df, categories, topics, sentiment_colors):
         topic_filter_values = filter_values[-1]
         category_filter_values = filter_values[:-1]
 
-        # Filter by selected categories
         for category, filter_value in zip(categories, category_filter_values):
             if filter_value:
                 filtered_df = filtered_df[filtered_df[category].isin(filter_value)]
 
-        # Filter by selected topics
         if topic_filter_values:
             for topic in topic_filter_values:
                 filtered_df = filtered_df[filtered_df[topic] == True]
@@ -332,33 +355,4 @@ def create_sentiment_distribution_app(df, categories, topics, sentiment_colors):
 
         return fig
 
-    return app
-
-
-def create_sunburst_plot(long_df, note):
-    """
-    Create a Sunburst plot for sentiment breakdown by topic.
-
-    Parameters:
-    - long_df (pd.DataFrame): DataFrame containing long-form data with 'Topic', 'Sentiment', and 'count' columns.
-    - note (str): Annotation note to be added to the plot.
-
-    Returns:
-    - fig (plotly.graph_objs._figure.Figure): Sunburst plot figure.
-    """
-
-    sunburst_data = long_df.groupby(['Topic', 'Sentiment']).size().reset_index(name='count')
-
-    fig = px.sunburst(sunburst_data, path=['Topic', 'Sentiment'], values='count',
-                      title='Sentiment Breakdown by Topic*')
-
-    fig.add_annotation(
-        text=note,
-        xref='paper', yref='paper',
-        x=0.5, y=-0.1,
-        showarrow=False,
-        font=dict(size=12),
-        align='center'
-    )
-
-    return fig
+    return app_sentiment_pie
