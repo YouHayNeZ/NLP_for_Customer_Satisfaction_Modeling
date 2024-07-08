@@ -22,6 +22,7 @@ https://www.machinelearningplus.com/nlp/topic-modeling-gensim-python/
 https://github.com/wjbmattingly/topic_modeling_textbook/blob/main/03_03_lda_model_demo_bigrams_trigrams.ipynb
 """
 
+
 def topic_modeling():
     """
     Main function to perform topic modeling on comments.
@@ -302,7 +303,7 @@ def plot_search_results(results):
     ax1.set_xticklabels(params, rotation=45, ha='right', fontsize=5)
     plt.title('Parameter Search Results for LDA')
     plt.subplots_adjust(left=0.2, bottom=0.3, top=0.9)  # Adjust the margins
-    plt.savefig("outputs/nlp/topic_modeling/coherence_vs_perplexity.png")
+    plt.savefig("outputs/nlp/topic_modeling/lda_random_search_coherence_vs_perplexity.png")
     plt.show()
 
 
@@ -370,7 +371,7 @@ def run_lda_model(comments_df, corpus, id2word, data_bigrams_trigrams):
     topic_counts = comments_df['Max_Probability_Topic'].value_counts()
     print(topic_counts)
     comments_df.to_csv("outputs/nlp/topic_modeling/comments_with_lda_topics.csv")
-    generate_wordclouds(lda_model,num_topics)
+    generate_wordclouds(lda_model, num_topics)
 
 
 def generate_wordclouds(lda_model, num_topics):
@@ -389,7 +390,8 @@ def generate_wordclouds(lda_model, num_topics):
     fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(15, 5 * nrows))
 
     for i in range(num_topics):
-        wordcloud = WordCloud(width=800, height=400, background_color='white').fit_words(dict(lda_model.show_topic(i, 25)))
+        wordcloud = WordCloud(width=800, height=400, background_color='white').fit_words(
+            dict(lda_model.show_topic(i, 25)))
         ax = axes[i // ncols, i % ncols]
         ax.imshow(wordcloud, interpolation='bilinear')
         ax.axis('off')

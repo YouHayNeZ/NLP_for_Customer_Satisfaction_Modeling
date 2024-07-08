@@ -44,8 +44,9 @@ The dataset consists of Ryanair customer reviews obtained from Kaggle.
 │   │   ├── sentiment_analysis_vader.py
 │   │   └── sentiment_benchmark_analysis.ipynb  -> conducted the different sentiment analyses and the benchmark analysis there
 │   ├── topic_modeling
+│   │   ├── dashboard.ipynb
+│   │   ├── dashboard_functions.py  
 │   │   ├── topic_modeling_openai.py    
-│   │   ├── topic_modeling.ipynb
 │   │   ├── topic_modelling_LDA.py
 │   │   ├── topics_first_run
 │   │   └── topics_second_run
@@ -77,10 +78,10 @@ The dataset consists of Ryanair customer reviews obtained from Kaggle.
 │   │   │   ├── labeled_data_for_benchmark_analysis.csv
 │   │   │   └── openai_sentiment_analysis.csv
 │   │   ├── topic_modeling
-│   │   │   ├── coherence_vs_perplexity.png
 │   │   │   ├── comments_with_lda_topics.csv
+│   │   │   ├── lda_random_search_coherence_vs_perplexity.png
+│   │   │   ├── lda_topic_wordclouds.png
 │   │   │   ├── lda_topics_visualization.html
-│   │   │   ├── lda_topics.png
 │   │   │   └── openai_topic_modeling.csv
 │   ├── predictive_modeling
 │   │   ├── classification
@@ -172,18 +173,18 @@ nlp/sentiment_analysis/sentiment_benchmark_analysis.ipynb
 ### Topic Modeling
 To perform topic modeling using LDA and OpenAI models, run:
 
-# LDA
+#### LDA
 ```bash
 python nlp/topic_modeling/topic_modelling_LDA.py
 ```
 
-# OpenAI GPT-3.5-turbo
+#### OpenAI GPT-3.5-turbo
 Note that you need a key to re-run the script.
 ```bash
 python nlp/topic_modeling/topic_modeling_openai.py
 ```
 
-# Dashboard
+#### Dashboard
 To run the dashboard that visualizes the results of Sentiment Analysis and Topic Modeling, navigate to the following path and run the jupyter notebook:
 
 ```
