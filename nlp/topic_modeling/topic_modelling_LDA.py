@@ -12,7 +12,6 @@ from gensim.models import TfidfModel
 import spacy
 from nltk.corpus import stopwords
 import pyLDAvis
-import pyLDAvis.gensim
 import pyLDAvis.gensim_models as gensimvis
 from wordcloud import WordCloud
 
@@ -72,7 +71,7 @@ def topic_modeling():
     Since RandomizedSearchCV is optimized for the scikit library and gensim is used in this implementation a random search is perform with the following functionality.
     Uncomment the following line to perform random search.
     """
-    # perform_random_search()
+    # perform_random_search(corpus, id2word, data_bigrams_trigrams)
     run_lda_model(comments_df, corpus, id2word, data_bigrams_trigrams)
 
 
@@ -162,16 +161,16 @@ def make_bigram_trigram(data_words):
 
 def compute_coherence_perplexity(corpus, texts, dictionary, params):
     """
-        Computes coherence and perplexity of the LDA model.
+    Computes coherence and perplexity of the LDA model.
 
-        Parameters:
-            corpus (list): List of document term matrices.
-            texts (list): List of tokenized texts.
-            dictionary (gensim.corpora.Dictionary): Gensim dictionary.
-            params (dict): Parameters for LDA model.
+    Parameters:
+        corpus (list): List of document term matrices.
+        texts (list): List of tokenized texts.
+        dictionary (gensim.corpora.Dictionary): Gensim dictionary.
+        params (dict): Parameters for LDA model.
 
-        Returns:
-            tuple: Coherence score, perplexity score, and LDA model.
+    Returns:
+        tuple: Coherence score, perplexity score, and LDA model.
     """
     lda_model = LdaModel(corpus=corpus,
                          id2word=dictionary,
@@ -191,37 +190,22 @@ def compute_coherence_perplexity(corpus, texts, dictionary, params):
 # Function for random search
 def random_search(param_grid, n_iter):
     """
-        Performs random search for hyperparameter optimization.
+    Performs random search for hyperparameter optimization.
 
-        Parameters:
-            param_grid (dict): Dictionary of parameter grid.
-            n_iter (int): Number of iterations.
+    Parameters:
+        param_grid (dict): Dictionary of parameter grid.
+        n_iter (int): Number of iterations.
 
-        Returns:
-            list: List of random parameter combinations.
+    Returns:
+        list: List of random parameter combinations.
     """
-
     param_combinations = list(itertools.product(*param_grid.values()))
     return random.sample(param_combinations, n_iter)
 
 
-def perform_random_search():
+def perform_random_search(corpus, id2word, data_bigrams_trigrams):
     """
     Performs random search for LDA model hyperparameters.
-    """
-    """
-    # 1st Random Search - Online Learning
-    # Best Params: {'num_topics': 10, 'update_every': 2, 'chunksize': 200, 'passes': 30, 'alpha': 'auto'} =	 Coherence: 0.5370863931633967
-    param_grid = {'num_topics': [5, 7, 10],'update_every': [1, 2],'chunksize': [100, 200, 300], 'passes': [10, 20, 30],'alpha': ['symmetric', 'auto']}
-
-    # 2nd Random Search - Batch Learning
-    # Best Params: {'num_topics': 10, 'update_every': 1, 'chunksize': 300, 'passes': 20, 'alpha': 'auto'} =	 Coherence: 0.5683360578973087
-    param_grid = {'num_topics': [5, 7, 10],'update_every': [0],'passes': [10, 20, 30],'alpha': ['symmetric', 'auto']}
-
-    param_grid = {'num_topics': [5, 7, 10],'update_every': [1, 2],'chunksize': [200, 300],'passes': [20, 30],'alpha': ['auto'], 'eta': ["auto", "symmetric"]}
-
-    param_grid = { 'num_topics': [5, 7, 10, 15], 'update_every': [1, 2],'chunksize': [100, 200, 300], 'passes': [10, 20, 30], 'alpha': ['symmetric', 'auto', 0.01, 0.1, 0.5], 'eta': ['symmetric', 'auto', 0.01, 0.1, 0.5]
-    }
     """
     param_grid = {
         'num_topics': [5, 6, 7],
@@ -282,9 +266,7 @@ def plot_search_results(results):
     ax1.tick_params(axis='y', labelcolor=color)
 
     # 2nd y-axis for Perplexity
-
     ax2 = ax1.twinx()
-
     color = 'tab:red'
     ax2.set_ylabel('Perplexity', color=color)
     ax2.grid(True, which='both', linestyle='--', linewidth=0.5, color='lightcoral')
@@ -385,20 +367,20 @@ def generate_wordclouds(lda_model, num_topics):
     Returns:
         None
     """
-    ncols = 3
-    nrows = (num_topics // ncols) + (num_topics % ncols > 0)
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(15, 5 * nrows))
+    num_ncols = 3
+    num_rows = (num_topics // num_ncols) + (num_topics % num_ncols > 0)
+    fig, axes = plt.subplots(nrows=num_rows, ncols=num_ncols, figsize=(15, 5 * num_rows))
 
     for i in range(num_topics):
         wordcloud = WordCloud(width=800, height=400, background_color='white').fit_words(
             dict(lda_model.show_topic(i, 25)))
-        ax = axes[i // ncols, i % ncols]
+        ax = axes[i // num_ncols, i % num_ncols]
         ax.imshow(wordcloud, interpolation='bilinear')
         ax.axis('off')
         ax.set_title(f'Topic {i + 1}')
 
-    for j in range(num_topics, nrows * ncols):
-        fig.delaxes(axes[j // ncols, j % ncols])
+    for j in range(num_topics, num_rows * num_ncols):
+        fig.delaxes(axes[j // num_ncols, j % num_ncols])
 
     plt.tight_layout()
     plt.savefig('outputs/nlp/topic_modeling/lda_topic_wordclouds.png')
