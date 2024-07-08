@@ -26,9 +26,10 @@ The dataset consists of Ryanair customer reviews obtained from Kaggle.
 
 ### Description
 - **Raw Data:** `data/ryanair_reviews.csv`
-- **Preprocessed Data:** `data/ryanair_review_with_extra_features.csv`
+- **Data with Extra Features:** `data/ryanair_review_with_extra_features.csv`
 
 ### Project Structure
+```
 .
 ├── data                                -> Contains raw and processed data
 │   ├── ryanair_review_with_extra_features.csv   -> Preprocessed and cleaned data with included features from NLP
@@ -134,7 +135,7 @@ The dataset consists of Ryanair customer reviews obtained from Kaggle.
 ├── preprocessing.py
 ├── README.md
 ├── requirements.txt
-
+```
 
 ## Installation
 To install and set up the project locally, follow these steps:
@@ -163,12 +164,12 @@ python nlp/comments_preprocessing.py
 ```
 
 ### Sentiment Analysis
-To perform sentiment analysis using different models, run:
-```bash
-python nlp/sentiment_analysis/sentiment_benchmark_analysis.ipynb
+To perform sentiment analysis using different models, navigate to the following path and run the jupyter notebook:
+```
+nlp/sentiment_analysis/sentiment_benchmark_analysis.ipynb
 ```
 
-### Topic Modeling @Ece, Pati: is that right?
+### Topic Modeling
 To perform topic modeling using LDA and OpenAI models, run:
 
 # LDA
@@ -177,8 +178,16 @@ python nlp/topic_modeling/topic_modelling_LDA.py
 ```
 
 # OpenAI GPT-3.5-turbo
+Note that you need a key to re-run the script.
 ```bash
 python nlp/topic_modeling/topic_modeling_openai.py
+```
+
+# Dashboard
+To run the dashboard that visualizes the results of Sentiment Analysis and Topic Modeling, navigate to the following path and run the jupyter notebook:
+
+```
+nlp/topic_modeling/dashboard.ipynb
 ```
 
 ### Predicive Modeling

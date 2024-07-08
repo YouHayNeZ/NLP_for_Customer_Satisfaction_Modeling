@@ -14,14 +14,20 @@ from nltk.corpus import stopwords
 import pyLDAvis
 import pyLDAvis.gensim
 import pyLDAvis.gensim_models as gensimvis
+from wordcloud import WordCloud
 
+"""
+Referenced from 
+https://www.machinelearningplus.com/nlp/topic-modeling-gensim-python/
+https://github.com/wjbmattingly/topic_modeling_textbook/blob/main/03_03_lda_model_demo_bigrams_trigrams.ipynb
+"""
 
 def topic_modeling():
     """
     Main function to perform topic modeling on comments.
     """
     # Read the preprocessed comments for sentiment analysis
-    comments_df = pd.read_csv("../../outputs/nlp/sentiment_analysis/cleaned_comments.csv")
+    comments_df = pd.read_csv("outputs/nlp/sentiment_analysis/cleaned_comments.csv")
     if 'Unnamed: 0' in comments_df.columns:
         comments_df.drop(columns=["Unnamed: 0"], inplace=True)
 
@@ -36,12 +42,6 @@ def topic_modeling():
     data_bigrams_trigrams = make_bigram_trigram(data_words)
 
     id2word = corpora.Dictionary(data_bigrams_trigrams)
-
-    # Check the most frequent words to see if there is something to remove
-    # word_frequencies = Counter({id2word[id]: freq for id, freq in id2word.dfs.items()})
-    # most_common_words = word_frequencies.most_common(20)
-    # for word, freq in most_common_words:
-    #     print(f"{word}: {freq}")
 
     texts = data_bigrams_trigrams
 
@@ -69,6 +69,7 @@ def topic_modeling():
     """
     Do hyperparameter optimization with a random search implementation.
     Since RandomizedSearchCV is optimized for the scikit library and gensim is used in this implementation a random search is perform with the following functionality.
+    Uncomment the following line to perform random search.
     """
     # perform_random_search()
     run_lda_model(comments_df, corpus, id2word, data_bigrams_trigrams)
@@ -301,7 +302,7 @@ def plot_search_results(results):
     ax1.set_xticklabels(params, rotation=45, ha='right', fontsize=5)
     plt.title('Parameter Search Results for LDA')
     plt.subplots_adjust(left=0.2, bottom=0.3, top=0.9)  # Adjust the margins
-    plt.savefig("../../outputs/nlp/topic_modeling/coherence_vs_perplexity.png")
+    plt.savefig("outputs/nlp/topic_modeling/coherence_vs_perplexity.png")
     plt.show()
 
 
@@ -346,7 +347,7 @@ def run_lda_model(comments_df, corpus, id2word, data_bigrams_trigrams):
         print(f'Topic {topic_num}: {", ".join([word for word, prob in words])}')
 
     lda_vis_data = gensimvis.prepare(lda_model, corpus, id2word, mds="mmds", R=10)
-    pyLDAvis.save_html(lda_vis_data, '../../outputs/nlp/topic_modeling/lda_topics_visualization.html')
+    pyLDAvis.save_html(lda_vis_data, 'outputs/nlp/topic_modeling/lda_topics_visualization.html')
 
     # Save topic probability distribution and max probability topic
     topic_assignments = [lda_model.get_document_topics(bow, minimum_probability=0) for bow in corpus]
@@ -368,7 +369,37 @@ def run_lda_model(comments_df, corpus, id2word, data_bigrams_trigrams):
 
     topic_counts = comments_df['Max_Probability_Topic'].value_counts()
     print(topic_counts)
-    comments_df.to_csv("../../outputs/nlp/topic_modeling/comments_with_lda_topics.csv")
+    comments_df.to_csv("outputs/nlp/topic_modeling/comments_with_lda_topics.csv")
+    generate_wordclouds(lda_model,num_topics)
+
+
+def generate_wordclouds(lda_model, num_topics):
+    """
+    Generates word clouds for each topic from the LDA.
+
+    Parameters:
+        lda_model (gensim.models.ldamodel.LdaModel): Trained LDA model.
+        num_topics (int): Number of topics.
+
+    Returns:
+        None
+    """
+    ncols = 3
+    nrows = (num_topics // ncols) + (num_topics % ncols > 0)
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(15, 5 * nrows))
+
+    for i in range(num_topics):
+        wordcloud = WordCloud(width=800, height=400, background_color='white').fit_words(dict(lda_model.show_topic(i, 25)))
+        ax = axes[i // ncols, i % ncols]
+        ax.imshow(wordcloud, interpolation='bilinear')
+        ax.axis('off')
+        ax.set_title(f'Topic {i + 1}')
+
+    for j in range(num_topics, nrows * ncols):
+        fig.delaxes(axes[j // ncols, j % ncols])
+
+    plt.tight_layout()
+    plt.savefig('outputs/nlp/topic_modeling/lda_topic_wordclouds.png')
 
 
 if __name__ == '__main__':
